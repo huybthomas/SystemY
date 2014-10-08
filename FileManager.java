@@ -21,12 +21,12 @@ public class FileManager {
 	}	 
 
 
-	public static Object loadXMLFile(Object typeClass, String fileLocation) {
+	public static Object loadXMLFile(Class<?> typeClass, String fileLocation) {
 		Object object = null;
 
 		try  {
 			File file = new File(fileLocation);
-			JAXBContext jaxbContext = JAXBContext.newInstance(typeClass.getClass());
+			JAXBContext jaxbContext = JAXBContext.newInstance(typeClass);
 			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();   	//Deserializer from class to XML
 			object = jaxbUnmarshaller.unmarshal(file);         						//Read XML file and reconstruct object
 		} catch(JAXBException e) {
