@@ -8,7 +8,7 @@ import javax.xml.bind.Unmarshaller;
 
 public class FileManager {
 
-	public static void saveNodeList(Object object, String fileLocation) {
+	public static void saveXMLFile(Object object, String fileLocation) {
 		try {
 			File file = new File(fileLocation);
 			JAXBContext jaxbContext = JAXBContext.newInstance(object.getClass()); 	//Java architecture for XML Binding (JAXB)
@@ -21,7 +21,7 @@ public class FileManager {
 	}	 
 
 
-	public static Object loadNodeList(Object typeClass, String fileLocation) {
+	public static Object loadXMLFile(Object typeClass, String fileLocation) {
 		Object object = null;
 
 		try  {
