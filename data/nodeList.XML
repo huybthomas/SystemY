@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<NodeList>
+    <nodeMap>
+        <entry>
+            <key>8784</key>
+            <value>
+                <hostname>Node2</hostname>
+                <ipAddress>192.168.0.2</ipAddress>
+            </value>
+        </entry>
+        <entry>
+            <key>8783</key>
+            <value>
+                <hostname>Node1</hostname>
+                <ipAddress>192.168.0.2</ipAddress>
+            </value>
+        </entry>
+    </nodeMap>
+</NodeList>
