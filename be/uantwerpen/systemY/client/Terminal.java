@@ -7,6 +7,9 @@ import java.util.Observer;
 
 import be.uantwerpen.systemY.terminal.TerminalReader;
 
+/**
+ * Terminal class to interpret the input of the console and execute methods of the client class
+ */
 public class Terminal
 {
 	private Client client;
@@ -14,7 +17,7 @@ public class Terminal
 	
 	/**
 	 * Creates the Terminal Object.
-	 * @param server	Server
+	 * @param Client 	client
 	 */
 	public Terminal(Client client)
 	{
@@ -34,7 +37,7 @@ public class Terminal
 	
 	/**
 	 * Prints a message to the Terminal.
-	 * @param message	String
+	 * @param String	message
 	 */
 	public void printTerminal(String message)
 	{
@@ -43,7 +46,7 @@ public class Terminal
 	
 	/**
 	 * Prints info message to the Terminal.
-	 * @param message	String
+	 * @param String	message
 	 */
 	public void printTerminalInfo(String message)
 	{
@@ -55,7 +58,7 @@ public class Terminal
 	
 	/**
 	 * Prints error message to the Terminal.
-	 * @param message	String
+	 * @param String	message
 	 */
 	public void printTerminalError(String message)
 	{
@@ -75,7 +78,7 @@ public class Terminal
 	
 	/**
 	 * Executes a command
-	 * @param commandString	Command to be executed in String format
+	 * @param String	commandString	Command to be executed in String format
 	 */
 	private void executeCommand(String commandString)
 	{
@@ -148,9 +151,9 @@ public class Terminal
 	}
 	
 	/**
-	 * METHODE UNDER CONSTRUCTION
+	 * METHOD STILL UNDER CONSTRUCTION
 	 * Returns the ip where a file can be found.
-	 * @param filename	String
+	 * @param String	filename
 	 * @return	boolean	True if successful, false otherwise
 	 */
 	private String getFileLocation(String filename)
@@ -158,13 +161,16 @@ public class Terminal
 		return "";
 	}
 	
+	/**
+	 * Let client login to SystemY.
+	 */
 	private void loginSystem()
 	{
 		client.loginSystem();
 	}
 	
 	/**
-	 * Prints the host Information
+	 * Prints the host Information (hostname & ip address)
 	 */
 	private void getHostInfo()
 	{
@@ -173,7 +179,7 @@ public class Terminal
 	
 	/**
 	 * Change the host name.
-	 * @param name
+	 * @param String	name
 	 * @return boolean	True if successful, false if failed
 	 */
 	private boolean setHostname(String name)
@@ -190,6 +196,11 @@ public class Terminal
 		}
 	}
 	
+	/**
+	 * Change the host ip address.
+	 * @param String	ip
+	 * @return boolean	True if successful, false if failed
+	 */
 	private boolean setIP(String ip)
 	{
 		if(client.setIP(ip))
@@ -204,6 +215,9 @@ public class Terminal
 		}
 	}
 	
+	/**
+	 * Let client logout of SystemY.
+	 */
 	private void logoutSystem()
 	{
 		client.logoutSystem();

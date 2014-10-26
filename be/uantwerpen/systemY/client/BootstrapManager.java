@@ -6,6 +6,11 @@ import java.rmi.server.UnicastRemoteObject;
 import be.uantwerpen.systemY.interfaces.BootstrapManagerInterface;
 import be.uantwerpen.systemY.shared.Node;
 
+/**
+ * Class that handles the bootstrap of a client
+ * @extends UnicastRemoteObject
+ * @implements BootstrapManagerInterface
+ */
 public class BootstrapManager extends UnicastRemoteObject implements BootstrapManagerInterface
 {
 	private static final long serialVersionUID = 1L;
@@ -14,8 +19,8 @@ public class BootstrapManager extends UnicastRemoteObject implements BootstrapMa
 	private boolean firstNetworkNode;
 	
 	/**
-	 * Puts client in local variable.
-	 * @param client
+	 * Create the BootstrapManager object.
+	 * @param Client	the client
 	 * @throws RemoteException
 	 */
 	public BootstrapManager(Client client) throws RemoteException
@@ -24,9 +29,9 @@ public class BootstrapManager extends UnicastRemoteObject implements BootstrapMa
 	}
 	
 	/**
-	 * sets the linked node
-	 * @param prevNode
-	 * @param nextNode
+	 * Sets the linked next and previous nodes to a client
+	 * @param Node 	prevNode
+	 * @param Node 	nextNode
 	 */
 	public void setLinkedNodes(Node prevNode, Node nextNode)
 	{
@@ -38,8 +43,8 @@ public class BootstrapManager extends UnicastRemoteObject implements BootstrapMa
 	
 	/**
 	 * Give the server ip address and the network size to the new node.
-	 * @param serverIP
-	 * @param networkSize
+	 * @param String	serverIP
+	 * @param int	networkSize
 	 */
 	public void setNetwork(String serverIP, int networkSize)
 	{
@@ -55,6 +60,10 @@ public class BootstrapManager extends UnicastRemoteObject implements BootstrapMa
 		finishBootstrap();
 	}
 	
+	/**
+	 * Implements the bootstrap service
+	 * @return boolean	True if succcess, false if not
+	 */
 	public boolean startBootstrap()
 	{
 		//Initialize bootstrap
@@ -80,18 +89,26 @@ public class BootstrapManager extends UnicastRemoteObject implements BootstrapMa
 		}
 	}
 	
+	/**
+	 * Sends out a multicast message when entering network
+	 * @return boolean	True if success, false if not
+	 */
 	private boolean sendDiscoveryMulticast()
 	{
 		byte[] discoveryMessage = new String(client.getHostname() + " " + client.getIP()).getBytes();
 		return client.sendMulticast(discoveryMessage);
 	}
 	
+	/**
+	 * Finish bootstrap services and enter 'running' mode
+	 */
 	private void finishBootstrap()
 	{
 		if(serverRespons && (prevNodeRespons || firstNetworkNode))
 		{
 			client.unbindRMIservice("Bootstrap_" + client.getHostname());
 			client.runServices();
+			client.setSessionState(true);
 		}
 	}
 }

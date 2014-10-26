@@ -7,15 +7,18 @@ import javax.swing.*;
 
 import be.uantwerpen.systemY.client.Client;
 
+/**
+ * Class that implements the GUI of a client.
+ */
 public class ClientGUI extends JFrame implements ActionListener
 {
 	private static final long serialVersionUID = 1L;
 	private static final String version = "v0.3";
-	private final Image SYIcon = Toolkit.getDefaultToolkit().getImage("pictures/SystemY.png");
-	private final Image loginIcon = Toolkit.getDefaultToolkit().getImage("pictures/SystemYLogin.png");
-	private final Image logoutIcon = Toolkit.getDefaultToolkit().getImage("pictures/SystemYLogout.png");
-	private final Image infoIcon = Toolkit.getDefaultToolkit().getImage("pictures/SystemYInfo.png");
-	private final Image settingsIcon = Toolkit.getDefaultToolkit().getImage("pictures/SystemYSettings.png");
+	private final Image SYIcon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("pictures/SystemY.png"));
+	private final Image loginIcon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("pictures/SystemYLogin.png"));
+	private final Image logoutIcon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("pictures/SystemYLogout.png"));
+	private final Image infoIcon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("pictures/SystemYInfo.png"));
+	private final Image settingsIcon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("pictures/SystemYSettings.png"));
 	private JPanel filePanel;
 	private JScrollPane filePane;
 	private JList<String> fileList;
@@ -24,8 +27,8 @@ public class ClientGUI extends JFrame implements ActionListener
 	private Client client;
 	
 	/**
-	 * sets up the client interface
-	 * @param client
+	 * Sets up the client interface
+	 * @param Client	the client on which the GUI is working
 	 */
 	public ClientGUI(Client client)
 	{
@@ -117,7 +120,8 @@ public class ClientGUI extends JFrame implements ActionListener
 	}
 	
 	/**
-	 * checks for events
+	 * Checks for events
+	 * @param Actionevent	the action that is performed
 	 */
 	public void actionPerformed(ActionEvent e)
 	{
@@ -180,44 +184,66 @@ public class ClientGUI extends JFrame implements ActionListener
 		this.setVisible(true);
 	}
 	
+	/**
+	 * Get the client's hostname
+	 * @return String	client hostname
+	 */
 	public String getClientHostname() 
 	{
 		return this.client.getHostname();
 	}
 	
+	/**
+	 * Set the client's hostname
+	 * @param String	client hostname
+	 */
 	public boolean setClientHostname(String hostname)
 	{
 		return this.client.setHostname(hostname);
 	}
 	
+	/**
+	 * Get the client's ip address
+	 * @return String	client ip address
+	 */
 	public String getClientIP()
 	{
 		return this.client.getIP();
 	}
 	
+	/**
+	 * Set the client's ip address
+	 * @param String	client ip address
+	 */
 	public boolean setClientIP(String ip)
 	{
 		return this.client.setIP(ip);
 	}
 	
-	
-	// deze twee functies zijn nog te implementeren
+	// Still to be implemented for later use
 	public String getClientFiledir()
 	{
 		return "C://Documents/default/";
 	}
-	
+	// Still to be implemented for later use
 	public boolean setClientFiledir(String filedir)
 	{
 		return false;
 	}
 	
+	/**
+	 * Get whether the client is connected or not.
+	 * @return boolean	Get the login status
+	 */
+	// might need to be improved
 	public boolean getLoginStatus()
 	{
 		return logoutButton.isEnabled();
 	}
 	
-	
+	/**
+	 * Makes the client login
+	 */
 	private void loginSystem()
 	{
 		client.loginSystem();
@@ -225,6 +251,9 @@ public class ClientGUI extends JFrame implements ActionListener
 		logoutButton.setEnabled(true);
 	}
 	
+	/**
+	 * Makes the client logout
+	 */
 	private void logoutSystem()
 	{
 		client.logoutSystem();

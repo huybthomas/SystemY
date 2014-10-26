@@ -8,14 +8,17 @@ import java.util.Observer;
 import be.uantwerpen.systemY.interfaces.BootstrapManagerInterface;
 import be.uantwerpen.systemY.networkservices.MulticastObserver;
 
+/**
+ * Class that handles the discovery of a new node in the network.
+ */
 public class DiscoveryManager
 {
 	private Server server;
 	
 	/**
 	 * Receives packets from the multicast.
-	 * @param observer	observer from the multicast server
-	 * @param server	the server
+	 * @param MulticastObserver	observer of the multicast server
+	 * @param Server	the server
 	 */
 	public DiscoveryManager(MulticastObserver observer, Server server)
 	{
@@ -32,7 +35,7 @@ public class DiscoveryManager
 	
 	/**
 	 * Reads received packets from the multicast.
-	 * @param datagram message that is received from observer of multicast
+	 * @param DatagramPacket	datagram message that is received from observer of multicast
 	 */
 	private void multicastReceived(DatagramPacket datagram)
 	{
@@ -59,9 +62,9 @@ public class DiscoveryManager
 	
 	/**
 	 * Sends an answer to the new node.
-	 * @param ip 			the ip from the node you want to reach
-	 * @param clientname 	the name from the node you are trying to reach
-	 * @return boolean True if successful, false if failed
+	 * @param String	clientname 	the name from the node you are trying to reach
+	 * @param String 	ip 			the ip from the node you want to reach
+	 * @return boolean 	True if successful, false if failed
 	 */
 	private boolean sendNetworkInfo(String clientname, String ip)
 	{

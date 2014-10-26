@@ -7,6 +7,9 @@ import java.util.Random;
 
 import be.uantwerpen.systemY.GUI.ClientGUI;
 
+/**
+ * Main class to implement the initialization of a client in the SystemY project.
+ */
 public class Main
 {
 	private static boolean enableGUI;
@@ -17,6 +20,11 @@ public class Main
 	private static String multicastIP;
 	private static int multicastPort;
 	
+	/**
+	 * Starts a client.
+	 * @param args	The input arguments
+	 * @throws RemoteException
+	 */
 	public static void main(String[] args) throws RemoteException
 	{
 		//Default port settings
@@ -31,7 +39,7 @@ public class Main
 			hostname = "Node" + networkIP + "-" + Math.abs(new Random().nextInt());
 		}
 		networkPort = 1099;
-		multicastIP = "228.1.2.3";
+		multicastIP = "224.13.4.94";
 		multicastPort = 2453;
 		
 		//Default settings
@@ -50,6 +58,10 @@ public class Main
 		}
 	}
 	
+	/**
+	 * Makes it possible to add options as an argument when starting the server.
+	 * @param args
+	 */
 	private static void argsCommand(String[] args)
 	{
 		for(int i = 0; i < args.length; i++)

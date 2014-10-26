@@ -52,17 +52,18 @@ public class DebugManager
 	 */
 	private void runTests()
 	{
-		testBootstrap();
+		//testBootstrap();
 		//Logout kan vertekken vanuit de situatie gecreeerd door testBootstrap
 		//testLogout();
 		//test voor de failure
-		testFailure();
+		//testFailure();
 	}
 		
 	/**
 	 * This function requires runs with a hard coded ip (see funcion for details)
 	 * It bootstraps 3 nodes into a network.
 	 */
+	@SuppressWarnings("unused")
 	private void testBootstrap()
 	{
 		tests++;
@@ -143,6 +144,7 @@ public class DebugManager
 	/**
 	 * Tests the network after a logout, do the nodes restore the network correctly?
 	 */
+	@SuppressWarnings("unused")
 	private void testLogout()
 	{
 		//Nodes moeten zichzelf herstellen na logout
@@ -169,7 +171,7 @@ public class DebugManager
 			prevNode3 = iFace.getPrevNode(hostname3);
 			nextNode3 = iFace.getNextNode(hostname3);
 			
-			assert (nextNode2.equals(prevNode3) && nextNode3.equals(prevNode2)): "Failed to restore nodelinks when going from 3->2 clients";
+			assert (nextNode2.equals(prevNode2) && nextNode3.equals(prevNode3)): "Failed to restore nodelinks when going from 3->2 clients";
 			
 			//Second Client
 			assert c2.logoutSystem(): "Failed to logout client 2";
@@ -189,7 +191,7 @@ public class DebugManager
 		}
 		catch(AssertionError e)
 		{
-			printDebugInfo("Bootstrap: ", e.getMessage());
+			printDebugInfo("Shutdown: ", e.getMessage());
 		}
 		catch (RemoteException e) 
 		{
@@ -203,6 +205,7 @@ public class DebugManager
 	 * Request file from that node, other nodes will see that no node is present.
 	 * Start failure process.
 	 */
+	@SuppressWarnings("unused")
 	private void testFailure()
 	{
 		try
@@ -253,7 +256,7 @@ public class DebugManager
 		}
 		catch(AssertionError e)
 		{
-			printDebugInfo("Bootstrap: ", e.getMessage());
+			printDebugInfo("Failure: ", e.getMessage());
 		}
 		catch(RemoteException e) 
 		{

@@ -13,6 +13,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
+/**
+ * Class that implements the popup window for settings.
+ */
 public class SettingsWindow extends JFrame implements ActionListener
 {
 	private static final long serialVersionUID = 1L;
@@ -22,8 +25,12 @@ public class SettingsWindow extends JFrame implements ActionListener
 	private JTextField hostnameText, ipAddressText, filedirText;
 	private JButton okButton, cancelButton;
 	
-	private final Image settingsIcon = Toolkit.getDefaultToolkit().getImage("pictures/SystemYSettings.png");
+	private final Image settingsIcon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("pictures/SystemYSettings.png"));
 	
+	/**
+	 * Sets up the settingswindow object
+	 * @param ClientGUI		the ClientGUI that is already running
+	 */
 	public SettingsWindow(ClientGUI clientGUI)
 	{
 		
@@ -96,7 +103,7 @@ public class SettingsWindow extends JFrame implements ActionListener
 	
 	
 	/**
-	 * Initializes the work window
+	 * Initializes the settings window
 	 */
 	private void initialisation()
 	{
@@ -105,6 +112,7 @@ public class SettingsWindow extends JFrame implements ActionListener
 		this.setIconImage(settingsIcon);
 		this.setSize(290, 300);
 		this.setResizable(false);
+		this.setLocation(this.clientGUI.getLocation().x + (this.clientGUI.getWidth() - this.getWidth()) / 2, this.clientGUI.getLocation().y + (this.clientGUI.getHeight() - this.getHeight()) / 2);
 		
 		// set max and min size as each other
 		this.setMaximumSize(getMinimumSize());
@@ -124,7 +132,10 @@ public class SettingsWindow extends JFrame implements ActionListener
 		this.setAlwaysOnTop(true);
 	}
 	
-	
+	/**
+	 * Checks for events
+	 * @param Actionevent	the action that is performed
+	 */
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{

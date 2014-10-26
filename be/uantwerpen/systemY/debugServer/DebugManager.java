@@ -2,6 +2,9 @@ package be.uantwerpen.systemY.debugServer;
 
 import be.uantwerpen.systemY.server.Server;
 
+/**
+ * Class that runs test on a given Server
+ */
 public class DebugManager
 {
 	private Server server;
@@ -9,8 +12,8 @@ public class DebugManager
 	private int passed = 0;
 	
 	/**
-	 * runs tests on the server
-	 * @param server
+	 * Create Debugmanager object and run tests on the server
+	 * @param Server	the server to test
 	 */
 	public DebugManager(Server server)
 	{		
@@ -50,7 +53,7 @@ public class DebugManager
 	
 	/**
 	 * test the add node function
-	 * @param server
+	 * @param Server
 	 */
 	private void test1(Server server)
 	{
@@ -70,7 +73,7 @@ public class DebugManager
 	
 	/**
 	 * tests the safety against adding 2 nodes with the same name
-	 * @param server
+	 * @param Server
 	 */
 	private void test2(Server server)
 	{
@@ -91,7 +94,7 @@ public class DebugManager
 	
 	/**
 	 * testing delete a node
-	 * @param server
+	 * @param Server
 	 */
 	private void test3(Server server)
 	{
@@ -112,7 +115,7 @@ public class DebugManager
 	
 	/**
 	 * test: delete a node that does not exist.
-	 * @param server
+	 * @param Server
 	 */
 	private void test4(Server server)
 	{
@@ -132,7 +135,7 @@ public class DebugManager
 	
 	/**
 	 * Test: Save Node List.
-	 * @param server
+	 * @param Server
 	 */
 	private void test5(Server server)
 	{
@@ -152,7 +155,7 @@ public class DebugManager
 	
 	/**
 	 * Test: load the node list.
-	 * @param server
+	 * @param Server
 	 */
 	private void test6(Server server)
 	{
@@ -172,7 +175,7 @@ public class DebugManager
 	
 	/**
 	 * Test: search file with hash value smaller then smallest hash of the node list.
-	 * @param server
+	 * @param Server
 	 */
 	private void test7(Server server)
 	{
@@ -194,8 +197,8 @@ public class DebugManager
 	
 	/**
 	 * Prints debug information.
-	 * @param header
-	 * @param message
+	 * @param String	header
+	 * @param String	message
 	 */
 	private void printDebugInfo(String header, String message)
 	{

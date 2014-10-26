@@ -2,6 +2,9 @@ package be.uantwerpen.systemY.client;
 
 import be.uantwerpen.systemY.shared.Node;
 
+/**
+ * Class that implements the links to the next and previous node of a node.
+ */
 public class NodeLinks
 {
 	private Node thisNode;
@@ -9,8 +12,8 @@ public class NodeLinks
 	private Node prevNode;
 	
 	/**
-	 * Reads a node form the list.
-	 * @param node
+	 * Object creation of the nodelinks of a given node
+	 * @param Node	node
 	 */
 	public NodeLinks(Node node) 
 	{
@@ -20,8 +23,8 @@ public class NodeLinks
 	}
 	
 	/**
-	 * Reads the host name.
-	 * @return	String hostname
+	 * Get the clients host name.
+	 * @return String 	hostname
 	 */
 	public String getMyHostname()
 	{
@@ -30,7 +33,7 @@ public class NodeLinks
 	
 	/**
 	 * Sets a new hostname.
-	 * @param hostname
+	 * @param String	hostname
 	 */
 	public void setMyHostname(String hostname)
 	{
@@ -39,7 +42,7 @@ public class NodeLinks
 	
 	/**
 	 * Set the ip of the host.
-	 * @param ip	the new Ip
+	 * @param String	ip	the new Ip
 	 */
 	public void setMyIP(String ip)
 	{
@@ -75,7 +78,7 @@ public class NodeLinks
 	
 	/**
 	 * Sets the next node for specific node.
-	 * @param node
+	 * @param Node	node
 	 */
 	public void setNext(Node node)
 	{
@@ -84,7 +87,7 @@ public class NodeLinks
 	
 	/**
 	 * Gets the previous node of the given node.
-	 * @return Node	the previous node
+	 * @return Node		the previous node
 	 */
 	public Node getPrev()
 	{
@@ -93,7 +96,7 @@ public class NodeLinks
 	
 	/**
 	 * Sets the previous node of the given node.
-	 * @param node
+	 * @param Node	new prevNode
 	 */
 	public void setPrev(Node node)
 	{

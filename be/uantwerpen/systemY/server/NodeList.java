@@ -11,6 +11,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import be.uantwerpen.systemY.shared.Node;
 
+
+/**
+ * NodeList class that contains the Nodes in the network and operations on them.
+ * @implements	Serializable
+ */
 @XmlRootElement(name = "NodeList")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class NodeList implements Serializable
@@ -38,6 +43,8 @@ public class NodeList implements Serializable
 	
 	/**
 	 * Adds a Node to the NodeList.
+	 * @param String	hostname of the new node
+	 * @param String 	ipAddress of the new node
 	 * @return boolean	true if successful, false otherwise
 	 */
 	public boolean addNode(String hostname, String ipAddress)
@@ -56,6 +63,7 @@ public class NodeList implements Serializable
 	
 	/**
 	 * Deletes a node from the NodeList.
+	 * @param String 	hostname to delete
 	 * @return boolean	True if successful, false otherwise
 	 */
 	public boolean delNode(String hostname)
@@ -74,6 +82,7 @@ public class NodeList implements Serializable
 	
 	/**
 	 * Returns the ip of the given hostname.
+	 * @param String	hostname 
 	 * @return String	ip in String format
 	 */
 	public String getNode(String hostname)
@@ -91,8 +100,8 @@ public class NodeList implements Serializable
 	
 	/**
 	 * Returns the ip address of the file's location.
-	 * @param filename 	name of the requested file
-	 * @return	String	ip in string format, null if there are no hosts in the list
+	 * @param String	filename 	name of the requested file
+	 * @return String	ip in string format, null if there are no hosts in the list
 	 */
 	public String getFileLocation(String filename)
 	{
@@ -135,7 +144,7 @@ public class NodeList implements Serializable
 	
 	/**
 	 * Calculates the next node.
-	 * @param hostname	the hostname of the host
+	 * @param String	hostname	the hostname of the host
 	 * @return Node		returns the next node of the host, null if the host is not in the list
 	 */
 	public Node getNextNode(String hostname) 
@@ -166,7 +175,7 @@ public class NodeList implements Serializable
 	
 	/**
 	 * Calculates the previous node.
-	 * @param hostname	the hostname of the host
+	 * @param String	hostname	the hostname of the host
 	 * @return Node		returns the previous node of the host, null if the host is not in the list
 	 */
 	public Node getPrevNode(String hostname) 
@@ -197,7 +206,7 @@ public class NodeList implements Serializable
 	
 	/**
 	 * Checks if a hostname exists.
-	 * @param hostname	name of the host to be checked
+	 * @param String	hostname	name of the host to be checked
 	 * @return	boolean	True if successful, false otherwise
 	 */
 	private boolean checkNodeExistence(String hostname)
@@ -207,8 +216,8 @@ public class NodeList implements Serializable
 	
 	/**
 	 * Calculates the hash of a string.
-	 * @param name	String to be hashed
-	 * @return	int	The hash
+	 * @param String	name	String to be hashed
+	 * @return int		The hash
 	 */
 	private int calculateHash(String name)
 	{

@@ -1,9 +1,19 @@
 package be.uantwerpen.systemY.fileSystem;
 
-import java.io.*;
-import javax.xml.bind.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
-public class FileManager
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+
+/**
+ * Class that implements the file handling
+ */
+public class FileSystemManager
 {
 	/**
 	 * Saves an Object in an xml file.
@@ -30,12 +40,12 @@ public class FileManager
 		}
 		catch(JAXBException e)
 		{
-			System.out.println("JAXB Marshalling: " + e.getMessage());
+			System.err.println("JAXB Marshalling: " + e.getMessage());
 			return false;
 		}
 		catch(IOException e)
 		{
-			System.out.println("IOException: " + e.getMessage());
+			System.err.println("IOException: " + e.getMessage());
 			return false;
 		}
 		return true;
@@ -62,8 +72,61 @@ public class FileManager
 		}
 		catch(JAXBException e)
 		{
-			System.out.println("JAXB Unmarshalling: " + e.getMessage());
+			System.err.println("JAXB Unmarshalling: " + e.getMessage());
 		}
 		return object;
+	}
+	
+	public boolean saveFile(byte[] data, String fileLocation)
+	{
+		FileOutputStream f = null;
+		
+		try
+		{
+			f = new FileOutputStream(fileLocation);
+			f.write(data);
+			f.close();
+			return true;
+		}
+		catch(FileNotFoundException e)
+		{
+			System.err.println("File not found: " + e);
+			e.printStackTrace();
+		}
+		catch(IOException e)
+		{
+			System.err.println("IO: " + e);
+			e.printStackTrace();
+		}
+		finally
+		{
+			if(f != null)
+			{
+				try 
+				{
+					f.close();
+				} 
+				catch(IOException e) 
+				{
+					System.err.println("IO: " + e);
+					e.printStackTrace();
+				}
+			}
+		}
+		return false;
+	}
+	
+	public File loadFile(String location, String name)
+	{
+		File file = new File(location + name);
+		if(file.isFile())
+		{
+			return file;
+		}
+		else
+		{
+			System.err.println("File does not exist.");
+			return null;
+		}
 	}
 }

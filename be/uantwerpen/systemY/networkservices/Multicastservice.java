@@ -6,6 +6,10 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketException;
 
+/**
+ * Class that enables multi casts in the network.
+ * @implements	Runnable
+ */
 public class Multicastservice implements Runnable
 {
 	private int port;
@@ -17,8 +21,8 @@ public class Multicastservice implements Runnable
 	
 	/**
 	 * Creates the MulticastService Object
-	 * @param multicastIP	String
-	 * @param port	int
+	 * @param String	multicastIP
+	 * @param int	port
 	 */
 	public Multicastservice(String multicastIP, int port)
 	{
@@ -28,6 +32,10 @@ public class Multicastservice implements Runnable
 		this.running = false;
 	}
 	
+	/**
+	 * Get a multicast observer
+	 * @return	MulticastObserver	the observer
+	 */
 	public MulticastObserver getObserver()
 	{
 		return this.observer;
@@ -35,7 +43,7 @@ public class Multicastservice implements Runnable
 	
 	/**
 	 * Setup the Multicast Service
-	 * @return	boolean True if successful, false otherwise
+	 * @return	boolean	True if successful, false otherwise
 	 */
 	public boolean setupMulticastservice()
 	{
@@ -59,9 +67,9 @@ public class Multicastservice implements Runnable
 	}
 	
 	/**
-	 * Sends a multicast message
-	 * @param message		the message you want to send
-	 * @return boolean 		true when success, false when failed
+	 * Send a multicast message
+	 * @param byte[]	message		the message you want to send
+	 * @return boolean 	true when success, false when failed
 	 */
 	public boolean sendMulticast(byte[] message)
 	{
@@ -94,6 +102,10 @@ public class Multicastservice implements Runnable
 		return true;
 	}
 	
+	/**
+	 * Terminate the multicast service
+	 * @return boolean	True if successful, false if failed
+	 */
 	public boolean terminate()
 	{
 		running = false;	//disable running flag
@@ -112,8 +124,7 @@ public class Multicastservice implements Runnable
 	}
 	
 	/**
-	 * Checks for messages and notifies observer when message is detected
-	 * @return boolean True if successful, false if failed
+	 * Run the multicast service.
 	 */
 	@Override
 	public void run()

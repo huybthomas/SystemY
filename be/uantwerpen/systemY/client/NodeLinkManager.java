@@ -6,6 +6,11 @@ import java.rmi.server.UnicastRemoteObject;
 import be.uantwerpen.systemY.interfaces.NodeLinkManagerInterface;
 import be.uantwerpen.systemY.shared.Node;
 
+/**
+ * Class that manages the NodeLinks
+ * @extends UnicastRemoteObject
+ * @implements NodeLinkManagerInterface
+ */
 public class NodeLinkManager extends UnicastRemoteObject implements NodeLinkManagerInterface
 {
 	private static final long serialVersionUID = 1L;
@@ -14,8 +19,8 @@ public class NodeLinkManager extends UnicastRemoteObject implements NodeLinkMana
 	private String serverIP;
 	
 	/**
-	 * Creates Nodelinks.
-	 * @param node
+	 * Creates NodelinkManager object of a node
+	 * @param Node node
 	 * @throws RemoteException
 	 */
 	public NodeLinkManager(Node node) throws RemoteException
@@ -25,7 +30,7 @@ public class NodeLinkManager extends UnicastRemoteObject implements NodeLinkMana
 	
 	/**
 	 * Request hostname.
-	 * @return hostname
+	 * @return String	hostname
 	 */
 	public String getMyHostname()
 	{
@@ -34,7 +39,7 @@ public class NodeLinkManager extends UnicastRemoteObject implements NodeLinkMana
 	
 	/**
 	 * Set new hostname.
-	 * @param hostname
+	 * @param String	hostname
 	 */
 	public void setMyHostname(String hostname)
 	{
@@ -43,7 +48,7 @@ public class NodeLinkManager extends UnicastRemoteObject implements NodeLinkMana
 	
 	/**
 	 * Set new ip.
-	 * @param ip
+	 * @param String	ip
 	 */
 	public void setMyIP(String ip)
 	{
@@ -52,7 +57,7 @@ public class NodeLinkManager extends UnicastRemoteObject implements NodeLinkMana
 	
 	/**
 	 * Get own ip.
-	 * @return String
+	 * @return String	ip
 	 */
 	public String getMyIP()
 	{
@@ -61,7 +66,7 @@ public class NodeLinkManager extends UnicastRemoteObject implements NodeLinkMana
 	
 	/**
 	 * Get next node.
-	 * @return Node
+	 * @return Node	
 	 */
 	public Node getNext()
 	{
@@ -79,7 +84,7 @@ public class NodeLinkManager extends UnicastRemoteObject implements NodeLinkMana
 	
 	/**
 	 * Sets the next node.
-	 * @param node
+	 * @param Node nextNode
 	 */
 	public void setNext(Node node)
 	{
@@ -88,7 +93,7 @@ public class NodeLinkManager extends UnicastRemoteObject implements NodeLinkMana
 	
 	/**
 	 * Sets previous node.
-	 * @param node
+	 * @param Node prevNode
 	 */
 	public void setPrev(Node node)
 	{
@@ -97,8 +102,8 @@ public class NodeLinkManager extends UnicastRemoteObject implements NodeLinkMana
 	
 	/**
 	 * Sets previous and next node.
-	 * @param prevNode
-	 * @param nextNode
+	 * @param Node	prevNode
+	 * @param Node	nextNode
 	 */
 	public void setLinkedNodes(Node prevNode, Node nextNode)
 	{
@@ -108,7 +113,7 @@ public class NodeLinkManager extends UnicastRemoteObject implements NodeLinkMana
 	
 	/**
 	 * Sets the ip address of the server.
-	 * @param ip
+	 * @param String	ip
 	 */
 	public void setServerIP(String ip)
 	{
@@ -117,7 +122,7 @@ public class NodeLinkManager extends UnicastRemoteObject implements NodeLinkMana
 	
 	/**
 	 * Gets the ip address of the server.
-	 * @return String
+	 * @return String	ip
 	 */
 	public String getServerIP()
 	{
@@ -126,7 +131,7 @@ public class NodeLinkManager extends UnicastRemoteObject implements NodeLinkMana
 	
 	/**
 	 * Update the list when a new node is added.
-	 * @param newNode
+	 * @param Node	newNode
 	 * @return Node
 	 */
 	public Node updateLinks(Node newNode)

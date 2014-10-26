@@ -111,5 +111,4 @@ public class Node implements Serializable
 		}
 		return false;
 	}
-	
 }

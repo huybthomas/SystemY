@@ -7,12 +7,20 @@ import java.util.HashMap;
 import be.uantwerpen.systemY.interfaces.NodeManagerInterface;
 import be.uantwerpen.systemY.shared.Node;
 
+/**
+ * Nodemanager class to execute operations on nodes in the NodeList.
+ * @extends UnicastRemoteObject
+ * @implements NodeManagerInterface
+ */
 public class NodeManager extends UnicastRemoteObject implements NodeManagerInterface
 {
 	private static final long serialVersionUID = 1L;
-	
 	private NodeList nodeList;
 	
+	/**
+	 * Creates the NodeManager Object.
+	 * @throws RemoteException
+	 */
 	public NodeManager() throws RemoteException
 	{
 		nodeList = new NodeList();
@@ -20,9 +28,9 @@ public class NodeManager extends UnicastRemoteObject implements NodeManagerInter
 	
 	/**
 	 * Adds a Node to the NodeList.
-	 * @param hostname	String
-	 * @param ipAddress	ip in String format
-	 * @return boolean True if successful, false otherwise
+	 * @param String	hostname
+	 * @param String 	ipAddress in string format
+	 * @return boolean 	True if successful, false otherwise
 	 */
 	public boolean addNode(String hostname, String ipAddress)
 	{
@@ -31,7 +39,7 @@ public class NodeManager extends UnicastRemoteObject implements NodeManagerInter
 	
 	/**
 	 * Deletes a node from the NodeList.
-	 * @param hostname	String
+	 * @param String 	hostname
 	 * @return	boolean True if successful, false otherwise
 	 */
 	public boolean delNode(String hostname)
@@ -41,7 +49,7 @@ public class NodeManager extends UnicastRemoteObject implements NodeManagerInter
 	
 	/**
 	 * Sets the new list.
-	 * @param nodeList		the nodelist
+	 * @param NodeList		the nodelist
 	 */
 	public void setNodeList(NodeList nodeList)
 	{
@@ -58,8 +66,8 @@ public class NodeManager extends UnicastRemoteObject implements NodeManagerInter
 	}
 	
 	/**
-	 * Get information of a node.
-	 * @param hostname	the name of the node you want
+	 * Get ip address of a node.
+	 * @param String	hostname	the name of the node you want
 	 * @return String 	Ip addreess
 	 */
 	public String getNode(String hostname)
@@ -69,7 +77,7 @@ public class NodeManager extends UnicastRemoteObject implements NodeManagerInter
 	
 	/**
 	 * Sends an answer to the new node.
-	 * @param hostname	the name of the node you want
+	 * @param String 	hostname	the name of the node you want
 	 * @return Node		returns the next node of the host
 	 */
 	public Node getNextNode(String hostname) 

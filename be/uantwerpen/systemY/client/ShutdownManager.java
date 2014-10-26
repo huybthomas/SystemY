@@ -4,6 +4,9 @@ import be.uantwerpen.systemY.interfaces.NodeLinkManagerInterface;
 import be.uantwerpen.systemY.interfaces.NodeManagerInterface;
 import be.uantwerpen.systemY.shared.Node;
 
+/**
+ * Class that implements the shutdown of a client node
+ */
 public class ShutdownManager
 {
 	private Client client;
@@ -13,6 +16,14 @@ public class ShutdownManager
 		this.client = client;
 	}
 	
+	/**
+	 * Let the client log off the SystemY and close the connection.
+	 * Log out is in 3 steps:
+	 * 1. Set the prevNode on the client's nextNode as my prevNode
+	 * 2. Set the nextNode on the client's prevNode as my nextNode
+	 * 3. Delete client on nameserver
+	 * @return boolean	True if success, false if not
+	 */
 	public boolean shutdown()
 	{
 		client.stopServices();
@@ -89,6 +100,10 @@ public class ShutdownManager
 		return(step1 && step2 && step3);
 	}
 	
+	/**
+	 * Implementation of the deletion of the client node on the nameserver
+	 * @return boolean	True if success, false if not
+	 */
 	private boolean deleteMyNode()
 	{
 		String bindLocation = "//" + client.getServerIP() + "/NodeServer";		

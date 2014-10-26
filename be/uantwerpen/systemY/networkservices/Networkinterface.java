@@ -1,6 +1,8 @@
 package be.uantwerpen.systemY.networkservices;
 
-
+/**
+ * Class that includes all communication classes.
+ */
 public class Networkinterface
 {
 	private Multicastservice multicastservice;
@@ -9,10 +11,10 @@ public class Networkinterface
 	
 	/**
 	 * sets up the RMIsevice and multicastservice
-	 * @param networkIP
-	 * @param rmiPort
-	 * @param multicastIP
-	 * @param multicastPort
+	 * @param String	networkIP
+	 * @param int	rmiPort
+	 * @param String	multicastIP
+	 * @param int	multicastPort
 	 */
 	public Networkinterface(String networkIP, int rmiPort, String multicastIP, int multicastPort)
 	{
@@ -45,8 +47,8 @@ public class Networkinterface
 	
 	/**
 	 * bind the RMI server
-	 * @param object	
-	 * @param bindName
+	 * @param Object	object to bind	
+	 * @param String	bindName for bindlocation
 	 * @return boolean	True if successful, false if failed
 	 */
 	public boolean bindRMIServer(Object object, String bindName)
@@ -56,7 +58,7 @@ public class Networkinterface
 	
 	/**
 	 * unbind the RMI server
-	 * @param bindName
+	 * @param String 	bindName to unbind
 	 * @return boolean	True if successful, false if failed
 	 */
 	public boolean unbindRMIServer(String bindName)
@@ -66,7 +68,7 @@ public class Networkinterface
 	
 	/**
 	 * get the RMI Interface
-	 * @param bindLocation
+	 * @param String	bindLocation
 	 * @return boolean	True if successful, false if failed
 	 */
 	public Object getRMIInterface(String bindLocation)
@@ -75,8 +77,7 @@ public class Networkinterface
 	}
 	
 	/**
-	 * get the RMI Interface
-	 * @param bindLocation
+	 * Set up the multi cast service and returns success.
 	 * @return boolean	True if successful, false if failed
 	 */
 	public boolean setupMulticastservice()
@@ -86,7 +87,7 @@ public class Networkinterface
 	
 	/**
 	 * send a multicast message
-	 * @param message	the message you want to send
+	 * @param byte[]	message	to send
 	 * @return boolean	True if successful, false if failed
 	 */
 	public boolean sendMulticast(byte[] message)

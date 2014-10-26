@@ -1,8 +1,5 @@
 package be.uantwerpen.systemY.client;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 
@@ -11,6 +8,9 @@ import be.uantwerpen.systemY.interfaces.NodeManagerInterface;
 import be.uantwerpen.systemY.networkservices.Networkinterface;
 import be.uantwerpen.systemY.shared.Node;
 
+/**
+ * Client class is the main class of the network nodes in the SystemY project
+ */
 public class Client
 {
 	private static final String version = "v0.3";
@@ -24,6 +24,16 @@ public class Client
 	private Networkinterface iFace;
 	private boolean activeSession;
 	
+	/**
+	 * Creates the Client Object.
+	 * @param boolean	enableTerminal	make client boot along with a terminal window
+	 * @param String	hostname	the client's hostname
+	 * @param String	networkIP	the client's ip address
+	 * @param int	rmiPort		the port for the remote method invocation calls
+	 * @param String	multicastIP	the ip for multicasts
+	 * @param int	multicastPort	the port for multicasts
+	 * @throws RemoteException
+	 */
 	public Client(boolean enableTerminal, String hostname, String networkIP, int rmiPort, String multicastIP, int multicastPort) throws RemoteException
 	{
 		activeSession = false;
@@ -41,7 +51,7 @@ public class Client
 		
 		if(!setupServices())
 		{
-			System.err.println("System not fully operational. Instability issues can occure. Resolve the issue and reboot the system.");
+			System.err.println("System not fully operational. Instability issues can occur. Resolve the issue and reboot the system.");
 		}
 		
 		nodeLinkManager = new NodeLinkManager(new Node(hostname, networkIP));
@@ -53,6 +63,10 @@ public class Client
 		}
 	}
 	
+	/**
+	 * Make client login to SystemY
+	 * @return boolean	True if success, false if not
+	 */
 	public boolean loginSystem()
 	{
 		if(!activeSession)	
@@ -68,10 +82,13 @@ public class Client
 			printTerminalError("Already an active session running.");
 			return false;
 		}
-		activeSession = true;
 		return true;
 	}
 	
+	/**
+	 * Make client logout of SystemY
+	 * @return boolean	True if success, false if not
+	 */
 	public boolean logoutSystem()
 	{
 		if(activeSession)
@@ -92,6 +109,20 @@ public class Client
 		return true;
 	}
 	
+	public void setSessionState(boolean state)
+	{
+		this.activeSession = state;
+	}
+	
+	public boolean getSessionState()
+	{
+		return this.activeSession;
+	}
+	
+	/**
+	 * Start RMI and discovery multicast service
+	 * @return boolean	True if success, false if not
+	 */
 	public boolean runServices()
 	{
 		//Start RMI-server
@@ -106,6 +137,10 @@ public class Client
 		return true;
 	}
 	
+	/**
+	 * Stop multicast and rmi services
+	 * @return boolean	True if success, false if not
+	 */
 	public boolean stopServices()
 	{
 		activeSession = false;
@@ -122,13 +157,18 @@ public class Client
 		return true;
 	}
 	
+	/**
+	 * Send multicast to network
+	 * @param byte[] 	message
+	 * @return boolean	True if success, false if not
+	 */
 	public boolean sendMulticast(byte[] message)
 	{
 		return iFace.sendMulticast(message);
 	}
 	
 	/**
-	 * Close the running session and shuts down the client.
+	 * Closes the running session and shuts down the client.
 	 */
 	public void exitSystem()
 	{
@@ -139,16 +179,28 @@ public class Client
 		System.exit(1);
 	}
 	
+	/**
+	 * Set the ip of the nameserver
+	 * @param String	ip
+	 */
 	public void setServerIP(String ip)
 	{
 		this.nodeLinkManager.setServerIP(ip);
 	}
 	
+	/**
+	 * Get the ip of the nameserver
+	 * @return String	ip
+	 */
 	public String getServerIP()
 	{
 		return this.nodeLinkManager.getServerIP();
 	}
 	
+	/**
+	 * Set the hostname of this node
+	 * @param String	name
+	 */
 	public boolean setHostname(String name)
 	{
 		if(!activeSession)
@@ -162,16 +214,28 @@ public class Client
 		}
 	}
 	
+	/**
+	 * Get the hostname of this node
+	 * @return String	name
+	 */
 	public String getHostname()
 	{
 		return this.nodeLinkManager.getMyHostname();
 	}
 	
+	/**
+	 * Get the ip address of this node
+	 * @return String	ip
+	 */
 	public String getIP()
 	{
 		return this.nodeLinkManager.getMyIP();
 	}
 	
+	/**
+	 * Set the ip address of this node
+	 * @param String	ip
+	 */
 	public boolean setIP(String ip)
 	{
 		if(!activeSession)
@@ -185,16 +249,29 @@ public class Client
 		}
 	}
 	
+	/**
+	 * Set the next and previous nodes of this node
+	 * @param Node	prevNode
+	 * @param Node	nextNode
+	 */
 	public void setLinkedNodes(Node prevNode, Node nextNode)
 	{
 		this.nodeLinkManager.setLinkedNodes(prevNode, nextNode);
 	}
 	
+	/**
+	 * Let the nodeLinkManager add a newNode
+	 * @param Node	newNode
+	 */
 	public Node updateLinks(Node newNode)
 	{
 		return this.nodeLinkManager.updateLinks(newNode);
 	}
 	
+	/**
+	 * Set the next node of this node
+	 * @param Node	nextNode
+	 */
 	public boolean setNextNode(Node node)
 	{
 		if(node != null) 
@@ -216,6 +293,10 @@ public class Client
 		}
 	}
 	
+	/**
+	 * Set the previous node of this node
+	 * @param Node	prevNode
+	 */
 	public boolean setPrevNode(Node node)
 	{
 		if(node != null) 
@@ -237,36 +318,68 @@ public class Client
 		}
 	}
 	
+	/**
+	 * Get the next node of this node
+	 * @return Node	nextNode
+	 */
 	public Node getNextNode()
 	{
 		return this.nodeLinkManager.getNext();
 	}
 	
+	/**
+	 * Get the previous node of this node
+	 * @return Node	prevNode
+	 */
 	public Node getPrevNode()
 	{
 		return this.nodeLinkManager.getPrev();
 	}
 	
+	/**
+	 * Bind object to bindlocation
+	 * @param Object	object to bind
+	 * @param String	bindName
+	 * @return boolean	True if success, false if not
+	 */
 	public boolean bindRMIservice(Object object, String bindName)
 	{
 		return iFace.bindRMIServer(object, bindName);
 	}
 	
+	/**
+	 * Unbind bindlocation
+	 * @param String	bindName
+	 * @return boolean	True if success, false if not
+	 */
 	public boolean unbindRMIservice(String bindName)
 	{
 		return iFace.unbindRMIServer(bindName);
 	}
 	
+	/**
+	 * Get object from bindlocation
+	 * @param String	bindName
+	 * @return Object	the RMI object
+	 */
 	public Object getRMIInterface(String bindLocation)
 	{
 		return this.iFace.getRMIInterface(bindLocation);
 	}
 	
+	/**
+	 * Handles the failure of a node, returns true if the failure is handled correctly.
+	 * @param String	hostname
+	 * @return boolean	True if connection failure handled correctly, false if not
+	 */
 	public boolean nodeConnectionFailure(String hostname)
 	{
 		return this.failure.nodeConnectionFailure(hostname);
 	}
 	
+	/**
+	 * Stops the services of this client because the server failed.
+	 */
 	public void serverConnectionFailure()
 	{
 		this.failure.serverConnectionFailure();
@@ -274,7 +387,7 @@ public class Client
 	
 	/**
 	 * Prints to the Terminal.
-	 * @param message	String
+	 * @param String	message
 	 */
 	public void printTerminal(String message)
 	{
@@ -283,7 +396,7 @@ public class Client
 	
 	/**
 	 * Prints info message on the Terminal.
-	 * @param message	String
+	 * @param String	message
 	 */
 	public void printTerminalInfo(String message)
 	{
@@ -292,7 +405,7 @@ public class Client
 	
 	/**
 	 * Prints error message on the Terminal.
-	 * @param message	String
+	 * @param String 	message
 	 */
 	public void printTerminalError(String message)
 	{
@@ -310,9 +423,8 @@ public class Client
 	
 	/**
 	 * Pings the given node.
-	 *
-	 * @param node		the node to be pinged.
-	 * @return          true if connection succeed, otherwise false.
+	 * @param Node		the node to be pinged.
+	 * @return boolean	True if connection succeed, otherwise false.
 	 */
 	public boolean ping(Node node)
 	{
@@ -332,6 +444,10 @@ public class Client
 		return true;
 	}
 	
+	/**
+	 * Start RMI and multicast services
+	 * @return boolean	True if connection succeed, otherwise false.
+	 */
 	private boolean setupServices()
 	{
 		//Start RMI-server

@@ -3,16 +3,19 @@ package be.uantwerpen.systemY.server;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 
-import be.uantwerpen.systemY.fileSystem.FileManager;
+import be.uantwerpen.systemY.fileSystem.FileSystemManager;
 import be.uantwerpen.systemY.networkservices.Networkinterface;
 import be.uantwerpen.systemY.shared.Node;
 
+/**
+ * Server class is the main class of the name server in the SystemY project
+ */
 public class Server
 {
 	private static final String version = "v0.2";
 	private Terminal terminal;
 	private Networkinterface networkinterface;
-	private FileManager fileManager;
+	private FileSystemManager fileManager;
 	private NodeManager nodeManager;
 	@SuppressWarnings("unused")
 	private DiscoveryManager discoveryManager;
@@ -34,7 +37,7 @@ public class Server
 		printTerminalInfo("Server starting...");
 		
 		nodeManager = new NodeManager();
-		fileManager = new FileManager();
+		fileManager = new FileSystemManager();
 		failureManager = new FailureManager(this);
 		
 		//setup networkinterface
@@ -58,8 +61,8 @@ public class Server
 	
 	/**
 	 * Adds a Node to the NodeList.
-	 * @param hostname	String
-	 * @param ipAddress	ip in String format
+	 * @param String	hostname
+	 * @param String 	ipAddress
 	 * @return boolean True if successful, false otherwise
 	 */
 	public boolean addNode(String hostname, String ipAddress)
@@ -69,7 +72,7 @@ public class Server
 	
 	/**
 	 * Deletes a node from the NodeList.
-	 * @param hostname	String
+	 * @param String 	hostname
 	 * @return	boolean True if successful, false otherwise
 	 */
 	public boolean delNode(String hostname)
@@ -79,7 +82,7 @@ public class Server
 	
 	/**
 	 * Loads a Nodelist from file.
-	 * @param fileLocation	location of the file in String format
+	 * @param String	fileLocation	location of the file in String format
 	 * @return	boolean True if successful, false otherwise
 	 */
 	public boolean loadNodeList(String fileLocation)
@@ -106,8 +109,8 @@ public class Server
 	
 	/**
 	 * Saves a node to file.
-	 * @param fileLocation	location in String format
-	 * @return	boolean True if successful, false otherwise
+	 * @param String 		fileLocation	location in String format
+	 * @return	boolean 	True if successful, false otherwise
 	 */
 	public boolean saveNodeList(String fileLocation)
 	{
@@ -135,7 +138,7 @@ public class Server
 	
 	/**
 	 * Get server IP.
-	 * @return	server IP
+	 * @return	String 	server IP
 	 */
 	public String getServerIP()
 	{
@@ -144,18 +147,28 @@ public class Server
 	
 	/**
 	 * Get the size of the node list.
-	 * @return	size of node list
+	 * @return	int		size of node list
 	 */
 	public int getNetworkSize()
 	{
 		return this.nodeManager.getNodeList().getNodeList().size();
 	}
 	
+	/**
+	 * Get the next node in the network for a given node hostname.
+	 * @param String 	hostname	
+	 * @return	Node 	the next node of the given node
+	 */
 	public Node getNextNode(String hostname)
 	{
 		return this.nodeManager.getNextNode(hostname);
 	}
 	
+	/**
+	 * Get the previous node in the network for a given node hostname.
+	 * @param String	hostname	
+	 * @return	Node 	the previous node of the given node
+	 */
 	public Node getPrevNode(String hostname)
 	{
 		return this.nodeManager.getPrevNode(hostname);

@@ -8,6 +8,9 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 
+/**
+ * Class that implements Remote Method Invocation services.
+ */
 public class RMIservice
 {
 	private String RMIip;
@@ -15,8 +18,8 @@ public class RMIservice
 	
 	/**
 	 * Load the existing RMIip and RMIPort
-	 * @param RMIip
-	 * @param RMIPort
+	 * @param String	RMIip
+	 * @param int	RMIPort
 	 */
 	public RMIservice(String RMIip, int RMIPort)
 	{
@@ -26,7 +29,7 @@ public class RMIservice
 	
 	/**
 	 * Start the RMI server
-	 * @return	True if successful, false if failed
+	 * @return boolean	True if successful, false if failed
 	 */
 	public boolean startRMIServer() 
 	{
@@ -44,9 +47,9 @@ public class RMIservice
 	
 	/**
 	 * Binds the RMI server to specific object.
-	 * @param object	object to bind to
-	 * @param bindName	RMI server name
-	 * @return	True if successful, false if failed
+	 * @param Object	object to bind to
+	 * @param String	bindName	RMI server name
+	 * @return	boolean True if successful, false if failed
 	 */
 	public boolean bindRMIServer(Object object, String bindName)
 	{
@@ -72,8 +75,8 @@ public class RMIservice
 	
 	/**
 	 * Unbind the RMI server.
-	 * @param bindName	name of the server
-	 * @return	True if successful, false if failed
+	 * @param String	bindName	name of the server
+	 * @return	boolean	True if successful, false if failed
 	 */
 	public boolean unbindRMIServer(String bindName)
 	{
@@ -98,8 +101,8 @@ public class RMIservice
 	
 	/**
 	 * Get the interface of a specific RMI
-	 * @param bindLocation
-	 * @return	Object
+	 * @param String	bindLocation
+	 * @return Object	interface object
 	 */
 	public Object getRMIInterface(String bindLocation)
 	{

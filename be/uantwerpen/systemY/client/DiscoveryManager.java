@@ -9,10 +9,18 @@ import be.uantwerpen.systemY.interfaces.BootstrapManagerInterface;
 import be.uantwerpen.systemY.networkservices.MulticastObserver;
 import be.uantwerpen.systemY.shared.Node;
 
+/**
+ * Class that manages the discovery of a new connection
+ */
 public class DiscoveryManager
 {
 	private Client client;
 	
+	/**
+	 * Creates a DiscoveryManager object instance with a given multicast observer and client
+	 * @param MulticastObserver
+	 * @param Client
+	 */
 	public DiscoveryManager(MulticastObserver observer, Client client)
 	{
 		this.client = client;
@@ -26,6 +34,10 @@ public class DiscoveryManager
 		});
 	}
 	
+	/**
+	 * Receive a multicast datagram packet.
+	 * @param DatagramPacket 	the multicast packet
+	 */
 	private void multicastReceived(DatagramPacket datagram)
 	{
 		String message = new String(datagram.getData());
@@ -46,6 +58,14 @@ public class DiscoveryManager
 		}
 	}
 	
+	/**
+	 * Send info to the new node who just joined the network right next to this client node
+	 * @param String	clientname
+	 * @param String	ip
+	 * @param Node	prevNode
+	 * @param Node	nextNode
+	 * @return boolean	True if success, false if not
+	 */
 	private boolean sendNetworkInfo(String clientname, String ip, Node prevNode, Node nextNode)
 	{
 		String bindLocation = "//" + ip + "/Bootstrap_" + clientname;

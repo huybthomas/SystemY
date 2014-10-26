@@ -7,6 +7,9 @@ import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+/**
+ * Main class to implement the initialization of the nameserver in the SystemY project.
+ */
 public class Main
 {
 	private static Server server;
@@ -18,6 +21,7 @@ public class Main
 	/**
 	 * Starts the server.
 	 * @param args	The input arguments
+	 * @throws RemoteException
 	 */
 	public static void main(String[] args) throws RemoteException
 	{
@@ -31,7 +35,7 @@ public class Main
 			networkIP = "localhost";
 		}
 		networkPort = 1099;
-		multicastIP = "228.1.2.3";
+		multicastIP = "224.13.4.94";
 		multicastPort = 2453;
 		
 		//Read arguments
@@ -47,7 +51,7 @@ public class Main
 	}
 	
 	/**
-	 * Maakt het mogelijk opties mee tegeven bij het opstarten van een server.
+	 * Makes it possible to add options as an argument when starting the server.
 	 * @param args
 	 */
 	private static void argsCommand(String[] args)
