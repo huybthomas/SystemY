@@ -112,5 +112,11 @@ public class Networkinterface
 		{
 			multicastThread = new Thread(multicastservice);
 		}
-	}	
+	}
+	
+	//TCPSECION
+	public boolean setupTCPservice()
+	{
+		return true;
+	} 
 }

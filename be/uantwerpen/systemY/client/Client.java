@@ -93,10 +93,10 @@ public class Client
 	{
 		if(activeSession)
 		{
-			activeSession = false;
 			if(!shutdownM.shutdown())
 			{
 				printTerminalError("Client didn't logout correctly out of the system.");
+				activeSession = false;
 				return false;
 			}
 		}
@@ -106,6 +106,7 @@ public class Client
 			printTerminalError("No active session running.");
 			return false;
 		}
+		activeSession = false;
 		return true;
 	}
 	
@@ -143,8 +144,6 @@ public class Client
 	 */
 	public boolean stopServices()
 	{
-		activeSession = false;
-		
 		//Stop discovery multicastservice
 		iFace.stopMulticastservice();
 				
@@ -428,12 +427,13 @@ public class Client
 	 */
 	public boolean ping(Node node)
 	{
-		String bindLocation = "//" + node.getIpAddress() + "/NodeLinkManager_" + node.getHostname();;
+		String bindLocation = "//" + node.getIpAddress() + "/NodeLinkManager_" + node.getHostname();
 
 		try 
 		{
-			@SuppressWarnings("unused")
+			//@SuppressWarnings("unused")
 			NodeLinkManagerInterface iFace = (NodeLinkManagerInterface)this.getRMIInterface(bindLocation);		//If RMI succeed than the node is still online
+			iFace.getNext();
 		} 
 		catch(Exception e)
 		{

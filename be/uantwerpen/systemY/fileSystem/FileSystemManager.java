@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import javax.swing.JFileChooser;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -15,6 +16,18 @@ import javax.xml.bind.Unmarshaller;
  */
 public class FileSystemManager
 {
+	private FileSystemWatcher fileSystemWatcher;
+	
+	public FileSystemManager(String watchDirectory)
+	{
+		fileSystemWatcher = new FileSystemWatcher(watchDirectory);
+	}
+	
+	public FileSystemManager()
+	{
+		fileSystemWatcher = new FileSystemWatcher(new JFileChooser().getFileSystemView().getDefaultDirectory().toString() + "\\SystemY\\Files");
+	}
+	
 	/**
 	 * Saves an Object in an xml file.
 	 * 
@@ -128,5 +141,15 @@ public class FileSystemManager
 			System.err.println("File does not exist.");
 			return null;
 		}
+	}
+	
+	public FileSystemObserver getFileWatchObserver()
+	{
+		return fileSystemWatcher.getObserver();
+	}
+	
+	public void startFileWatcher()
+	{
+		new Thread(fileSystemWatcher).start();
 	}
 }

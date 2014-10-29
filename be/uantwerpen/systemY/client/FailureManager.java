@@ -79,6 +79,7 @@ public class FailureManager
 		client.printTerminalError("Lost connection to server.");
 		
 		client.stopServices();
+		client.setSessionState(false);
 	}
 	
 	/**

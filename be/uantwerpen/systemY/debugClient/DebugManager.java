@@ -1,10 +1,19 @@
 package be.uantwerpen.systemY.debugClient;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Socket;
+import java.rmi.Naming;
 import java.rmi.RemoteException;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import be.uantwerpen.systemY.client.Client;
-import be.uantwerpen.systemY.interfaces.NodeManagerInterface;
+import be.uantwerpen.systemY.interfaces.NodeLinkManagerInterface;
+import be.uantwerpen.systemY.networkservices.TCPConnection;
 import be.uantwerpen.systemY.shared.Node;
+import be.uantwerpen.systemY.server.*;
 
 /**
  * Class that runs test on a given Client
@@ -14,6 +23,7 @@ public class DebugManager
 	private int tests = 0;
 	private int passed = 0;
 	private Client c1, c2, c3;
+	private Server server;
 	
 	/**
 	 * Does tests on 3 client instances
@@ -21,8 +31,9 @@ public class DebugManager
 	 * @param Client2
 	 * @param Client3
 	 */
-	public DebugManager(Client c1, Client c2, Client c3)
+	public DebugManager(Client c1, Client c2, Client c3, Server server)
 	{		
+		this.server = server;
 		this.c1 = c1;
 		this.c2 = c2;
 		this.c3 = c3;
@@ -41,10 +52,11 @@ public class DebugManager
 			printDebugInfo("WARNING", "Passed " + passed + " of " + tests + " tests.");
 		}
 		
-		printDebugInfo("INFO", "Clients will now exit.");
+		printDebugInfo("INFO", "Clients and server will now exit.");
 		c1.exitSystem();
 		c2.exitSystem();
 		c3.exitSystem();
+		server.exitServer();
 	}
 	
 	/**
@@ -52,26 +64,23 @@ public class DebugManager
 	 */
 	private void runTests()
 	{
-		//testBootstrap();
+		testBootstrap();
 		//Logout kan vertekken vanuit de situatie gecreeerd door testBootstrap
-		//testLogout();
+		testLogout();
 		//test voor de failure
-		//testFailure();
+		testFailure();
 	}
 		
 	/**
 	 * This function requires runs with a hard coded ip (see funcion for details)
 	 * It bootstraps 3 nodes into a network.
 	 */
-	@SuppressWarnings("unused")
 	private void testBootstrap()
 	{
 		tests++;
 		try 
 		{
 			//First Client		next and prev node should be referring to itself
-			String bindLocation = "//" + "localhost" + "/NodeServer";		//Hard coded ip (Change localhost)
-			String hostname1 = c1.getHostname();
 			Node prevNode1 = null;
 			Node prevNode1s = null;
 			Node nextNode1 = null;
@@ -82,46 +91,85 @@ public class DebugManager
 			
 			assert c1.loginSystem(): "Failed to bootstrap client 1 (login failed)";
 			
-			NodeManagerInterface iFace = (NodeManagerInterface)c1.getRMIInterface(bindLocation);
+			printDebugInfo("INFO", "Wait for " + c1.getHostname() +" to finish startup.");
+			while(c1.getSessionState() == false)
+			{
+				try
+				{
+					Thread.sleep(1000);
+				}
+				catch(InterruptedException e)
+				{}
+				//hold off, wait for the client (stop blocking the client thread with polling) 
+			}
 			
-			prevNode1 = iFace.getPrevNode(hostname1);
+			NodeLinkManagerInterface iFace1 = (NodeLinkManagerInterface)c1.getRMIInterface("//localhost/NodeLinkManager_" + c1.getHostname());
+			
+			
+			prevNode1 = iFace1.getPrev();
 			prevNode1s = prevNode1;
-			nextNode1 = iFace.getNextNode(hostname1);
+			nextNode1 = iFace1.getNext();
 			
 			assert (prevNode1.equals(nextNode1)): "First node in network does not refer to itself";
 			
 			//Second Client		next and prev node should be referring to other node than itself
-			String hostname2 = c2.getHostname();
 			prevNode1 = null;
 			nextNode1 = null;
+		
+			assert c2.loginSystem(): "Failed to bootstrap client 2 (login failed)";
 			
-			assert c2.loginSystem(): "Failed to bootsrap client 2 (login failed)";
+			printDebugInfo("INFO", "Wait for " + c2.getHostname() +" to finish startup.");
+			while(c2.getSessionState() == false)
+			{
+				try
+				{
+					Thread.sleep(1000);
+				}
+				catch(InterruptedException e)
+				{}
+				//hold off, wait for the client (stop blocking the client thread with polling) 
+			}
 			
-			prevNode1 = iFace.getPrevNode(hostname1);
-			nextNode1 = iFace.getNextNode(hostname1);
+			NodeLinkManagerInterface iFace2 = (NodeLinkManagerInterface)c2.getRMIInterface("//localhost/NodeLinkManager_" + c2.getHostname());
 			
-			prevNode2 = iFace.getPrevNode(hostname2);
-			nextNode2 = iFace.getNextNode(hostname2);
+			prevNode1 = iFace1.getPrev();
+			nextNode1 = iFace1.getNext();
+			
+			prevNode2 = iFace2.getPrev();
+			nextNode2 = iFace2.getNext();
 			
 			assert(prevNode1.equals(nextNode1) && nextNode2.equals(prevNode2) && !(prevNode1.equals(prevNode1s))): "NodeLinks were not created correctly with 2 nodes";
 			
 			//Derde Client		There should be a loop between nodes
-			String hostname3 = c3.getHostname();
 			prevNode1 = null;
 			nextNode1 = null;
 			prevNode2 = null;
 			nextNode2 = null;
 			
-			assert c3.loginSystem(): "Failed to bootsrap client 3 (login failed)";
+			assert c3.loginSystem(): "Failed to bootstrap client 3 (login failed)";
+
+			printDebugInfo("INFO", "Wait for " + c3.getHostname() +" to finish startup.");
+			while(c3.getSessionState() == false)
+			{
+				try
+				{
+					Thread.sleep(1000);
+				}
+				catch(InterruptedException e)
+				{}
+				//hold off, wait for the client (stop blocking the client thread with polling) 
+			}
 			
-			prevNode1 = iFace.getPrevNode(hostname1);
-			nextNode1 = iFace.getNextNode(hostname1);
+			NodeLinkManagerInterface iFace3 = (NodeLinkManagerInterface)c3.getRMIInterface("//localhost/NodeLinkManager_" + c3.getHostname());
 			
-			prevNode2 = iFace.getPrevNode(hostname2);
-			nextNode2 = iFace.getNextNode(hostname2);
+			prevNode1 = iFace1.getPrev();
+			nextNode1 = iFace1.getNext();
 			
-			prevNode3 = iFace.getPrevNode(hostname3);
-			nextNode3 = iFace.getNextNode(hostname3);
+			prevNode2 = iFace2.getPrev();
+			nextNode2 = iFace2.getNext();
+			
+			prevNode3 = iFace3.getPrev();
+			nextNode3 = iFace3.getNext();
 			
 			assert(
 					(nextNode1.equals(prevNode3) && nextNode2.equals(prevNode1) && nextNode3.equals(prevNode2))		//1-2-3
@@ -133,11 +181,11 @@ public class DebugManager
 		}
 		catch(AssertionError e)
 		{
-			printDebugInfo("Bootstrap: ", e.getMessage());
+			printDebugInfo("Bootstrap", e.getMessage());
 		}
 		catch (RemoteException e) 
 		{
-			System.err.println("NodeServer exception: "+ e.getMessage());
+			System.err.println("NodeServer exception"+ e.getMessage());
 		}
 	}
 	
@@ -152,38 +200,61 @@ public class DebugManager
 		tests++;
 		try
 		{	
-			String bindLocation = "//" + "localhost" + "/NodeServer";		//Hard coded ip (Change localhost)
-			String hostname2 = c2.getHostname();
-			String hostname3 = c3.getHostname();
 			Node prevNode2 = null;
 			Node nextNode2 = null;
 			Node prevNode3 = null;
 			Node nextNode3 = null;
 			
-			//first client		after looging out there should be a circle of 2 clients
+			NodeLinkManagerInterface iFace1 = (NodeLinkManagerInterface)c1.getRMIInterface("//localhost/NodeLinkManager_" + c1.getHostname());
+			NodeLinkManagerInterface iFace2 = (NodeLinkManagerInterface)c2.getRMIInterface("//localhost/NodeLinkManager_" + c2.getHostname());
+			NodeLinkManagerInterface iFace3 = (NodeLinkManagerInterface)c3.getRMIInterface("//localhost/NodeLinkManager_" + c3.getHostname());
+			
+			//first client		after logging out there should be a circle of 2 clients
 			assert c1.logoutSystem(): "Failed to logout client 1";
 			
-			NodeManagerInterface iFace = (NodeManagerInterface)c1.getRMIInterface(bindLocation);
+			printDebugInfo("INFO", "Wait for " + c1.getHostname() +" to finish shutdown.");
+			while(c1.getSessionState() == true)
+			{
+				try
+				{
+					Thread.sleep(1000);
+				}
+				catch(InterruptedException e)
+				{}
+				//hold off, wait for the client (stop blocking the client thread with polling) 
+			}
 			
-			prevNode2 = iFace.getPrevNode(hostname2);
-			nextNode2 = iFace.getNextNode(hostname2);
+			prevNode2 = iFace2.getPrev();
+			nextNode2 = iFace2.getNext();
 			
-			prevNode3 = iFace.getPrevNode(hostname3);
-			nextNode3 = iFace.getNextNode(hostname3);
+			prevNode3 = iFace3.getPrev();
+			nextNode3 = iFace3.getNext();
 			
 			assert (nextNode2.equals(prevNode2) && nextNode3.equals(prevNode3)): "Failed to restore nodelinks when going from 3->2 clients";
 			
 			//Second Client
 			assert c2.logoutSystem(): "Failed to logout client 2";
 			
-			prevNode3 = iFace.getPrevNode(hostname3);
-			nextNode3 = iFace.getNextNode(hostname3);
+			printDebugInfo("INFO", "Wait for " + c2.getHostname() +" to finish shutdown.");
+			while(c2.getSessionState() == true)
+			{
+				try
+				{
+					Thread.sleep(1000);
+				}
+				catch(InterruptedException e)
+				{}
+				//hold off, wait for the client (stop blocking the client thread with polling) 
+			}
+			
+			prevNode3 = iFace3.getPrev();
+			nextNode3 = iFace3.getNext();
 			
 			assert(prevNode3.equals(nextNode3)): "Failed to restore nodelinks when going from 2->1 clients";
 			
 			//Derde Client		There should be a loop between nodes
 			
-			assert c3.logoutSystem(): "Failed to logout last client";
+			assert c3.logoutSystem(): "Failed to logout client 3";
 			//no more connected nodes -> nothing to check
 			
 			printDebugInfo("Logout ", "Passed");
@@ -191,11 +262,11 @@ public class DebugManager
 		}
 		catch(AssertionError e)
 		{
-			printDebugInfo("Shutdown: ", e.getMessage());
+			printDebugInfo("Shutdown", e.getMessage());
 		}
 		catch (RemoteException e) 
 		{
-			System.err.println("NodeServer exception: "+ e.getMessage());
+			System.err.println("NodeServer exception"+ e.getMessage());
 		}
 	}
 	
@@ -211,11 +282,19 @@ public class DebugManager
 		try
 		{
 			tests++;
+			printDebugInfo("Failure test", "Press 'enter' to continu...");
+			commandLineWait();
 			
-			String bindLocation = "//" + "localhost" + "/NodeServer";		//Hard coded ip (Change localhost)
-			String hostname1 = c1.getHostname();
-			String hostname2 = c2.getHostname();
-			String hostname3 = c3.getHostname();
+			printDebugInfo("Failure test", "Login three new nodes to the network and press 'enter' to continu...");
+			commandLineWait();
+			
+			HashMap<Integer, Node> nodeList = server.getNodeList();
+			assert(nodeList.size() == 3) : "The number of nodes do not equal 3! (" + nodeList.size() + " nodes available)";
+			
+			Node node1 = (Node)nodeList.values().toArray()[0];
+			Node node2 = (Node)nodeList.values().toArray()[1];
+			Node node3 = (Node)nodeList.values().toArray()[2];
+			
 			Node prevNode1 = null;
 			Node nextNode1 = null;			
 			Node prevNode2 = null;
@@ -223,40 +302,55 @@ public class DebugManager
 			Node prevNode3 = null;
 			Node nextNode3 = null;
 			
-			NodeManagerInterface iFace = (NodeManagerInterface)c1.getRMIInterface(bindLocation);
+			NodeLinkManagerInterface iFace1 = null;
+			NodeLinkManagerInterface iFace3 = null;
+			NodeLinkManagerInterface iFace2 = null;
+			
+			try
+			{
+				iFace1 = (NodeLinkManagerInterface)Naming.lookup("//" + node1.getIpAddress() + "/NodeLinkManager_" + node1.getHostname());
+				iFace2 = (NodeLinkManagerInterface)Naming.lookup("//" + node2.getIpAddress() + "/NodeLinkManager_" + node2.getHostname());
+				iFace3 = (NodeLinkManagerInterface)Naming.lookup("//" + node3.getIpAddress() + "/NodeLinkManager_" + node3.getHostname());
+			}
+			catch(Exception e)
+			{
+				System.out.println("RMI lookup: " + e.getMessage());
+			}
 			
 			//there should still be a loop between the 3 clients
-			prevNode1 = iFace.getPrevNode(hostname1);
-			nextNode1 = iFace.getNextNode(hostname1);
+			prevNode1 = iFace1.getPrev();
+			nextNode1 = iFace1.getNext();
 			
-			prevNode2 = iFace.getPrevNode(hostname2);
-			nextNode2 = iFace.getNextNode(hostname2);
+			prevNode2 = iFace2.getPrev();
+			nextNode2 = iFace2.getNext();
 			
-			prevNode3 = iFace.getPrevNode(hostname3);
-			nextNode3 = iFace.getNextNode(hostname3);
+			prevNode3 = iFace3.getPrev();
+			nextNode3 = iFace3.getNext();
 			
 			assert(
 					(nextNode1.equals(prevNode3) && nextNode2.equals(prevNode1) && nextNode3.equals(prevNode2))		//1-2-3
 					|| (nextNode1.equals(prevNode2) && nextNode3.equals(prevNode1) && nextNode2.equals(prevNode3))	//1-3-2
 					): "NodeLinks were not created correctly with 3 nodes";
 			
-			c2.serverConnectionFailure();
-					
-			boolean answer = c1.ping(new Node("failureNode","localhost"));
-					
-			//Error should be detected when calling c2 -> 2 client loop should be created
-			prevNode1 = iFace.getPrevNode(hostname1);
-			nextNode1 = iFace.getNextNode(hostname1);
+			printDebugInfo("Failure test", "Terminate the node: '" + node2.getHostname() + "' and press 'enter' to continu...");
+			commandLineWait();
 			
-			prevNode3 = iFace.getPrevNode(hostname3);
-			nextNode3 = iFace.getNextNode(hostname3);
+			printDebugInfo("Failure test", "Execute the 'testLinks' command on one of the nodes and press 'enter' to continu...");
+			commandLineWait();
+			
+			//Error should be detected when calling c2 -> 2 client loop should be created
+			prevNode1 = iFace1.getPrev();
+			nextNode1 = iFace1.getNext();
+			
+			prevNode3 = iFace3.getPrev();
+			nextNode3 = iFace3.getNext();
 			
 			assert(nextNode1.equals(prevNode1) && nextNode3.equals(prevNode3)): "NodeLinks aren't correct.";
 			passed++;
 		}
 		catch(AssertionError e)
 		{
-			printDebugInfo("Failure: ", e.getMessage());
+			printDebugInfo("Failure", e.getMessage());
 		}
 		catch(RemoteException e) 
 		{
@@ -272,5 +366,15 @@ public class DebugManager
 	private void printDebugInfo(String header, String message)
 	{
 		System.out.println("[DEBUG - " + header + "] - " + message);
+	}
+	
+	private void commandLineWait()
+	{
+		try
+		{
+			new BufferedReader(new InputStreamReader(System.in)).readLine();
+		}
+		catch(IOException e)
+		{}
 	}
 }

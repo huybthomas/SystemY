@@ -27,4 +27,16 @@ public interface NodeLinkManagerInterface extends Remote
 	 * @param Node node
 	 */
 	public void setPrev(Node node) throws RemoteException;
+	
+	/**
+	 * get prev node.
+	 * @return Node
+	 */
+	public Node getPrev() throws RemoteException;
+	
+	/**
+	 * get next node.
+	 * @return Node
+	 */
+	public Node getNext() throws RemoteException;
 }

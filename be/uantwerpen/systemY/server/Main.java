@@ -7,6 +7,8 @@ import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import javax.swing.JFileChooser;
+
 /**
  * Main class to implement the initialization of the nameserver in the SystemY project.
  */
@@ -41,7 +43,7 @@ public class Main
 		//Read arguments
 		argsCommand(args);
 		
-		server = new Server(networkIP, networkPort, multicastIP, multicastPort);
+		server = new Server(true, networkIP, networkPort, multicastIP, multicastPort);
 		
 		//To run the tests, asserts needs to be enabled: runconfig -> arguments -> VM arguments, add the argument '-ea'.
 		if(ManagementFactory.getRuntimeMXBean().getInputArguments().contains("-ea"))

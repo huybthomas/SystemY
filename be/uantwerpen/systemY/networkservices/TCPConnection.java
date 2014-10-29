@@ -73,7 +73,5 @@ public class TCPConnection extends Thread
 			System.err.println("IO: " + e);
 			e.printStackTrace();
 		}
-		
-
 	}
 }

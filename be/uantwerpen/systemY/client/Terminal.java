@@ -118,6 +118,9 @@ public class Terminal
 							setIP(ip);
 						}
 						break;
+				case "testlinks":
+						testLinks();
+						break;
 				case "login":
 						loginSystem();
 						break;
@@ -215,6 +218,35 @@ public class Terminal
 		}
 	}
 	
+	private void testLinks()
+	{
+		boolean linksUp = true;
+		
+		if(client.getSessionState())
+		{
+			if(!client.ping(client.getNextNode()))
+			{
+				printTerminalInfo("The next link was broken and is now recoverd.");
+				linksUp = false;
+			}
+			
+			if(!client.ping(client.getPrevNode()))
+			{
+				printTerminalInfo("The previous link was broken and is now recoverd.");
+				linksUp = false;
+			}
+			
+			if(linksUp)
+			{
+				printTerminalInfo("All links are up.");
+			}
+		}
+		else
+		{
+			printTerminalError("The node is not logged in to the network.");
+		}
+	}
+	
 	/**
 	 * Let client logout of SystemY.
 	 */
@@ -243,6 +275,7 @@ public class Terminal
 		printTerminal("'setHostname' : change the hostname of the system.");
 		printTerminal("'setIP' : change the ip address of the system.");
 		printTerminal("'showHostInfo' : get info of the localhost.");
+		printTerminal("'testLinks' : check the state of the linked nodes.");
 		printTerminal("'stop' : shutdown the client.");
 		printTerminal("'help' / '?' : show all available commands.\n");
 	}

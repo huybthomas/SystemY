@@ -26,7 +26,7 @@ public class Server
 	 * Creates the Server Object.
 	 * @throws RemoteException
 	 */
-	public Server(String networkIP, int networkPort, String multicastIP, int multicastPort) throws RemoteException
+	public Server(boolean enableTerminal, String networkIP, int networkPort, String multicastIP, int multicastPort) throws RemoteException
 	{		
 		this.serverIP = networkIP;
 		
@@ -56,7 +56,10 @@ public class Server
 			printTerminalError("Server not fully operational, resolve the issue and reboot the server.");
 		}
 		
-		activateTerminal();
+		if(enableTerminal)
+		{
+			activateTerminal();
+		}
 	}
 	
 	/**

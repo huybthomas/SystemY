@@ -34,12 +34,9 @@ public class ShutdownManager
 		String bindLocationNext = "//" + nextNode.getIpAddress() + "/NodeLinkManager_" + nextNode.getHostname();
 		String bindLocationPrev = "//" + prevNode.getIpAddress() + "/NodeLinkManager_" + prevNode.getHostname();
 		
-		boolean skipStep;
-		
 		// Step1 : set prevNode on nextNode as my prevNode
 		boolean step1 = false; 
-		skipStep = false;
-		while(!(skipStep || step1))
+		while(!step1)
 		{
 			try 
 			{
@@ -52,7 +49,7 @@ public class ShutdownManager
 			} 
 			catch(Exception e)
 			{
-				System.err.println("Step1 in shutdown fail: "+ e.getMessage());
+				System.err.println("Step 1 in shutdown fail: "+ e.getMessage());
 				if(this.client.nodeConnectionFailure(nextNode.getHostname()))
 				{
 					nextNode = client.getNextNode();
@@ -60,15 +57,14 @@ public class ShutdownManager
 				}
 				else
 				{
-					skipStep = true;
+					return false;
 				}
 			}
 		}
 		
 		// Step2: set nextNode on prevNode as my nextNode
 		boolean step2 = false;  
-		skipStep = false;
-		while(!(skipStep || step2))
+		while(!step2)
 		{
 			try 
 			{
@@ -81,7 +77,7 @@ public class ShutdownManager
 			} 
 			catch(Exception e)
 			{
-				System.err.println("Step2 in shutdown fail: "+ e.getMessage());
+				System.err.println("Step 2 in shutdown fail: "+ e.getMessage());
 				if(this.client.nodeConnectionFailure(prevNode.getHostname()))
 				{
 					prevNode = client.getPrevNode();
@@ -89,7 +85,7 @@ public class ShutdownManager
 				}
 				else
 				{
-					skipStep = true;
+					return false;
 				}
 			}
 		}
