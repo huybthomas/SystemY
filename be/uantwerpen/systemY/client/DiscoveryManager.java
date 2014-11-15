@@ -52,8 +52,9 @@ public class DiscoveryManager
 				Node oldNext = client.updateLinks(new Node(clientname, ipAddress));
 				if(oldNext != null)																						//New node is the new nextNode
 				{
-					sendNetworkInfo(clientname, ipAddress, new Node(client.getHostname(), client.getIP()), oldNext);	//Send prevNode (this node) and nextNode (oldNext) to the new node
+					sendNetworkInfo(clientname, ipAddress, client.getThisNode(), oldNext);								//Send prevNode (this node) and nextNode (oldNext) to the new node
 				}
+				client.discoveryFileTransfer();
 			}
 		}
 	}
@@ -67,10 +68,8 @@ public class DiscoveryManager
 	 * @return boolean	True if success, false if not
 	 */
 	private boolean sendNetworkInfo(String clientname, String ip, Node prevNode, Node nextNode)
-	{
-		String bindLocation = "//" + ip + "/Bootstrap_" + clientname;
-		
-		BootstrapManagerInterface bInterface = (BootstrapManagerInterface)client.getRMIInterface(bindLocation);
+	{		
+		BootstrapManagerInterface bInterface = (BootstrapManagerInterface)client.getBootstrapInterface(new Node(clientname, ip));
 		
 		if(bInterface != null)
 		{

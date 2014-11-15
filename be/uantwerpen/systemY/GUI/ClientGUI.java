@@ -2,8 +2,8 @@ package be.uantwerpen.systemY.GUI;
 
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.*;
 
+import javax.swing.*;
 
 import be.uantwerpen.systemY.client.Client;
 
@@ -162,6 +162,7 @@ public class ClientGUI extends JFrame implements ActionListener
 		this.setIconImage(SYIcon);
 		this.setSize(355, 418);
 		this.setResizable(false);
+		this.setLocationRelativeTo(null);				//Centralize the frame on the screen
 		this.addWindowListener(new WindowAdapter()
 		{
 			@Override

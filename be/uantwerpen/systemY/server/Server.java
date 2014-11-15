@@ -26,7 +26,7 @@ public class Server
 	 * Creates the Server Object.
 	 * @throws RemoteException
 	 */
-	public Server(boolean enableTerminal, String networkIP, int networkPort, String multicastIP, int multicastPort) throws RemoteException
+	public Server(boolean enableTerminal, String networkIP, int tcpPort, int rmiPort, String multicastIP, int multicastPort) throws RemoteException
 	{		
 		this.serverIP = networkIP;
 		
@@ -41,7 +41,7 @@ public class Server
 		failureManager = new FailureManager(this);
 		
 		//setup networkinterface
-		networkinterface = new Networkinterface(networkIP, networkPort, multicastIP, multicastPort);
+		networkinterface = new Networkinterface(networkIP, rmiPort, tcpPort, tcpPort, multicastIP, multicastPort);
 		
 		//setup node lifecycle services
 		discoveryManager = new DiscoveryManager(networkinterface.getMulticastObserver(), this);
@@ -121,11 +121,11 @@ public class Server
 	}
 	
 	/**
-	 * Returns the ip where the file can be found.
+	 * Returns the node where the file can be found.
 	 * @param filename	filename in String format
-	 * @return	String	ip
+	 * @return	Node	fileowner
 	 */
-	public String getFileLocation(String filename)
+	public Node getFileLocation(String filename)
 	{
 		return nodeManager.getNodeList().getFileLocation(filename);
 	}
@@ -180,11 +180,21 @@ public class Server
 	/**
 	 * Get the interface bound to a specific location.
 	 * @param bindLocation	
-	 * @return	(Object) inteface
+	 * @return	(Object) interface
 	 */
 	public Object getRMIInterface(String bindLocation)
 	{
 		return this.networkinterface.getRMIInterface(bindLocation);
+	}
+	
+	public Object getNodeLinkInterface(Node node)
+	{
+		return this.networkinterface.getRMIInterface("//" + node.getIpAddress() + "/NodeLinkManager_" + node.getHostname());
+	}
+	
+	public Object getBootstrapInterface(Node node)
+	{
+		return this.networkinterface.getRMIInterface("//" + node.getIpAddress() + "/Bootstrap_" + node.getHostname());
 	}
 	
 	public void nodeConnectionFailure(String hostname) 

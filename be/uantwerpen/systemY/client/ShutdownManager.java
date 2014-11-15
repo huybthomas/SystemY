@@ -25,14 +25,9 @@ public class ShutdownManager
 	 * @return boolean	True if success, false if not
 	 */
 	public boolean shutdown()
-	{
-		client.stopServices();
-		
+	{		
 		Node nextNode = client.getNextNode();
 		Node prevNode = client.getPrevNode();
-
-		String bindLocationNext = "//" + nextNode.getIpAddress() + "/NodeLinkManager_" + nextNode.getHostname();
-		String bindLocationPrev = "//" + prevNode.getIpAddress() + "/NodeLinkManager_" + prevNode.getHostname();
 		
 		// Step1 : set prevNode on nextNode as my prevNode
 		boolean step1 = false; 
@@ -40,9 +35,9 @@ public class ShutdownManager
 		{
 			try 
 			{
-				if(!nextNode.equals(new Node(client.getHostname(), client.getIP())))	//If next node is himself, no need to change the nextNode
+				if(!nextNode.equals(client.getThisNode()))			//If next node is himself, no need to change the nextNode
 				{
-					NodeLinkManagerInterface iFace = (NodeLinkManagerInterface)client.getRMIInterface(bindLocationNext);
+					NodeLinkManagerInterface iFace = (NodeLinkManagerInterface)client.getNodeLinkInterface(nextNode);
 					iFace.setPrev(prevNode);
 				}
 				step1 = true;
@@ -53,7 +48,6 @@ public class ShutdownManager
 				if(this.client.nodeConnectionFailure(nextNode.getHostname()))
 				{
 					nextNode = client.getNextNode();
-					bindLocationNext = "//" + nextNode.getIpAddress() + "/NodeLinkManager_" + nextNode.getHostname();
 				}
 				else
 				{
@@ -68,9 +62,9 @@ public class ShutdownManager
 		{
 			try 
 			{
-				if(!prevNode.equals(new Node(client.getHostname(), client.getIP())))	//If previous node is himself, no need to change the prevNode
+				if(!prevNode.equals(client.getThisNode()))		//If previous node is himself, no need to change the prevNode
 				{
-					NodeLinkManagerInterface iFace = (NodeLinkManagerInterface)client.getRMIInterface(bindLocationPrev);
+					NodeLinkManagerInterface iFace = (NodeLinkManagerInterface)client.getNodeLinkInterface(prevNode);
 					iFace.setNext(nextNode);
 				}
 				step2 = true;
@@ -81,7 +75,6 @@ public class ShutdownManager
 				if(this.client.nodeConnectionFailure(prevNode.getHostname()))
 				{
 					prevNode = client.getPrevNode();
-					bindLocationPrev = "//" + prevNode.getIpAddress() + "/NodeLinkManager_" + prevNode.getHostname();
 				}
 				else
 				{
@@ -102,15 +95,17 @@ public class ShutdownManager
 	 */
 	private boolean deleteMyNode()
 	{
-		String bindLocation = "//" + client.getServerIP() + "/NodeServer";		
-		try 
-		{
-			NodeManagerInterface iFace = (NodeManagerInterface)client.getRMIInterface(bindLocation);
-			return iFace.delNode(client.getHostname());
-		} 
-		catch(Exception e)
-		{
-			System.err.println("NodeServer exception: "+ e.getMessage());	//No connection with the server could be established, drop serverConnectionFailure (services already down)
+		if(client.getServerIP() != null)
+		{	
+			try 
+			{
+				NodeManagerInterface iFace = (NodeManagerInterface)client.getNodeServerInterface();
+				return iFace.delNode(client.getHostname());
+			} 
+			catch(Exception e)
+			{
+				System.err.println("NodeServer exception: "+ e.getMessage());	//No connection with the server could be established, drop serverConnectionFailure (services already down)
+			}
 		}
 		return false;
 	}

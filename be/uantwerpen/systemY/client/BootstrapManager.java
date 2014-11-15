@@ -2,9 +2,12 @@ package be.uantwerpen.systemY.client;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Observable;
+import java.util.Observer;
 
 import be.uantwerpen.systemY.interfaces.BootstrapManagerInterface;
 import be.uantwerpen.systemY.shared.Node;
+import be.uantwerpen.systemY.timeOut.TimeOutService;
 
 /**
  * Class that handles the bootstrap of a client
@@ -17,6 +20,7 @@ public class BootstrapManager extends UnicastRemoteObject implements BootstrapMa
 	private Client client;
 	private boolean serverRespons, prevNodeRespons;
 	private boolean firstNetworkNode;
+	private TimeOutService timeOut;
 	
 	/**
 	 * Create the BootstrapManager object.
@@ -26,6 +30,15 @@ public class BootstrapManager extends UnicastRemoteObject implements BootstrapMa
 	public BootstrapManager(Client client) throws RemoteException
 	{
 		this.client = client;
+		this.timeOut = new TimeOutService(3000);
+		
+		timeOut.getObserver().addObserver(new Observer()
+		{
+			public void update(Observable source, Object object)
+			{
+				timeOutDetection();
+			}
+		});
 	}
 	
 	/**
@@ -71,10 +84,18 @@ public class BootstrapManager extends UnicastRemoteObject implements BootstrapMa
 		prevNodeRespons = false;
 		firstNetworkNode = false;
 		
+		//Reset the node links
+		client.setNextNode(client.getThisNode());
+		client.setPrevNode(client.getThisNode());
+		
+		//Reset the server ip
+		client.setServerIP(null);
+		
 		if(client.bindRMIservice(this, "Bootstrap_" + client.getHostname()))
 		{
 			if(sendDiscoveryMulticast())
 			{
+				timeOut.startTimer();												//Start time out detection
 				return true;
 			}
 			else
@@ -106,9 +127,26 @@ public class BootstrapManager extends UnicastRemoteObject implements BootstrapMa
 	{
 		if(serverRespons && (prevNodeRespons || firstNetworkNode))
 		{
+			timeOut.stopTimer();
 			client.unbindRMIservice("Bootstrap_" + client.getHostname());
 			client.runServices();
 			client.setSessionState(true);
+		}
+	}
+	
+	private void timeOutDetection()
+	{
+		if(!client.getSessionState())
+		{
+			client.logoutSystem();
+			if(!serverRespons)
+			{
+				client.printTerminalError("Login time-out. Server did not respond.");
+			}
+			else
+			{
+				client.printTerminalError("Login time-out. Previous node did not respond.");
+			}
 		}
 	}
 }

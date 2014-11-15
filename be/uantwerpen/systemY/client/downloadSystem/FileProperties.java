@@ -1,10 +1,15 @@
-package be.uantwerpen.systemY.shared;
+package be.uantwerpen.systemY.client.downloadSystem;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 
-public class FileProperties
+import be.uantwerpen.systemY.shared.Node;
+
+public class FileProperties implements Serializable
 {
+	private static final long serialVersionUID = 1L;
+	
 	private String filename;
 	private Node owner;
 	private HashMap<Integer, Node> replications;

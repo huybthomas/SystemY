@@ -28,14 +28,13 @@ public class FailureManager
 	public boolean nodeConnectionFailure(String hostname)
 	{
 		client.printTerminalError("Lost connection to node: " + hostname);
-		
-		String bindLocation = "//" + client.getServerIP() + "/NodeServer";
+
 		Node prevNode = null;
 		Node nextNode = null;
 		
 		try 
 		{
-			NodeManagerInterface iFace = (NodeManagerInterface)client.getRMIInterface(bindLocation);
+			NodeManagerInterface iFace = (NodeManagerInterface)client.getNodeServerInterface();
 			
 			prevNode = iFace.getPrevNode(hostname);
 			nextNode = iFace.getNextNode(hostname);
@@ -58,7 +57,7 @@ public class FailureManager
 		
 		try
 		{
-			NodeManagerInterface iFace = (NodeManagerInterface)client.getRMIInterface(bindLocation);
+			NodeManagerInterface iFace = (NodeManagerInterface)client.getNodeServerInterface();
 			
 			iFace.delNode(hostname);
 		}
@@ -89,10 +88,8 @@ public class FailureManager
 	 * @param Node	nextNode
 	 */
 	private void updateNode(Node updateNode, Node prevNode, Node nextNode)
-	{
-		String bindLocation = "//" + updateNode.getIpAddress() + "/NodeLinkManager_" + updateNode.getHostname();
-		
-		if(updateNode.equals(new Node(client.getHostname(), client.getIP())))	//Node to update is own node
+	{		
+		if(updateNode.equals(client.getThisNode()))			//Node to update is own node
 		{
 			if(prevNode != null)
 			{
@@ -108,7 +105,7 @@ public class FailureManager
 		{
 			try
 			{
-				NodeLinkManagerInterface iFace = (NodeLinkManagerInterface)client.getRMIInterface(bindLocation);
+				NodeLinkManagerInterface iFace = (NodeLinkManagerInterface)client.getNodeLinkInterface(updateNode);
 				
 				if(prevNode != null)
 				{

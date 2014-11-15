@@ -96,11 +96,11 @@ public class NodeManager extends UnicastRemoteObject implements NodeManagerInter
 	}
 	
 	/**
-	 * Returns the ip where the file can be found.
+	 * Returns the node where the file can be found.
 	 * @param filename	filename in String format
-	 * @return	String	ip
+	 * @return	Node	fileowner
 	 */
-	public String getFileLocation(String filename)
+	public Node getFileLocation(String filename)
 	{
 		return nodeList.getFileLocation(filename);
 	}

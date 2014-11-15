@@ -33,11 +33,11 @@ public interface NodeManagerInterface extends Remote
 	public String getNode(String hostname) throws RemoteException;
 	
 	/**
-	 * Returns the ip where the file can be found.
+	 * Returns the node where the file can be found.
 	 * @param filename	filename in String format
-	 * @return	String	ip
+	 * @return	Node	fileowner
 	 */
-	public String getFileLocation(String filename) throws RemoteException;
+	public Node getFileLocation(String filename) throws RemoteException;
 	
 	/**
 	 * Sends an answer to the new node.

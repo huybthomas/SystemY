@@ -7,7 +7,9 @@ public class Networkinterface
 {
 	private Multicastservice multicastservice;
 	private RMIservice rmiService;
+	private TCPservice tcpService;
 	private Thread multicastThread;
+	private Thread tcpThread;
 	
 	/**
 	 * sets up the RMIsevice and multicastservice
@@ -16,7 +18,7 @@ public class Networkinterface
 	 * @param String	multicastIP
 	 * @param int	multicastPort
 	 */
-	public Networkinterface(String networkIP, int rmiPort, String multicastIP, int multicastPort)
+	public Networkinterface(String networkIP, int rmiPort, int tcpSendPort, int tcpReceivePort, String multicastIP, int multicastPort)
 	{
 		//Setup RMIservice
 		this.rmiService = new RMIservice(networkIP, rmiPort);
@@ -24,7 +26,11 @@ public class Networkinterface
 		//Setup multicastservice
 		this.multicastservice = new Multicastservice(multicastIP, multicastPort);
 		
+		//Setup TCPservice
+		this.tcpService = new TCPservice(tcpSendPort, tcpReceivePort);
+		
 		multicastThread = new Thread(multicastservice);
+		tcpThread = new Thread(tcpService);
 	}
 	
 	/**
@@ -105,18 +111,41 @@ public class Networkinterface
 	
 	/**
 	 * stop the multicast service
+	 * @return boolean True if successful, false if failed
 	 */
-	public void stopMulticastservice()
+	public boolean stopMulticastservice()
 	{
-		if(multicastservice.terminate())
-		{
-			multicastThread = new Thread(multicastservice);
-		}
+		boolean state = multicastservice.terminate();
+		multicastThread = new Thread(multicastservice);
+		
+		return state;
 	}
 	
-	//TCPSECION
-	public boolean setupTCPservice()
+	public boolean setupTCPListener()
 	{
-		return true;
-	} 
+		return tcpService.setupTCPListener();
+	}
+	
+	public TCPObserver getTCPObserver()
+	{
+		return tcpService.getTCPObserver();
+	}
+	
+	public void runTCPListener()
+	{
+		tcpThread.start();
+	}
+	
+	public boolean stopTCPListener()
+	{
+		boolean state = tcpService.terminate();
+		tcpThread = new Thread(tcpService);
+			
+		return state;
+	}
+	
+	public TCPConnection getTCPConnection(String destinationIP)
+	{
+		return tcpService.getConnection(destinationIP);
+	}
 }

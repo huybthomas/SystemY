@@ -48,12 +48,10 @@ public class FailureManager
 	 * @param Node 	nextNode	the new next node.
 	 */
 	private void updateNode(Node updateNode, Node prevNode, Node nextNode)
-	{
-		String bindLocation = "//" + updateNode.getIpAddress() + "/NodeLinkManager_" + updateNode.getHostname();
-		
+	{		
 		try
 		{
-			NodeLinkManagerInterface iFace = (NodeLinkManagerInterface)server.getRMIInterface(bindLocation);
+			NodeLinkManagerInterface iFace = (NodeLinkManagerInterface)server.getNodeLinkInterface(updateNode);
 		
 			if(prevNode != null)
 			{

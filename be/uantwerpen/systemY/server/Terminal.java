@@ -255,7 +255,7 @@ public class Terminal
 	private boolean getFileLocation(String filename)
 	{
 		
-		String fileLocation = server.getFileLocation(filename);
+		String fileLocation = server.getFileLocation(filename).getIpAddress();
 		
 		if(fileLocation != null)
 		{

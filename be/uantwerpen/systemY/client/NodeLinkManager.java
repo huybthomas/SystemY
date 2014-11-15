@@ -129,6 +129,11 @@ public class NodeLinkManager extends UnicastRemoteObject implements NodeLinkMana
 		return this.serverIP;
 	}
 	
+	public Node getThisNode()
+	{
+		return this.nodeLinks.getThis();
+	}
+	
 	/**
 	 * Update the list when a new node is added.
 	 * @param Node	newNode

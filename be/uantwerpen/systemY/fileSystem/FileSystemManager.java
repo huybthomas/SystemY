@@ -1,6 +1,7 @@
 package be.uantwerpen.systemY.fileSystem;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,6 +18,7 @@ import javax.xml.bind.Unmarshaller;
 public class FileSystemManager
 {
 	private FileSystemWatcher fileSystemWatcher;
+	private Thread watcherThread;
 	
 	public FileSystemManager(String watchDirectory)
 	{
@@ -25,7 +27,8 @@ public class FileSystemManager
 	
 	public FileSystemManager()
 	{
-		fileSystemWatcher = new FileSystemWatcher(new JFileChooser().getFileSystemView().getDefaultDirectory().toString() + "\\SystemY\\Files");
+		fileSystemWatcher = new FileSystemWatcher(new JFileChooser().getFileSystemView().getDefaultDirectory().toString() + File.separator + "SystemY" + File.separator + "Files");
+		watcherThread = new Thread(fileSystemWatcher);
 	}
 	
 	/**
@@ -129,9 +132,9 @@ public class FileSystemManager
 		return false;
 	}
 	
-	public File loadFile(String location, String name)
+	public File getFile(String location, String name)
 	{
-		File file = new File(location + name);
+		File file = new File(location + File.separator + name);
 		if(file.isFile())
 		{
 			return file;
@@ -143,13 +146,86 @@ public class FileSystemManager
 		}
 	}
 	
+	public File getDirectory(String directory) throws SecurityException
+	{
+		File dir = new File(directory);
+		
+		//Check if downloadlocation exists
+		if(dir.isDirectory())
+		{
+			return dir;
+		}
+		else
+		{
+			return null;
+		}
+	}
+	
+	public boolean createDirectory(String directory) throws SecurityException
+	{
+		File dir = new File(directory);
+		return dir.mkdirs();
+	}
+	
+	public boolean createFile(String location, String name) throws IOException
+	{
+		File file = new File(location + File.separator + name);
+		return file.createNewFile();
+	}
+	
+	public boolean deleteFile(String location, String name) throws IOException
+	{
+		File file = new File(location + File.separator + name);
+		return file.delete();
+	}
+	
+	public FileInputStream getFileInputStream(String location, String name) throws FileNotFoundException
+	{
+		return new FileInputStream(getFile(location, name));
+	}
+	
+	public FileOutputStream getFileOutputStream(String location, String name) throws FileNotFoundException
+	{
+		return new FileOutputStream(getFile(location, name));
+	}
+	
+	public boolean fileExist(String location, String name)
+	{
+		File file = new File(location + File.separator + name);
+		if(file.isFile())
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
 	public FileSystemObserver getFileWatchObserver()
 	{
 		return fileSystemWatcher.getObserver();
 	}
 	
+	public void setFileWatchDirectory(String directory)
+	{
+		if(watcherThread.isAlive())
+		{
+			stopFileWatcher();
+		}
+		fileSystemWatcher.setPathLocation(directory);
+	}
+	
 	public void startFileWatcher()
 	{
-		new Thread(fileSystemWatcher).start();
+		watcherThread.start();
+	}
+	
+	public void stopFileWatcher()
+	{
+		if(fileSystemWatcher.stopWatcher())
+		{
+			watcherThread = new Thread(fileSystemWatcher);
+		}
 	}
 }

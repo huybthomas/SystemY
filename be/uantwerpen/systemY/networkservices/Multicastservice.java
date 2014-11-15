@@ -152,11 +152,11 @@ public class Multicastservice implements Runnable
 		}
 		catch(SocketException e)
 		{
-			System.out.println("Socket: " + e.getMessage());
+			System.out.println("Multicastsocket: " + e.getMessage());
 		}
 		catch(IOException e)
 		{
-			System.out.println("IO: " + e.getMessage());
+			System.err.println("IO: " + e.getMessage());
 		}
 	}
 }

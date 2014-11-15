@@ -185,7 +185,7 @@ public class DebugManager
 		{
 			server.addNode("SMALL", "0.0.0.0");		//HASH: 7399
 			server.addNode("LARGE", "1.1.1.1");		//HASH: 17179
-			assert server.getFileLocation("MINI") == "1.1.1.1": "Returned node isn't the highest hash-value in the node list!";	//HASH: 7255
+			assert server.getFileLocation("MINI").getIpAddress() == "1.1.1.1": "Returned node isn't the highest hash-value in the node list!";	//HASH: 7255
 			printDebugInfo("Test 7", "Passed");
 			passed++;
 		}

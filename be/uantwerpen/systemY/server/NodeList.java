@@ -11,7 +11,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import be.uantwerpen.systemY.shared.Node;
 
-
 /**
  * NodeList class that contains the Nodes in the network and operations on them.
  * @implements	Serializable
@@ -99,11 +98,11 @@ public class NodeList implements Serializable
 	}
 	
 	/**
-	 * Returns the ip address of the file's location.
+	 * Returns the node of the file's location.
 	 * @param String	filename 	name of the requested file
-	 * @return String	ip in string format, null if there are no hosts in the list
+	 * @return Node		fileowner of the requested file, null if there are no hosts in the list
 	 */
-	public String getFileLocation(String filename)
+	public Node getFileLocation(String filename)
 	{
 		int hashValue = calculateHash(filename);
 		Set<Integer> nodeIDs = nodeMap.keySet();
@@ -115,7 +114,7 @@ public class NodeList implements Serializable
 		{
 			if(hashValue > id[nodeIDs.size() - 1])
 			{
-				return nodeMap.get(id[nodeIDs.size()-1]).getIpAddress();
+				return nodeMap.get(id[nodeIDs.size()-1]);
 			}
 			else
 			{
@@ -127,11 +126,11 @@ public class NodeList implements Serializable
 				
 				if(i == 0)
 				{
-					return nodeMap.get(id[nodeIDs.size() - 1]).getIpAddress();
+					return nodeMap.get(id[nodeIDs.size() - 1]);
 				}
 				else
 				{
-					return nodeMap.get(id[i - 1]).getIpAddress();
+					return nodeMap.get(id[i - 1]);
 				}
 			}
 		}

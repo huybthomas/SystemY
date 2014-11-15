@@ -2,76 +2,73 @@ package be.uantwerpen.systemY.networkservices;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-import be.uantwerpen.systemY.client.DownloadManager;
-
-public class TCPConnection extends Thread
+public class TCPConnection
 {
-	private Socket client;
-	private DownloadManager d;
+	private Socket socket;
 	private DataInputStream in;
 	private DataOutputStream out;
-	private FileInputStream fileReader;
 	
-	public TCPConnection(Socket client, DownloadManager d) throws IOException 
+	public TCPConnection(Socket socket) throws IOException 
 	{
-		this.client = client;
-		this.d = d;
-		this.in = new DataInputStream(client.getInputStream());
-		this.out = new DataOutputStream(client.getOutputStream());
-		this.start();
+		this.socket = socket;
+		this.socket.setSoTimeout(5000);
+		this.in = new DataInputStream(socket.getInputStream());
+		this.out = new DataOutputStream(socket.getOutputStream());
 	}
 	
-	public void run()
+	public TCPConnection(String ip, int port) throws IOException 
 	{
-		File file = null;
-
-		try
-		{
-			String filename = in.readUTF();			//Get requested filename
-			file = d.getFile(filename);				//Search for file on filesystem
-			System.out.println("File requested: " + filename + " by " + client.getInetAddress());
-			
-			if(file != null)						//File exists
-			{
-				out.writeUTF("File exists");		//Notify client
-				
-				byte[] byteArray = new byte[(int)file.length()];
-
-				fileReader = new FileInputStream(file);
-				fileReader.read(byteArray);		//Read file
-				
-				out.writeLong(byteArray.length);			//Send file size
-				out.write(byteArray, 0, byteArray.length);	//Send file
-				client.close();					//Close connection
-				System.out.println("File successfully sent");
-			}
-			else
-			{
-				out.writeUTF("File not found");
-			}
-		}
-		catch(IOException e)
-		{
-			System.err.println("IO: " + e);
-			e.printStackTrace();
-		}
-		
-		try
-		{
-			if(file != null)
-			{
-				fileReader.close();
-			}
-		}
-		catch(IOException e)
-		{
-			System.err.println("IO: " + e);
-			e.printStackTrace();
-		}
+		this.socket = new Socket(ip, port);
+		this.socket.setSoTimeout(5000);
+		this.in = new DataInputStream(socket.getInputStream());
+		this.out = new DataOutputStream(socket.getOutputStream());
 	}
+	
+	public DataInputStream getDataInputStream()
+	{
+		return this.in;
+	}
+	
+	public DataOutputStream getDataOutputStream()
+	{
+		return this.out;
+	}
+	
+	public String getConnectedHost()
+	{
+		return this.socket.getInetAddress().getHostName();
+	}
+
+    public byte[] receiveData() throws IOException
+    {
+    	byte[] b;
+    	
+    	long byteLength = in.readLong();
+    	b = new byte[(int) byteLength];
+    	in.readFully(b);
+    	return b;
+    }
+    
+    public void sendData(byte[] data) throws IOException
+    {
+		out.writeLong((long) data.length);
+		out.write(data);
+    }
+    
+    public boolean closeConnection()
+    {
+    	try
+    	{
+			this.socket.close();
+		}
+    	catch(IOException e)
+    	{
+			System.err.println("Socket close: " + e.getMessage());
+			return false;
+		}
+    	return true;
+    }
 }

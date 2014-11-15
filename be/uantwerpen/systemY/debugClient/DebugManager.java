@@ -3,15 +3,12 @@ package be.uantwerpen.systemY.debugClient;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.Socket;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import be.uantwerpen.systemY.client.Client;
 import be.uantwerpen.systemY.interfaces.NodeLinkManagerInterface;
-import be.uantwerpen.systemY.networkservices.TCPConnection;
 import be.uantwerpen.systemY.shared.Node;
 import be.uantwerpen.systemY.server.*;
 
@@ -89,22 +86,34 @@ public class DebugManager
 			Node prevNode3 = null;
 			Node nextNode3 = null;
 			
-			assert c1.loginSystem(): "Failed to bootstrap client 1 (login failed)";
+			Runnable login1 = new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					assert c1.loginSystem(): "Failed to bootstrap client 1 (login failed)";
+				}
+			};
+			
+			new Thread(login1).start();
 			
 			printDebugInfo("INFO", "Wait for " + c1.getHostname() +" to finish startup.");
-			while(c1.getSessionState() == false)
+			
+			while(!c1.getSessionState())
 			{
 				try
 				{
 					Thread.sleep(1000);
 				}
 				catch(InterruptedException e)
-				{}
-				//hold off, wait for the client (stop blocking the client thread with polling) 
+				{
+					System.err.println("Thread sleep: " + e.getMessage());
+				}
+				//hold off, wait for the client (stop blocking the client thread with polling)
+				System.out.println("Waiting for node: " + c1.getHostname() + " ...");
 			}
 			
 			NodeLinkManagerInterface iFace1 = (NodeLinkManagerInterface)c1.getRMIInterface("//localhost/NodeLinkManager_" + c1.getHostname());
-			
 			
 			prevNode1 = iFace1.getPrev();
 			prevNode1s = prevNode1;
@@ -112,22 +121,36 @@ public class DebugManager
 			
 			assert (prevNode1.equals(nextNode1)): "First node in network does not refer to itself";
 			
+			
 			//Second Client		next and prev node should be referring to other node than itself
 			prevNode1 = null;
 			nextNode1 = null;
 		
-			assert c2.loginSystem(): "Failed to bootstrap client 2 (login failed)";
+			Runnable login2 = new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					assert c2.loginSystem(): "Failed to bootstrap client 2 (login failed)";
+				}
+			};
+			
+			new Thread(login2).start();
 			
 			printDebugInfo("INFO", "Wait for " + c2.getHostname() +" to finish startup.");
-			while(c2.getSessionState() == false)
+			
+			while(!c2.getSessionState())
 			{
 				try
 				{
 					Thread.sleep(1000);
 				}
 				catch(InterruptedException e)
-				{}
-				//hold off, wait for the client (stop blocking the client thread with polling) 
+				{
+					System.err.println("Thread sleep: " + e.getMessage());
+				}
+				//hold off, wait for the client (stop blocking the client thread with polling)
+				System.out.println("Waiting for node: " + c2.getHostname() + " ...");
 			}
 			
 			NodeLinkManagerInterface iFace2 = (NodeLinkManagerInterface)c2.getRMIInterface("//localhost/NodeLinkManager_" + c2.getHostname());
@@ -140,24 +163,37 @@ public class DebugManager
 			
 			assert(prevNode1.equals(nextNode1) && nextNode2.equals(prevNode2) && !(prevNode1.equals(prevNode1s))): "NodeLinks were not created correctly with 2 nodes";
 			
-			//Derde Client		There should be a loop between nodes
+			
+			//Third Client		There should be a loop between nodes
 			prevNode1 = null;
 			nextNode1 = null;
 			prevNode2 = null;
 			nextNode2 = null;
 			
-			assert c3.loginSystem(): "Failed to bootstrap client 3 (login failed)";
+			Runnable login3 = new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					assert c3.loginSystem(): "Failed to bootstrap client 3 (login failed)";
+				}
+			};
+			
+			new Thread(login3).start();
 
 			printDebugInfo("INFO", "Wait for " + c3.getHostname() +" to finish startup.");
-			while(c3.getSessionState() == false)
+			while(!c3.getSessionState())
 			{
 				try
 				{
 					Thread.sleep(1000);
 				}
 				catch(InterruptedException e)
-				{}
-				//hold off, wait for the client (stop blocking the client thread with polling) 
+				{
+					System.err.println("Thread sleep: " + e.getMessage());
+				}
+				//hold off, wait for the client (stop blocking the client thread with polling)
+				System.out.println("Waiting for node: " + c3.getHostname() + " ...");
 			}
 			
 			NodeLinkManagerInterface iFace3 = (NodeLinkManagerInterface)c3.getRMIInterface("//localhost/NodeLinkManager_" + c3.getHostname());
@@ -192,7 +228,6 @@ public class DebugManager
 	/**
 	 * Tests the network after a logout, do the nodes restore the network correctly?
 	 */
-	@SuppressWarnings("unused")
 	private void testLogout()
 	{
 		//Nodes moeten zichzelf herstellen na logout
@@ -205,23 +240,34 @@ public class DebugManager
 			Node prevNode3 = null;
 			Node nextNode3 = null;
 			
-			NodeLinkManagerInterface iFace1 = (NodeLinkManagerInterface)c1.getRMIInterface("//localhost/NodeLinkManager_" + c1.getHostname());
 			NodeLinkManagerInterface iFace2 = (NodeLinkManagerInterface)c2.getRMIInterface("//localhost/NodeLinkManager_" + c2.getHostname());
 			NodeLinkManagerInterface iFace3 = (NodeLinkManagerInterface)c3.getRMIInterface("//localhost/NodeLinkManager_" + c3.getHostname());
 			
 			//first client		after logging out there should be a circle of 2 clients
-			assert c1.logoutSystem(): "Failed to logout client 1";
+			Runnable logout1 = new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					assert c1.logoutSystem(): "Failed to logout client 1";
+				}
+			};
+			
+			new Thread(logout1).start();
 			
 			printDebugInfo("INFO", "Wait for " + c1.getHostname() +" to finish shutdown.");
-			while(c1.getSessionState() == true)
+			while(c1.getSessionState())
 			{
 				try
 				{
 					Thread.sleep(1000);
 				}
 				catch(InterruptedException e)
-				{}
-				//hold off, wait for the client (stop blocking the client thread with polling) 
+				{
+					System.err.println("Thread sleep: " + e.getMessage());
+				}
+				//hold off, wait for the client (stop blocking the client thread with polling)
+				System.out.println("Waiting for node: " + c1.getHostname() + " ...");
 			}
 			
 			prevNode2 = iFace2.getPrev();
@@ -233,18 +279,30 @@ public class DebugManager
 			assert (nextNode2.equals(prevNode2) && nextNode3.equals(prevNode3)): "Failed to restore nodelinks when going from 3->2 clients";
 			
 			//Second Client
-			assert c2.logoutSystem(): "Failed to logout client 2";
+			Runnable logout2 = new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					assert c2.logoutSystem(): "Failed to logout client 2";
+				}
+			};
+			
+			new Thread(logout2).start();
 			
 			printDebugInfo("INFO", "Wait for " + c2.getHostname() +" to finish shutdown.");
-			while(c2.getSessionState() == true)
+			while(c2.getSessionState())
 			{
 				try
 				{
 					Thread.sleep(1000);
 				}
 				catch(InterruptedException e)
-				{}
-				//hold off, wait for the client (stop blocking the client thread with polling) 
+				{
+					System.err.println("Thread sleep: " + e.getMessage());
+				}
+				//hold off, wait for the client (stop blocking the client thread with polling)
+				System.out.println("Waiting for node: " + c2.getHostname() + " ...");
 			}
 			
 			prevNode3 = iFace3.getPrev();
@@ -276,7 +334,6 @@ public class DebugManager
 	 * Request file from that node, other nodes will see that no node is present.
 	 * Start failure process.
 	 */
-	@SuppressWarnings("unused")
 	private void testFailure()
 	{
 		try
@@ -375,6 +432,8 @@ public class DebugManager
 			new BufferedReader(new InputStreamReader(System.in)).readLine();
 		}
 		catch(IOException e)
-		{}
+		{
+			System.err.println("BufferReader: " + e.getMessage());
+		}
 	}
 }

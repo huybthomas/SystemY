@@ -1,25 +1,50 @@
 package be.uantwerpen.systemY.fileSystem;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
+
+import javax.swing.JFileChooser;
 
 import static java.nio.file.StandardWatchEventKinds.*;
 
 public class FileSystemWatcher implements Runnable
 {
-	private String pathlocation;
+	private Path pathlocation;
 	private FileSystemObserver observer;
 	private WatchService watcher;
 	
 	public FileSystemWatcher(String pathlocation)
 	{
-		this.pathlocation = pathlocation;
+		try
+		{
+			this.pathlocation = FileSystems.getDefault().getPath(pathlocation);
+		}
+		catch(InvalidPathException e)
+		{
+			System.err.println("Invalid path: " + e.getMessage());
+			this.pathlocation = FileSystems.getDefault().getPath(new JFileChooser().getFileSystemView().getDefaultDirectory().toString() + File.separator + "SystemY" + File.separator + "Files");
+		}
 		this.observer = new FileSystemObserver();
 	}
 	
 	public FileSystemObserver getObserver()
 	{
 		return observer;
+	}
+	
+	public boolean setPathLocation(String pathlocation)
+	{
+		try
+		{
+			this.pathlocation = FileSystems.getDefault().getPath(pathlocation);
+		}
+		catch(InvalidPathException e)
+		{
+			System.err.println("Invalid path: " + e.getMessage());
+			return false;
+		}
+		return true;
 	}
 	
 	public boolean stopWatcher()
@@ -47,7 +72,7 @@ public class FileSystemWatcher implements Runnable
 		try
 		{
 			watcher = FileSystems.getDefault().newWatchService();
-			watchKey = FileSystems.getDefault().getPath(pathlocation).register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
+			watchKey = pathlocation.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
 		}
 		catch(InvalidPathException e)
 		{

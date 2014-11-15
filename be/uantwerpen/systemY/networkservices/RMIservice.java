@@ -39,7 +39,7 @@ public class RMIservice
 		}
 		catch(RemoteException e)
 		{
-			System.err.println("JAVA RMI registry already exists.");
+			System.err.println("JAVA RMI registry already exists or port: " + RMIPort + " is already in use.");
 			return false;
 		}
 		return true;

@@ -1,11 +1,14 @@
 package be.uantwerpen.systemY.client;
 
-import java.rmi.Naming;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 
+import be.uantwerpen.systemY.client.agent.AgentManager;
+import be.uantwerpen.systemY.client.downloadSystem.FileManager;
+import be.uantwerpen.systemY.client.downloadSystem.FileProperties;
 import be.uantwerpen.systemY.interfaces.NodeLinkManagerInterface;
-import be.uantwerpen.systemY.interfaces.NodeManagerInterface;
 import be.uantwerpen.systemY.networkservices.Networkinterface;
+import be.uantwerpen.systemY.networkservices.TCPConnection;
 import be.uantwerpen.systemY.shared.Node;
 
 /**
@@ -20,7 +23,9 @@ public class Client
 	@SuppressWarnings("unused")
 	private DiscoveryManager discovery;
 	private ShutdownManager shutdownM;
-	private FailureManager failure;
+	private AgentManager agentM;
+	private FileManager fileManager;
+	private FailureManager failureM;
 	private Networkinterface iFace;
 	private boolean activeSession;
 	
@@ -29,12 +34,13 @@ public class Client
 	 * @param boolean	enableTerminal	make client boot along with a terminal window
 	 * @param String	hostname	the client's hostname
 	 * @param String	networkIP	the client's ip address
+	 * @param int	tcpPort		the port for the tcp connections
 	 * @param int	rmiPort		the port for the remote method invocation calls
 	 * @param String	multicastIP	the ip for multicasts
 	 * @param int	multicastPort	the port for multicasts
 	 * @throws RemoteException
 	 */
-	public Client(boolean enableTerminal, String hostname, String networkIP, int rmiPort, String multicastIP, int multicastPort) throws RemoteException
+	public Client(boolean enableTerminal, String hostname, String networkIP, int tcpPort, int rmiPort, String multicastIP, int multicastPort) throws RemoteException
 	{
 		activeSession = false;
 		
@@ -42,16 +48,19 @@ public class Client
 		terminal = new Terminal(this);
 		
 		//setup networkinterface
-		iFace = new Networkinterface(networkIP, rmiPort, multicastIP, multicastPort);
+		iFace = new Networkinterface(networkIP, rmiPort, tcpPort, tcpPort, multicastIP, multicastPort);
+		
+		fileManager = new FileManager(this.iFace.getTCPObserver(), this);
 		
 		bootstrap = new BootstrapManager(this);
 		discovery = new DiscoveryManager(this.iFace.getMulticastObserver(), this);
 		shutdownM = new ShutdownManager(this);
-		failure = new FailureManager(this);
+		failureM = new FailureManager(this);
+		agentM = new AgentManager(this);
 		
 		if(!setupServices())
 		{
-			System.err.println("System not fully operational. Instability issues can occur. Resolve the issue and reboot the system.");
+			printTerminalError("System not fully operational. Instability issues can occur. Resolve the issue and reboot the system.");
 		}
 		
 		nodeLinkManager = new NodeLinkManager(new Node(hostname, networkIP));
@@ -91,22 +100,28 @@ public class Client
 	 */
 	public boolean logoutSystem()
 	{
-		if(activeSession)
+		if(!activeSession)
 		{
-			if(!shutdownM.shutdown())
+			if(!iFace.unbindRMIServer("Bootstrap_" + getHostname()))
 			{
-				printTerminalError("Client didn't logout correctly out of the system.");
-				activeSession = false;
-				return false;
+				printTerminalError("Bootstrap wasn't running.");
 			}
+			printTerminalError("No active session running.");
 		}
 		else
 		{
-			iFace.unbindRMIServer("Bootstrap_" + getHostname());
-			printTerminalError("No active session running.");
+			fileManager.shutdownTransfer();
+			stopServices();
+		}
+		
+		activeSession = false;
+		
+		if(!shutdownM.shutdown())
+		{
+			printTerminalError("Client didn't logout correctly out of the system.");
 			return false;
 		}
-		activeSession = false;
+
 		return true;
 	}
 	
@@ -134,26 +149,54 @@ public class Client
 		
 		//Start discovery multicastservice
 		iFace.runMulticastservice();
+		
+		//Start download tcpservice
+		iFace.runTCPListener();
+		
+		//Start fileManager service
+		fileManager.startService();
+		fileManager.bootTransfer();
 				
 		return true;
 	}
 	
 	/**
-	 * Stop multicast and rmi services
+	 * Stop multicast, tcp and rmi services
 	 * @return boolean	True if success, false if not
 	 */
 	public boolean stopServices()
 	{
+		boolean stopSuccessful = true;
+		
 		//Stop discovery multicastservice
-		iFace.stopMulticastservice();
+		if(!iFace.stopMulticastservice())
+		{
+			printTerminalError("Multicastservice didn't stop properly.");
+			stopSuccessful = false;
+		}
+		
+		//Stop download tcpservice
+		if(!iFace.stopTCPListener())
+		{
+			printTerminalError("TCP service didn't stop properly.");
+			stopSuccessful = false;
+		}
 				
-		//Stop RMI-server
+		//Stop RMI-server nodeLinkManager
 		if(!iFace.unbindRMIServer("NodeLinkManager_" + getHostname()))
 		{
-			return false;
+			printTerminalError("RMI service NodeLinkManager didn't stop properly.");
+			stopSuccessful = false;
+		}
+		
+		//Stop RMI-server fileManager
+		if(!iFace.unbindRMIServer("FileManager_" + getHostname()))
+		{
+			printTerminalError("RMI service FileManager didn't stop properly.");
+			stopSuccessful = false;
 		}
 
-		return true;
+		return stopSuccessful;
 	}
 	
 	/**
@@ -335,6 +378,16 @@ public class Client
 		return this.nodeLinkManager.getPrev();
 	}
 	
+	public Node getThisNode()
+	{
+		return this.nodeLinkManager.getThisNode();
+	}
+	
+	public void discoveryFileTransfer()
+	{
+		this.fileManager.discoveryTransfer();
+	}
+	
 	/**
 	 * Bind object to bindlocation
 	 * @param Object	object to bind
@@ -366,6 +419,36 @@ public class Client
 		return this.iFace.getRMIInterface(bindLocation);
 	}
 	
+	public Object getNodeServerInterface()
+	{
+		return this.iFace.getRMIInterface("//" + this.getServerIP() + "/NodeServer");
+	}
+	
+	public Object getNodeLinkInterface(Node node)
+	{
+		return this.iFace.getRMIInterface("//" + node.getIpAddress() + "/NodeLinkManager_" + node.getHostname());
+	}
+	
+	public Object getBootstrapInterface(Node node)
+	{
+		return this.iFace.getRMIInterface("//" + node.getIpAddress() + "/Bootstrap_" + node.getHostname());
+	}
+	
+	public Object getFileManagerInterface(Node node)
+	{
+		return this.iFace.getRMIInterface("//" + node.getIpAddress() + "/FileManager_" + node.getHostname());
+	}
+	
+	public Object getAgentManagerInterface(Node node)
+	{
+		return this.iFace.getRMIInterface("//" + node.getIpAddress() + "/AgentManager_" + node.getHostname());
+	}
+	
+	public TCPConnection getTCPConnection(String destinationIP)
+	{
+		return this.iFace.getTCPConnection(destinationIP);
+	}
+	
 	/**
 	 * Handles the failure of a node, returns true if the failure is handled correctly.
 	 * @param String	hostname
@@ -373,7 +456,10 @@ public class Client
 	 */
 	public boolean nodeConnectionFailure(String hostname)
 	{
-		return this.failure.nodeConnectionFailure(hostname);
+		return this.failureM.nodeConnectionFailure(hostname);
+		//boolean bool = this.failureM.nodeConnectionFailure(hostname);
+		//this.agentM.FailureAgentNextNode();
+		//return bool;
 	}
 	
 	/**
@@ -381,7 +467,27 @@ public class Client
 	 */
 	public void serverConnectionFailure()
 	{
-		this.failure.serverConnectionFailure();
+		this.failureM.serverConnectionFailure();
+	}
+	
+	public ArrayList<FileProperties> getOwnedFiles()
+	{
+		return fileManager.getOwnedFiles();
+	}
+	
+	public ArrayList<String> getLocalFiles()
+	{
+		return fileManager.getLocalFiles();
+	}
+	
+	public ArrayList<String> getNetworkFiles()
+	{
+		return fileManager.getNetworkFiles();
+	}
+	
+	public void setNetworkFiles(ArrayList<String> networkFiles)
+	{
+		this.fileManager.setNetworkFiles(networkFiles);
 	}
 	
 	/**
@@ -431,8 +537,7 @@ public class Client
 
 		try 
 		{
-			//@SuppressWarnings("unused")
-			NodeLinkManagerInterface iFace = (NodeLinkManagerInterface)this.getRMIInterface(bindLocation);		//If RMI succeed than the node is still online
+			NodeLinkManagerInterface iFace = (NodeLinkManagerInterface)this.getRMIInterface(bindLocation);		//If RMI succeed then the node is still online
 			iFace.getNext();
 		} 
 		catch(Exception e)
@@ -463,34 +568,6 @@ public class Client
 	}
 	
 	/**
-	 * METHODE UNDER CONSTRUCTION
-	 * Returns the ip of the given filename.
-	 *
-	 * @param filename 		name of the file to be found
-	 * @return           	return ip if found. Null otherwise.
-	 */
-	@SuppressWarnings("unused")
-	private String getFileLocation(String filename)
-	{
-		String bindLocation = "//" + this.getServerIP() + "/NodeServer";		
-		String ip;
-		try 
-		{
-			NodeManagerInterface iFace = (NodeManagerInterface) Naming.lookup(bindLocation);
-			ip = iFace.getFileLocation(filename);
-			System.out.println(ip);
-			return ip;
-		} 
-		catch(Exception e)
-		{
-			System.err.println("FileServer exception: "+ e.getMessage());
-			serverConnectionFailure();
-			e.printStackTrace();
-		}
-		return null;
-	}
-	
-	/**
 	 * TESTMETHODE
 	 */
 	public void TESTprintLinkedNodes()
@@ -498,5 +575,10 @@ public class Client
 		System.out.println("Prev: " + this.nodeLinkManager.getPrev().getHostname() + " - HASH: " + this.nodeLinkManager.getPrev().getHash());
 		System.out.println("This: " + this.nodeLinkManager.getMyHostname());
 		System.out.println("Next: " + this.nodeLinkManager.getNext().getHostname() + " - HASH: " + this.nodeLinkManager.getNext().getHash());
+	}
+	
+	public void downloadFile(String filename)
+	{
+		this.fileManager.downloadFile(filename);
 	}
 }

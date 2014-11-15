@@ -1,27 +1,26 @@
-package be.uantwerpen.systemY.client;
+package be.uantwerpen.systemY.server;
 
+import be.uantwerpen.systemY.debugServer.DebugManager;
+
+import java.rmi.RemoteException;
+import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.rmi.RemoteException;
-import java.util.Random;
-
-import be.uantwerpen.systemY.GUI.ClientGUI;
 
 /**
- * Main class to implement the initialization of a client in the SystemY project.
+ * Main class to implement the initialization of the nameserver in the SystemY project.
  */
-public class Main
+public class ServerMain
 {
-	private static boolean enableGUI;
-	private static boolean enableTerminal;
-	private static String hostname;
+	private static Server server;
 	private static String networkIP;
-	private static int networkPort;
+	private static int rmiPort;
+	private static int tcpPort;
 	private static String multicastIP;
 	private static int multicastPort;
 	
 	/**
-	 * Starts a client.
+	 * Starts the server.
 	 * @param args	The input arguments
 	 * @throws RemoteException
 	 */
@@ -31,30 +30,25 @@ public class Main
 		try
 		{
 			networkIP = InetAddress.getLocalHost().getHostAddress();
-			hostname = "Node" + networkIP.split("\\.", 4)[3] + "-" + Math.abs(new Random().nextInt());
 		}
 		catch(UnknownHostException e)
 		{
 			networkIP = "localhost";
-			hostname = "Node" + networkIP + "-" + Math.abs(new Random().nextInt());
 		}
-		networkPort = 1099;
+		rmiPort = 1099;
+		tcpPort = 1304;
 		multicastIP = "224.13.4.94";
 		multicastPort = 2453;
-		
-		//Default settings
-		enableGUI = true;
-		enableTerminal = false;
 		
 		//Read arguments
 		argsCommand(args);
 		
-		Client c = new Client(enableTerminal, hostname, networkIP, networkPort, multicastIP, multicastPort);
+		server = new Server(true, networkIP, tcpPort, rmiPort, multicastIP, multicastPort);
 		
-		//Activate GUI
-		if(enableGUI)
+		//To run the tests, asserts needs to be enabled: runconfig -> arguments -> VM arguments, add the argument '-ea'.
+		if(ManagementFactory.getRuntimeMXBean().getInputArguments().contains("-ea"))
 		{
-			new ClientGUI(c);
+			runDebug();
 		}
 	}
 	
@@ -68,28 +62,21 @@ public class Main
 		{
 			switch(args[i].toLowerCase())
 			{
-				case "-nogui":
-					enableGUI = false;
-					enableTerminal = true;
-					break;
-				case "-terminal":
-					enableTerminal = true;
-					break;
-				case "-hostname":
-					hostname = args[i + 1].trim();
-					i++;
-					break;
 				case "-ip":
 					if(args[i + 1].trim().split(":").length == 2)
 					{
 						networkIP = args[i + 1].split(":", 2)[0].trim();
-						networkPort = Integer.parseInt(args[i + 1].split(":", 2)[1].trim());
+						rmiPort = Integer.parseInt(args[i + 1].split(":", 2)[1].trim());
 						i++;
 					}
 					else
 					{
 						System.out.println("Invalid arguments for -ip");
 					}
+					break;
+				case "-tcp":
+					tcpPort = Integer.parseInt(args[i+1].trim());
+					i++;
 					break;
 				case "-multicast":
 					if(args[i + 1].trim().split(":").length == 2)
@@ -108,5 +95,13 @@ public class Main
 					break;
 			}
 		}
+	}
+	
+	/**
+	 * Runs the debugManager.
+	 */
+	private static void runDebug()
+	{
+		new DebugManager(server);
 	}
 }

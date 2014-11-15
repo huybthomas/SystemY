@@ -2,9 +2,11 @@ package be.uantwerpen.systemY.client;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.Observable;
 import java.util.Observer;
 
+import be.uantwerpen.systemY.client.downloadSystem.FileProperties;
 import be.uantwerpen.systemY.terminal.TerminalReader;
 
 /**
@@ -139,6 +141,12 @@ public class Terminal
 							getFileLocation(filename);
 						}
 						break;
+				case "showlocalfiles":
+						printLocalFiles();
+						break;
+				case "showownedfiles":
+						printOwnedFiles();
+						break;
 				case "help":
 						help();
 						break;
@@ -218,6 +226,29 @@ public class Terminal
 		}
 	}
 	
+	private void printLocalFiles()
+	{
+		printTerminal("Filename");
+		printTerminal("--------");
+		printTerminal("METHODE UNDER CONSTRUCTION");
+		//Iterator<Entry<Integer, Node>> iterator = client.getLocalFiles().iterator();
+		
+	}
+	
+	private void printOwnedFiles()
+	{
+		printTerminal("Filename");
+		printTerminal("--------");
+		
+		Iterator<FileProperties> iterator = client.getOwnedFiles().iterator();
+		while(iterator.hasNext())
+		{
+			FileProperties ownedFile = iterator.next();
+			printTerminal(ownedFile.getFilename() + "\t\t" + ownedFile.getHash());
+		}
+		printTerminal("");
+	}
+	
 	private void testLinks()
 	{
 		boolean linksUp = true;
@@ -275,6 +306,8 @@ public class Terminal
 		printTerminal("'setHostname' : change the hostname of the system.");
 		printTerminal("'setIP' : change the ip address of the system.");
 		printTerminal("'showHostInfo' : get info of the localhost.");
+		printTerminal("'showLocalFiles' : get a list of all files located on this system.");
+		printTerminal("'showOwnedFiles' : get a list of all files owned by this system.");
 		printTerminal("'testLinks' : check the state of the linked nodes.");
 		printTerminal("'stop' : shutdown the client.");
 		printTerminal("'help' / '?' : show all available commands.\n");

@@ -7,6 +7,7 @@ import java.util.Observer;
 
 import be.uantwerpen.systemY.interfaces.BootstrapManagerInterface;
 import be.uantwerpen.systemY.networkservices.MulticastObserver;
+import be.uantwerpen.systemY.shared.Node;
 
 /**
  * Class that handles the discovery of a new node in the network.
@@ -67,10 +68,8 @@ public class DiscoveryManager
 	 * @return boolean 	True if successful, false if failed
 	 */
 	private boolean sendNetworkInfo(String clientname, String ip)
-	{
-		String bindLocation = "//" + ip + "/Bootstrap_" + clientname;
-		
-		BootstrapManagerInterface bInterface = (BootstrapManagerInterface)server.getRMIInterface(bindLocation);
+	{	
+		BootstrapManagerInterface bInterface = (BootstrapManagerInterface)server.getBootstrapInterface(new Node(clientname, ip));
 		
 		if(bInterface != null)
 		{
