@@ -5,141 +5,232 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.Map.Entry;
 
-import be.uantwerpen.systemY.client.downloadSystem.FileProperties;
-import be.uantwerpen.systemY.networkservices.TCPConnection;
-import be.uantwerpen.systemY.timeOut.TimeOutService;
-
-/**
- * what has to be done?
- * 
- * Access tot de client methods		ok?
- * 
- * --
- * Download had to be stopped and started using the Agent's observer
- * Observer to notify of successful lock		partially ok? (none to notify)
- * Observer to activate requestUnlock
- * --
- * 
- * Niet lockbaar maken als het al gelocked is
- * 
- * --
- * Sending of Agent to next Client		RMI interface has to be implemented to be able to call FileAgentReceived()
- * Create RMI interface for Agent
- *--
- *
- */
+import be.uantwerpen.systemY.client.downloadSystem.Download;
+import be.uantwerpen.systemY.shared.HashFunction;
 
 public class FileAgent implements Runnable, Serializable
 {
-
 	private static final long serialVersionUID = 1L;
-	private FileAgentObserver observer;
+	
+	private AgentObserver observer;
 	private AgentManager agentM;
-	private ArrayList<AgentFileEntry> files;
-	
-	HashMap<Integer, Boolean> lockHash = null;				//Unieke integer	//Lock				//Lock status of all files
-	HashMap<Integer, FileProperties> dataHash = null;		//Unieke integer	//FileProperties	//All Files of all nodes
-	
-	ArrayList<String> locks, unlocks = new ArrayList<String>();
+	private HashMap<String, AgentFileEntry> networkFiles;
+	private boolean oneRoundCompleted;
 
 	/**
-	 * Create the BootstrapManager object.
-	 * @param Client	the client
+	 * Create the AgentManager object.
+	 * @param agentManager
 	 * @throws RemoteException
 	 */
-	public FileAgent(AgentManager agentM)
+	public FileAgent(AgentManager agentManager)
 	{
-		this.agentM = agentM;
-		this.observer = new FileAgentObserver();
-
+		this.agentM = agentManager;
+		this.networkFiles = new HashMap<String, AgentFileEntry>();
+		this.observer = new AgentObserver();
+		this.oneRoundCompleted = false;
 	}
-
-	public FileAgentObserver getObserver()
+	
+	/**
+	 * Get the observer of the agent.
+	 * @return	The observer of the agent.
+	 */
+	public AgentObserver getObserver()
 	{
 		return this.observer;
 	}
 	
-	public void FileAgentReceived(FileAgent agent)
+	/**
+	 * sets the manager of the agent.
+	 * @param agentManager	The manager you want to use.
+	 */
+	public void setManager(AgentManager agentManager)
 	{
-		this.lockHash = agent.lockHash;
-		this.dataHash = agent.dataHash;
-		this.run();
+		this.agentM = agentManager;
 	}
 	
+	/**
+	 * Checks if a complete round is made, when all the nodes have been passed.
+	 * Indicates that the list on the file agent is complete.
+	 */
+	public void roundCompleted()
+	{
+		this.oneRoundCompleted = true;
+	}
+	
+	/**
+	 * Runs the fileAgent when it arrives.
+	 */
 	@Override
 	public void run() 
 	{
-		/*
+		if(this.oneRoundCompleted && agentM.isAgentMaster())	//Executed after each round
+		{
+			Iterator<Entry<String, AgentFileEntry>> fileIterator = networkFiles.entrySet().iterator();
+			while(fileIterator.hasNext())
+			{
+				Entry<String, AgentFileEntry> entry = fileIterator.next();
+				
+				if(entry.getValue().getAvailability())			//File is still available in the network
+				{
+					entry.getValue().setAvailability(false);
+				}
+				else
+				{
+					fileIterator.remove();
+				}
+			}
+			
+			ArrayList<String> failedNodeQueue = agentM.getFailedNodeQueue();
+			
+			if(!failedNodeQueue.isEmpty())		//Unlock files from failed nodes
+			{
+				synchronized(failedNodeQueue)
+				{
+					Iterator<String> failedNodeIterator = failedNodeQueue.iterator();
+					while(failedNodeIterator.hasNext())
+					{
+						String name = failedNodeIterator.next();
+						
+						for(Entry<String, AgentFileEntry> entry : networkFiles.entrySet())
+						{
+							if(entry.getValue().getLock().equals(name))
+							{
+								entry.getValue().unlock();
+							}
+						}
+						failedNodeIterator.remove();
+					}
+				}
+			}
+		}
+		
 		//Check client for files.
-		ArrayList<String> local = agentM.getLocalFiles();			//To be created
-		//Update Agent fileList
-		Iterator<String> it = local.iterator();
-		while(it.hasNext())
-		{
-		    String str = it.next();
-		    if(files.contains(new AgentFileEntry(str, false)) || files.contains(new AgentFileEntry(str, true)))
-		    	;//do nothing
-		    else
-		    	files.add(new AgentFileEntry(str, false));
-		    	
-		}
+		ArrayList<String> owned = agentM.getOwnedFiles();
 		
-		//Update list of files on node? Maybe not necessary since the Agent class has them already?
-		agentM.setAvailableFiles(files);					//Method to be implemented?
-		
-		if(!locks.isEmpty())		//Aanvraag tot download, laten weten van zodra download mag beginnen (file gelocked)
+		synchronized(owned)
 		{
-			Iterator<String> lockIterator = locks.iterator();
-			while(lockIterator.hasNext())
+			//Update Agent fileList
+			Iterator<String> it = owned.iterator();
+			while(it.hasNext())
 			{
-				String name = lockIterator.next();
-				lockHash.put(name.hashCode(), true);
-				observer.setChanged();
-				observer.notifyObservers("Locked" + name);		//This can prob be better
+			    String fileName = it.next();
+			    if(!networkFiles.containsKey(new HashFunction().getHash(fileName)))
+			    {
+			    	networkFiles.put(fileName, new AgentFileEntry());		//Create new entry in file agent
+			    }
+			    else
+			    {
+			    	networkFiles.get(fileName).setAvailability(true);		//Check existence of file in system
+			    }
 			}
 		}
 		
-		if(!unlocks.isEmpty())		//Download gedaan. File mag unlocked worden. (Wanneer gedaan? Als downloadmanage rewuestunlock activeert met observable?) 
+		//Update list of files on node when list is completed after one round
+		if(this.oneRoundCompleted)
 		{
-			Iterator<String> unLockIterator = unlocks.iterator();
-			while(unLockIterator.hasNext())
-			{
-				String name = unLockIterator.next();
-				lockHash.put(name.hashCode(), true);
-				observer.setChanged();
-				observer.notifyObservers("Unlocked" + name);	//This can prob be better
-			}
+			agentM.setNetworkFiles(this.networkFiles.keySet());
 		}
 		
-		try
+		ArrayList<Download> lockQueue = agentM.getLockQueue();
+		
+		if(!lockQueue.isEmpty() && this.oneRoundCompleted)
 		{
-			//Send Agent to next client
-			//RMIinterface.FileAgentReceived(this);			//Send to rmi of next node
-		}
-		catch(Exception e)
-		{
-			System.err.println("Err: " + e.getMessage());
-		}
-		*/
-	}
-	
-	public void requestLockFile(String name)
-	{
-		locks.add(name);
-		//lockHash.put(name.hashCode(), true);	//Volledige hash mogelijk
-	}
-	
-	public void requestUnlockFile(String name)
-	{
-		unlocks.add(name);
-		//lockHash.put(name.hashCode(), false);	//Volledige hash mogelijk
-	}
-	//RUNNABLE, SERIALIZABLE OBJECT DIE WORDT DOORGEGEVEN ALS RMI PARAMETER AAN DE VOLGENDE AGENTMANAGER
-	// --> Agent(1)
+			synchronized(lockQueue)
+			{
+				Iterator<Download> lockIterator = lockQueue.iterator();
+				while(lockIterator.hasNext())
+				{
+					Download download = lockIterator.next();
 
-	
+					if(networkFiles.containsKey(download.getFileName()))
+					{
+						if((networkFiles.get(download.getFileName()).getLock() == null))
+						{
+							networkFiles.get(download.getFileName()).setLock(agentM.getHostname());
+							
+							agentM.runDownload(download);
+							lockIterator.remove();
+						}
+					}
+					else
+					{
+						if(download.getDownloadMode() == 1)				//Owner switch file
+						{
+							agentM.runDownload(download);
+						}
+						else
+						{
+							agentM.cancelDownload(download);
+						}
+						lockIterator.remove();
+					}
+				}
+			}
+		}
+		
+		ArrayList<String> unlockQueue = agentM.getUnlockQueue();
+		
+		if(!unlockQueue.isEmpty() && this.oneRoundCompleted)
+		{
+			synchronized(unlockQueue)
+			{
+				Iterator<String> unlockIterator = unlockQueue.iterator();
+				while(unlockIterator.hasNext())
+				{
+					String name = unlockIterator.next();
+					if(networkFiles.containsKey(name))
+					{
+						networkFiles.get(name).unlock();
+					}
+					unlockIterator.remove();
+				}
+			}
+		}
+		
+		ArrayList<String> fileDeleteQueue = agentM.getDeleteFileQueue();
+		
+		if(!fileDeleteQueue.isEmpty() && this.oneRoundCompleted)
+		{
+			ArrayList<String> deleteGranted = new ArrayList<String>();
+			
+			synchronized(fileDeleteQueue)
+			{
+				Iterator<String> deleteIterator = fileDeleteQueue.iterator();
+				while(deleteIterator.hasNext())
+				{
+					String name = deleteIterator.next();
+					
+					if(networkFiles.containsKey(name))
+					{
+						if((networkFiles.get(name).getLock() == null))
+						{
+							networkFiles.get(name).setLock(agentM.getHostname());
+							
+							deleteGranted.add(name);
+							deleteIterator.remove();
+						}
+					}
+					else
+					{
+						agentM.cancelDelete(name);
+						deleteIterator.remove();
+					}
+				}
+			}
+			
+			if(deleteGranted.size() > 0)
+			{
+				agentM.createFileDeletionAgent(deleteGranted);
+			}
+		}
+		
+		//Prepare for transfer
+		this.agentM = null;		//Delete reference to agent manager
+		
+		//FileAgent ready to continue
+		observer.setChanged();
+		observer.notifyObservers(this);
+	}
 }

@@ -14,18 +14,20 @@ import be.uantwerpen.systemY.shared.Node;
 public class DownloadManager 
 {
 	private int downloadLimit = 4;
+	private int downloadsHosting;
 	private FileManager fileManager;
 	private LinkedList<Download> downloadQueue;
 	private ArrayList<Download> runningDownloads;
 		
 	public DownloadManager(FileManager fileManager)
 	{
+		this.downloadsHosting = 0;
 		this.fileManager = fileManager;
 		this.downloadQueue = new LinkedList<Download>();
 		this.runningDownloads = new ArrayList<Download>();
 	}
 	
-	public boolean addDownload(Download download)
+	public synchronized boolean addDownload(Download download)
 	{
 		downloadQueue.add(download);
 		
@@ -34,7 +36,7 @@ public class DownloadManager
 		return true;
 	}
 	
-	public void startNextDownload()
+	public synchronized void startNextDownload()
 	{
 		if(runningDownloads.size() <= downloadLimit && downloadQueue.size() > 0)
 		{
@@ -48,6 +50,11 @@ public class DownloadManager
 				startNextDownload();
 			}
 		}
+	}
+	
+	public int getQueuedDownloads()
+	{
+		return (downloadQueue.size() + runningDownloads.size());
 	}
 	
 	public TCPConnection getTCPConnection(String destinationIP)
@@ -65,19 +72,19 @@ public class DownloadManager
 		return fileManager.nodeConnectionFailure(hostname);
 	}
 	
-	public boolean checkLocalFileExist(String fileName)
+	public boolean checkFileExist(String fileName)
 	{
-		return fileManager.checkLocalFileExistence(fileName);
+		return fileManager.checkSystemFileExistence(fileName);
 	}
 	
 	public boolean createNewFile(String fileName) throws IOException
 	{
-		return fileManager.createNewLocalFile(fileName);
+		return fileManager.createNewSystemFile(fileName);
 	}
 	
 	public boolean deleteFile(String fileName) throws IOException
 	{
-		return fileManager.deleteLocalFile(fileName);
+		return fileManager.deleteSystemFile(fileName);
 	}
 	
 	public FileOutputStream getFileOutputStream(String fileName) throws FileNotFoundException
@@ -85,22 +92,9 @@ public class DownloadManager
 		return fileManager.getFileOutputStream(fileName);
 	}
 	
-	public void downloadFinished(Download download, boolean successful)
+	public synchronized void downloadFinished(Download download, boolean successful)
 	{
-		if(successful)
-		{
-			if(download.getOwnerSwitchState())
-			{
-				System.out.println("Switch owner file of: " + download.getFileName());
-				fileManager.transferOwnerFile(download.getDownloadFileOwner(), download.getFileName());
-			}
-			else
-			{
-				System.out.println("Updated owner file with this node: " + download.getFileName());
-				fileManager.updateReplicationLocation(download.getDownloadFileOwner(), download.getFileName());
-			}
-			fileManager.addLocalFile(download.getFileName());
-		}
+		fileManager.downloadFinished(download, successful);
 
 		runningDownloads.remove(download);
 
@@ -125,9 +119,26 @@ public class DownloadManager
 		return this.downloadLimit;
 	}
 	
+	public ArrayList<String> getRunningDownloads()
+	{
+		ArrayList<String> downloads = new ArrayList<String>();
+		
+		synchronized(runningDownloads)
+		{
+			for(Download download : runningDownloads)
+			{
+				downloads.add(download.getFileName());
+			}
+		}
+		
+		return downloads;
+	}
+	
 	public void downloadRequest(TCPConnection connection)
 	{
 		byte[] fileRequest = null;
+		
+		this.addDownloadHosting();
 		
 		try
 		{
@@ -165,6 +176,24 @@ public class DownloadManager
 		{
 			fileManager.printTerminalError("Connection error while transferring file to " + connection.getConnectedHost() + ": " + e.getMessage());
 		}
+
+		this.delDownloadHosting();
+		
 		connection.closeConnection();
+	}
+	
+	public int getDownloadsHosting()
+	{
+		return this.downloadsHosting;
+	}
+	
+	private synchronized void addDownloadHosting()
+	{
+		this.downloadsHosting = this.downloadsHosting + 1;
+	}
+	
+	private synchronized void delDownloadHosting()
+	{
+		this.downloadsHosting = this.downloadsHosting - 1;
 	}
 }

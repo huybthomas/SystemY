@@ -148,27 +148,27 @@ public class NodeLinkManager extends UnicastRemoteObject implements NodeLinkMana
 		
 		if(nodeLinks.getThis().equals(nodeLinks.getNext()) && nodeLinks.getThis().equals(nodeLinks.getPrev()))
 		{
-			setLinkedNodes(newNode, newNode);	//Second node will be next and previous node
+			setLinkedNodes(newNode, newNode);		//Second node will be next and previous node
 			return nodeLinks.getThis();
 		}
 		else
 		{
-			// new node comes between this node and the next node
+			//New node comes between this node and the next node
 			if(((ownHash < newHash) && (newHash < nextHash)) || ((nextHash < ownHash) && (ownHash < newHash)) || ((nextHash < ownHash) && (newHash < nextHash))) 
 			{
-				Node oldNext = nodeLinks.getNext();	// make temporary node to return later
-				nodeLinks.setNext(newNode);			// set the new node as nextNode
-				return oldNext;						// return this nodes old nextNode so it can be the nextNode of the new node 
+				Node oldNext = nodeLinks.getNext();	//Make temporary node to return later
+				nodeLinks.setNext(newNode);			//Set the new node as nextNode
+				return oldNext;						//Return this nodes old nextNode so it can be the nextNode of the new node 
 			} 
-			// new node comes right before this node
+			//New node comes right before this node
 			else if(((prevHash < newHash) && (newHash < ownHash)) || ((ownHash < prevHash) && (newHash < ownHash)) || ((ownHash < prevHash) && (prevHash < newHash))) 
 			{
-				nodeLinks.setPrev(newNode);			// set the new node as prevNode
-				return null;						// no return to new node needed as it learns everything from the old prevNode
+				nodeLinks.setPrev(newNode);			//Set the new node as prevNode
+				return null;						//No return to new node needed as it learns everything from the old prevNode
 			}
 			else 
 			{
-				return null;						// no return because new node is not near this node
+				return null;						//No return because new node is not near this node
 			}
 		}
 	}

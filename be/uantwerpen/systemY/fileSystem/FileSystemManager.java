@@ -1,5 +1,6 @@
 package be.uantwerpen.systemY.fileSystem;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -23,6 +24,7 @@ public class FileSystemManager
 	public FileSystemManager(String watchDirectory)
 	{
 		fileSystemWatcher = new FileSystemWatcher(watchDirectory);
+		watcherThread = new Thread(fileSystemWatcher);
 	}
 	
 	public FileSystemManager()
@@ -36,9 +38,9 @@ public class FileSystemManager
 	 * 
 	 * Use {@link loadXMLFile(Class<?> typeClass, String fileLocation)} to load an object.
 	 * 
-	 * @param object		The object to be saved
-	 * @param fileLocation	The location for the file to be saved
-	 * @return	boolean		True if successful, false otherwise
+	 * @param object		The object to be saved.
+	 * @param fileLocation	The location for the file to be saved.
+	 * @return	boolean		True if successful, false otherwise.
 	 */
 	public boolean saveXMLFile(Object object, String fileLocation)
 	{
@@ -72,9 +74,9 @@ public class FileSystemManager
 	 * 
 	 * Use {@link saveXMLFile(Object object, String fileLocation)} to save an object.
 	 * 
-	 * @param typeClass		The type of object to be loaded
-	 * @param fileLocation	The location of the file
-	 * @return	boolean		True if successful, false otherwise
+	 * @param typeClass		The type of object to be loaded.
+	 * @param fileLocation	The location of the file.
+	 * @return	boolean		True if successful, false otherwise.
 	 */
 	public Object loadXMLFile(Class<?> typeClass, String fileLocation)
 	{
@@ -146,6 +148,12 @@ public class FileSystemManager
 		}
 	}
 	
+	/**
+	 * Checks if the name is a directory.
+	 * @param directory	Name of the directory.
+	 * @return The directory when it exists otherwise returns null.
+	 * @throws SecurityException
+	 */
 	public File getDirectory(String directory) throws SecurityException
 	{
 		File dir = new File(directory);
@@ -161,34 +169,117 @@ public class FileSystemManager
 		}
 	}
 	
+	/**
+	 * Make a directory.
+	 * @param directory	The name you want to give the directory.
+	 * @return	True when directory is made, false when failed.
+	 * @throws SecurityException
+	 */
 	public boolean createDirectory(String directory) throws SecurityException
 	{
 		File dir = new File(directory);
 		return dir.mkdirs();
 	}
 	
+	/**
+	 * Creates a file.
+	 * @param location	Where the file needs to be made.
+	 * @param name		The name of the file.
+	 * @return	True when file is made, false when failed.
+	 * @throws IOException
+	 */
 	public boolean createFile(String location, String name) throws IOException
 	{
 		File file = new File(location + File.separator + name);
 		return file.createNewFile();
 	}
 	
+	/**
+	 * Deletes a file.
+	 * @param location	The location of the file.
+	 * @param name		The name of the file.
+	 * @return	True when the file is deleted, false when failed.
+	 * @throws IOException
+	 */
 	public boolean deleteFile(String location, String name) throws IOException
 	{
 		File file = new File(location + File.separator + name);
-		return file.delete();
+		if(fileExist(location, name))
+		{
+			return file.delete();
+		}
+		else 
+		{
+			return false;
+		}
 	}
 	
+	/**
+	 * Open a file if it is on the local host.
+	 * If this is not the case, the file will be downloaded from SystemY first.
+	 * @param location	The location of the file.
+	 * @param name		The name of the file.
+	 * @return	True when the file is opened successfully, false when failed.
+	 * @throws 	IOException 
+	 */
+	public boolean openFile(String location, String name) throws IOException
+	{
+		File file = new File(location + File.separator + name);
+		
+		try
+		{
+			if(OSDetector.isWindows())
+			{
+				// Windows only.
+				Desktop.getDesktop().open(file);
+				return true;
+			}
+			else if(OSDetector.isLinux() || OSDetector.isMac())
+			{
+				Runtime.getRuntime().exec(new String[]{"/usr/bin/open", file.getAbsolutePath()});
+				return true;
+			}
+			System.err.println("Opening files is not supported for: " + OSDetector.getOSVersion() + ". Please open the file manually.");
+			return false;
+		}
+		catch(Exception e)
+		{
+			System.err.println("Can't open the file: " + name + ".");
+			System.err.println(e.getMessage());
+			return false;
+		}
+	}
+	
+	/**
+	 * Creates a FileInputStream by opening a connection to an actual file, the file named by the File object file in the file system.
+	 * @param location	The location of the file.
+	 * @param name		The name of the file.
+	 * @return	The created fileInputStream.
+	 * @throws FileNotFoundException
+	 */
 	public FileInputStream getFileInputStream(String location, String name) throws FileNotFoundException
 	{
 		return new FileInputStream(getFile(location, name));
 	}
 	
+	/**
+	 * Creates a file output stream to write to the file represented by the specified File object.
+	 * @param location	The location where the file needs to be written.
+	 * @param name		The name of the file.
+	 * @return	The created OutputStream.
+	 * @throws FileNotFoundException
+	 */
 	public FileOutputStream getFileOutputStream(String location, String name) throws FileNotFoundException
 	{
 		return new FileOutputStream(getFile(location, name));
 	}
 	
+	/**
+	 * Checks if the file exists.
+	 * @param location	The location of the file you want to check.
+	 * @param name		The name of the file you want to check.
+	 * @return	True when file exists, false when not.
+	 */
 	public boolean fileExist(String location, String name)
 	{
 		File file = new File(location + File.separator + name);
@@ -202,11 +293,19 @@ public class FileSystemManager
 		}
 	}
 	
+	/**
+	 * Get the fileWatchObserver.
+	 * @return The observer of the file.
+	 */
 	public FileSystemObserver getFileWatchObserver()
 	{
 		return fileSystemWatcher.getObserver();
 	}
 	
+	/**
+	 * Sets the directory which needs to be watched.
+	 * @param directory	The directory that needs to be watched.
+	 */
 	public void setFileWatchDirectory(String directory)
 	{
 		if(watcherThread.isAlive())
@@ -216,11 +315,20 @@ public class FileSystemManager
 		fileSystemWatcher.setPathLocation(directory);
 	}
 	
+	/**
+	 * Starts the file watcher.
+	 */
 	public void startFileWatcher()
 	{
-		watcherThread.start();
+		if(watcherThread.getState() == Thread.State.NEW)
+		{
+			watcherThread.start();
+		}
 	}
 	
+	/**
+	 * Stops the file watcher.
+	 */
 	public void stopFileWatcher()
 	{
 		if(fileSystemWatcher.stopWatcher())

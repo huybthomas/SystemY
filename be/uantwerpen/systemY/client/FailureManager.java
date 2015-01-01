@@ -38,6 +38,8 @@ public class FailureManager
 			
 			prevNode = iFace.getPrevNode(hostname);
 			nextNode = iFace.getNextNode(hostname);
+			
+			iFace.delNode(hostname);
 		} 
 		catch(Exception e)
 		{
@@ -55,18 +57,6 @@ public class FailureManager
 			updateNode(nextNode, prevNode, null);
 		}
 		
-		try
-		{
-			NodeManagerInterface iFace = (NodeManagerInterface)client.getNodeServerInterface();
-			
-			iFace.delNode(hostname);
-		}
-		catch(Exception e)
-		{
-			System.err.println("NodeServer exception: "+ e.getMessage());
-			serverConnectionFailure();
-			return false;
-		}
 		return true;
 	}
 	
@@ -77,8 +67,7 @@ public class FailureManager
 	{
 		client.printTerminalError("Lost connection to server.");
 		
-		client.stopServices();
-		client.setSessionState(false);
+		client.criticalErrorStop();
 	}
 	
 	/**

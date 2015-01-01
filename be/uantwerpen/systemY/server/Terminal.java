@@ -20,7 +20,7 @@ public class Terminal
 	
 	/**
 	 * Creates the Terminal Object.
-	 * @param server	Server
+	 * @param server	The server on which you want to create the terminal.
 	 */
 	public Terminal(Server server)
 	{
@@ -40,7 +40,7 @@ public class Terminal
 	
 	/**
 	 * Prints a message to the Terminal.
-	 * @param message	String message
+	 * @param message	The message you want to print.
 	 */
 	public void printTerminal(String message)
 	{
@@ -49,7 +49,7 @@ public class Terminal
 	
 	/**
 	 * Prints info message to the Terminal.
-	 * @param message	String
+	 * @param message	The message you want to print.
 	 */
 	public void printTerminalInfo(String message)
 	{
@@ -61,7 +61,7 @@ public class Terminal
 	
 	/**
 	 * Prints error message to the Terminal.
-	 * @param message	String
+	 * @param message	The error you want to print.
 	 */
 	public void printTerminalError(String message)
 	{
@@ -81,7 +81,7 @@ public class Terminal
 	
 	/**
 	 * Executes a command.
-	 * @param commandString	Command to be executed in String format
+	 * @param commandString	The command you want to execute.
 	 */
 	private void executeCommand(String commandString)
 	{
@@ -99,7 +99,7 @@ public class Terminal
 				case "addnode":
 						if(commandString.split(" ", 3).length <= 2)
 						{
-							printTerminalInfo("Missing arguments! 'addNode [hostname] [ipAddress]'");
+							printTerminalInfo("Missing arguments! 'addNode {hostname} {ipAddress}'");
 						}
 						else
 						{
@@ -111,7 +111,7 @@ public class Terminal
 				case "delnode":
 						if(commandString.split(" ", 2).length <= 1)
 						{
-							printTerminalInfo("Missing arguments! 'delNode [hostname]'");
+							printTerminalInfo("Missing arguments! 'delNode {hostname}'");
 						}
 						else
 						{
@@ -144,10 +144,13 @@ public class Terminal
 							saveNodeList(fileLocation);
 						}	
 						break;
+				case "clearnodes":
+						clearNodeList();
+						break;
 				case "getfilelocation":
 						if(commandString.split(" ", 2).length <= 1)
 						{
-							printTerminalInfo("Missing arguments! 'getFileLocation [filename]'");
+							printTerminalInfo("Missing arguments! 'getFileLocation {filename}'");
 						}
 						else
 						{
@@ -172,9 +175,9 @@ public class Terminal
 	
 	/**
 	 * Adds a Node to the NodeList.
-	 * @param hostname	String
-	 * @param ipAddress	String
-	 * @return Boolean	True if successful, false othewise
+	 * @param hostname	The name of the node you want to add.
+	 * @param ipAddress	The ip of the node you want to add.
+	 * @return Boolean	True if successful, false otherwise.
 	 */
 	private boolean addNode(String hostname, String ipAddress)
 	{
@@ -192,8 +195,8 @@ public class Terminal
 	
 	/**
 	 * Deletes a Node from the NodeList.
-	 * @param hostname	String	Name of the Node to be deleted
-	 * @return	boolean True if successful false otherwise
+	 * @param hostname	Name of the Node to be deleted.
+	 * @return	boolean True if successful false otherwise.
 	 */
 	private boolean delNode(String hostname)
 	{
@@ -211,8 +214,8 @@ public class Terminal
 	
 	/**
 	 * Loads the NodeList from a file.
-	 * @param fileLocation	Location of the file to be read in String format
-	 * @return	boolean True if successful, false otherwise
+	 * @param fileLocation	Location of the file to be read.
+	 * @return	boolean 	True if successful, false otherwise.
 	 */
 	private boolean loadNodeList(String fileLocation)
 	{
@@ -230,8 +233,8 @@ public class Terminal
 	
 	/**
 	 * Saves the NodeList to a file.
-	 * @param fileLocation	location of the file to be saved in Sting format
-	 * @return	boolean	True if successful, false otherwise
+	 * @param fileLocation	Location of the file to be saved.
+	 * @return	boolean		True if successful, false otherwise
 	 */
 	private boolean saveNodeList(String fileLocation)
 	{
@@ -248,9 +251,18 @@ public class Terminal
 	}
 	
 	/**
+	 * Clear all nodes from the list
+	 */
+	private void clearNodeList()
+	{
+		server.clearList();
+		printTerminalInfo("Nodelist cleared!");
+	}
+	
+	/**
 	 * Returns the ip where a file can be found.
-	 * @param filename	String
-	 * @return	boolean	True if successful, false otherwise
+	 * @param filename	The name of the file you want the location of.
+	 * @return	boolean	True if successful, false otherwise.
 	 */
 	private boolean getFileLocation(String filename)
 	{
@@ -301,11 +313,12 @@ public class Terminal
 		printTerminal("Available commands:");
 		printTerminal("-------------------");
 		printTerminal("'stop' : shutdown the server.");
-		printTerminal("'addNode' : add an entry to the nodelist.");
-		printTerminal("'delNode' : delete an entry from the nodelist.");
+		printTerminal("'addNode {hostname} {ipAddress}' : add an entry to the nodelist.");
+		printTerminal("'delNode {hostname}' : delete an entry from the nodelist.");
 		printTerminal("'showNodes' : show all entries from the nodelist.");
-		printTerminal("'loadNodeList : load the nodelist from the specified filelocation.");
-		printTerminal("'saveNodeList : save the nodelist to the specified filelocation.");
+		printTerminal("'clearNodes' : clear all entries from the nodelist.");
+		printTerminal("'loadNodeList [fileLocation]' : load the nodelist from the specified filelocation.");
+		printTerminal("'saveNodeList [fileLocation]' : save the nodelist to the specified filelocation.");
 		printTerminal("'help' / '?' : show all available commands.\n");
 	}
 }

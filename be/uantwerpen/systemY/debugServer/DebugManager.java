@@ -13,7 +13,7 @@ public class DebugManager
 	
 	/**
 	 * Create Debugmanager object and run tests on the server
-	 * @param Server	the server to test
+	 * @param server	the server to test
 	 */
 	public DebugManager(Server server)
 	{		
@@ -53,7 +53,7 @@ public class DebugManager
 	
 	/**
 	 * test the add node function
-	 * @param Server
+	 * @param server	The server that is used for testing.
 	 */
 	private void test1(Server server)
 	{
@@ -73,7 +73,7 @@ public class DebugManager
 	
 	/**
 	 * tests the safety against adding 2 nodes with the same name
-	 * @param Server
+	 * @param server	The server that is used for testing.
 	 */
 	private void test2(Server server)
 	{
@@ -94,7 +94,7 @@ public class DebugManager
 	
 	/**
 	 * testing delete a node
-	 * @param Server
+	 * @param server	The server that is used for testing.
 	 */
 	private void test3(Server server)
 	{
@@ -115,7 +115,7 @@ public class DebugManager
 	
 	/**
 	 * test: delete a node that does not exist.
-	 * @param Server
+	 * @param server	The server that is used for testing.
 	 */
 	private void test4(Server server)
 	{
@@ -135,7 +135,7 @@ public class DebugManager
 	
 	/**
 	 * Test: Save Node List.
-	 * @param Server
+	 * @param server	The server that is used for testing.
 	 */
 	private void test5(Server server)
 	{
@@ -155,7 +155,7 @@ public class DebugManager
 	
 	/**
 	 * Test: load the node list.
-	 * @param Server
+	 * @param server	The server that is used for testing.
 	 */
 	private void test6(Server server)
 	{
@@ -175,7 +175,7 @@ public class DebugManager
 	
 	/**
 	 * Test: search file with hash value smaller then smallest hash of the node list.
-	 * @param Server
+	 * @param server	The server that is used for testing.
 	 */
 	private void test7(Server server)
 	{
@@ -197,8 +197,8 @@ public class DebugManager
 	
 	/**
 	 * Prints debug information.
-	 * @param String	header
-	 * @param String	message
+	 * @param header	The header of the message.
+	 * @param message	The message that needs to be printed.
 	 */
 	private void printDebugInfo(String header, String message)
 	{

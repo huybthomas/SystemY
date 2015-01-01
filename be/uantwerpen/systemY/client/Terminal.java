@@ -1,6 +1,7 @@
 package be.uantwerpen.systemY.client;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.Observable;
@@ -101,7 +102,7 @@ public class Terminal
 				case "sethostname":
 						if(commandString.split(" ", 2).length <= 1)
 						{
-							printTerminalInfo("Missing arguments! 'setHostName [hostname]'");
+							printTerminalInfo("Missing arguments! 'setHostName {hostname}'");
 						}
 						else
 						{
@@ -112,7 +113,7 @@ public class Terminal
 				case "setip":
 						if(commandString.split(" ", 2).length <= 1)
 						{
-							printTerminalInfo("Missing arguments! 'setIP [ipaddress]'");
+							printTerminalInfo("Missing arguments! 'setIP {ipAddress}'");
 						}
 						else
 						{
@@ -129,10 +130,46 @@ public class Terminal
 				case "logout":
 						logoutSystem();
 						break;
+				case "getfiles":
+						getNetworkFiles();
+						break;
+				case "openfile":
+						if(commandString.split(" ", 2).length <= 1)
+						{
+							printTerminalInfo("Missing arguments! 'openFile {filename}'");
+						}
+						else
+						{
+							String filename = commandString.split(" ", 2)[1];
+							openFile(filename);
+						}
+						break;
+				case "deletefile":
+						if(commandString.split(" ", 2).length <= 1)
+						{
+							printTerminalInfo("Missing arguments! 'deleteFile {filename}'");
+						}
+						else
+						{
+							String filename = commandString.split(" ", 2)[1];
+							deleteFile(filename);
+						}
+						break;
+				case "deletefilelocal":
+						if(commandString.split(" ", 2).length <= 1)
+						{
+							printTerminalInfo("Missing arguments! 'deleteFileLocal {filename}'");
+						}
+						else
+						{
+							String filename = commandString.split(" ", 2)[1];
+							deleteFileLocal(filename);
+						}
+						break;
 				case "getfilelocation":
 						if(commandString.split(" ", 2).length <= 1)
 						{
-							printTerminalInfo("Missing arguments! 'getFileLocation [filename]'");
+							printTerminalInfo("Missing arguments! 'getFileLocation {filename}'");
 						}
 						else
 						{
@@ -226,6 +263,67 @@ public class Terminal
 		}
 	}
 	
+	private void getNetworkFiles()
+	{
+		if(client.getSessionState())
+		{
+			printTerminal("Network files available");
+			printTerminal("-----------------------");
+			
+			ArrayList<String> fileList = client.getNetworkFiles();
+			
+			for(String file: fileList)
+			{
+				printTerminal("- " + file);
+			}
+			
+			printTerminal("");
+		}
+		else
+		{
+			printTerminalInfo("Not connected to the network yet.");
+		}
+	}
+	
+	private void openFile(String filename)
+	{
+		if(client.getSessionState())
+		{
+			client.openFile(filename);
+		}
+		else
+		{
+			printTerminalInfo("Not connected to the network yet.");
+		}
+	}
+	
+	private void deleteFile(String filename)
+	{
+		if(client.getSessionState())
+		{
+			client.deleteFileFromNetwork(filename);
+		}
+		else
+		{
+			printTerminalInfo("Not connected to the network yet.");
+		}
+	}
+	
+	private void deleteFileLocal(String filename)
+	{
+		if(client.getSessionState())
+		{
+			if(!client.deleteLocalFile(filename))
+			{
+				printTerminalInfo("The selected file may not be deleted from this system.");
+			}
+		}
+		else
+		{
+			printTerminalInfo("Not connected to the network yet.");
+		}
+	}
+	
 	private void printLocalFiles()
 	{
 		printTerminal("Filename");
@@ -240,7 +338,7 @@ public class Terminal
 		printTerminal("Filename");
 		printTerminal("--------");
 		
-		Iterator<FileProperties> iterator = client.getOwnedFiles().iterator();
+		Iterator<FileProperties> iterator = client.getOwnedOwnerFiles().iterator();
 		while(iterator.hasNext())
 		{
 			FileProperties ownedFile = iterator.next();
@@ -303,12 +401,16 @@ public class Terminal
 		printTerminal("-------------------");
 		printTerminal("'login' : login to the netwerk.");
 		printTerminal("'logout' : logout from the netwerk.");
-		printTerminal("'setHostname' : change the hostname of the system.");
-		printTerminal("'setIP' : change the ip address of the system.");
+		printTerminal("'setHostname {name}' : change the hostname of the system.");
+		printTerminal("'setIP {ipAddress}' : change the ip address of the system.");
 		printTerminal("'showHostInfo' : get info of the localhost.");
-		printTerminal("'showLocalFiles' : get a list of all files located on this system.");
-		printTerminal("'showOwnedFiles' : get a list of all files owned by this system.");
-		printTerminal("'testLinks' : check the state of the linked nodes.");
+		printTerminal("'getFiles' : display all available files in the network.");
+		printTerminal("'openFile {fileName}' : open an available file from the network.");
+		printTerminal("'deleteFile {fileName}' : delete an available file from the network.");
+		printTerminal("'deleteFileLocal {fileName}' : delete an available file from this system.");
+		//printTerminal("'showLocalFiles' : get a list of all files located on this system.");
+		//printTerminal("'showOwnedFiles' : get a list of all files owned by this system.");
+		//printTerminal("'testLinks' : check the state of the linked nodes.");
 		printTerminal("'stop' : shutdown the client.");
 		printTerminal("'help' / '?' : show all available commands.\n");
 	}

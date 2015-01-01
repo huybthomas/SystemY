@@ -28,8 +28,8 @@ public class NodeManager extends UnicastRemoteObject implements NodeManagerInter
 	
 	/**
 	 * Adds a Node to the NodeList.
-	 * @param String	hostname
-	 * @param String 	ipAddress in string format
+	 * @param hostname	The hostname you want to add.
+	 * @param ipAddress The ipAddress of the host.
 	 * @return boolean 	True if successful, false otherwise
 	 */
 	public boolean addNode(String hostname, String ipAddress)
@@ -39,8 +39,8 @@ public class NodeManager extends UnicastRemoteObject implements NodeManagerInter
 	
 	/**
 	 * Deletes a node from the NodeList.
-	 * @param String 	hostname
-	 * @return	boolean True if successful, false otherwise
+	 * @param hostname	The name of the node you want to delete.
+	 * @return	boolean True if successful, false otherwise.
 	 */
 	public boolean delNode(String hostname)
 	{
@@ -48,8 +48,16 @@ public class NodeManager extends UnicastRemoteObject implements NodeManagerInter
 	}
 	
 	/**
+	 * Clear all nodes from the list
+	 */
+	public void clearList()
+	{
+		nodeList.clearList();
+	}
+	
+	/**
 	 * Sets the new list.
-	 * @param NodeList		the nodelist
+	 * @param nodeList	The nodeList you want to set.
 	 */
 	public void setNodeList(NodeList nodeList)
 	{
@@ -58,7 +66,7 @@ public class NodeManager extends UnicastRemoteObject implements NodeManagerInter
 	
 	/**
 	 * Get the node list.
-	 * @return NodeList
+	 * @return nodeList
 	 */
 	public NodeList getNodeList()
 	{
@@ -67,8 +75,8 @@ public class NodeManager extends UnicastRemoteObject implements NodeManagerInter
 	
 	/**
 	 * Get ip address of a node.
-	 * @param String	hostname	the name of the node you want
-	 * @return String 	Ip addreess
+	 * @param hostname	The name of the node you want.
+	 * @return 	Ip address.
 	 */
 	public String getNode(String hostname)
 	{
@@ -77,8 +85,8 @@ public class NodeManager extends UnicastRemoteObject implements NodeManagerInter
 	
 	/**
 	 * Sends an answer to the new node.
-	 * @param String 	hostname	the name of the node you want
-	 * @return Node		returns the next node of the host
+	 * @param hostname	The name of the node you want.
+	 * @return The next node of the host.
 	 */
 	public Node getNextNode(String hostname) 
 	{
@@ -87,8 +95,8 @@ public class NodeManager extends UnicastRemoteObject implements NodeManagerInter
 	
 	/**
 	 * Sends an answer to the new node.
-	 * @param hostname	the name of the node you want
-	 * @return Node		returns the previous node of the host
+	 * @param hostname	The name of the node you want.
+	 * @return The previous node of the host.
 	 */
 	public Node getPrevNode(String hostname)
 	{
@@ -97,8 +105,8 @@ public class NodeManager extends UnicastRemoteObject implements NodeManagerInter
 	
 	/**
 	 * Returns the node where the file can be found.
-	 * @param filename	filename in String format
-	 * @return	Node	fileowner
+	 * @param filename	The name of the file you want the location from.
+	 * @return	The owner of the file.
 	 */
 	public Node getFileLocation(String filename)
 	{
@@ -107,7 +115,7 @@ public class NodeManager extends UnicastRemoteObject implements NodeManagerInter
 	
 	/**
 	 * Returns the HashMap of the NodeList.
-	 * @return HashMap<Integer, Node>
+	 * @return The complete nodeList.
 	 */
 	public HashMap<Integer, Node> getNodes()
 	{

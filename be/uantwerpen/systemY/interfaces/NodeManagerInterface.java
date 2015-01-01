@@ -12,44 +12,44 @@ public interface NodeManagerInterface extends Remote
 {
 	/**
 	 * Adds a Node to the NodeList.
-	 * @param String	hostname
-	 * @param String 	ipAddress in string format
+	 * @param hostname	The name of the node that needs to be added.
+	 * @param ipAddress	The ip of the node that needs to be added.
 	 * @return boolean 	True if successful, false otherwise
 	 */
 	public boolean addNode(String hostname, String ipAddress) throws RemoteException;
 	
 	/**
 	 * Deletes a node from the NodeList.
-	 * @param String 	hostname
+	 * @param hostname	The name of the node that needs to be deleted.
 	 * @return	boolean True if successful, false otherwise
 	 */
 	public boolean delNode(String hostname) throws RemoteException;
 	
 	/**
 	 * Get ip address of a node.
-	 * @param String	hostname	the name of the node you want
-	 * @return String 	Ip addreess
+	 * @param hostname	The name of the node you want
+	 * @return The ip address of the requested node.
 	 */
 	public String getNode(String hostname) throws RemoteException;
 	
 	/**
 	 * Returns the node where the file can be found.
-	 * @param filename	filename in String format
-	 * @return	Node	fileowner
+	 * @param filename	The name of the requested file.
+	 * @return	The node on which the file is located.
 	 */
 	public Node getFileLocation(String filename) throws RemoteException;
 	
 	/**
 	 * Sends an answer to the new node.
-	 * @param String 	hostname	the name of the node you want
-	 * @return Node		returns the next node of the host
+	 * @param hostname	The name of the node you want.
+	 * @return The next node of the host.
 	 */
 	public Node getNextNode(String hostname) throws RemoteException;
 	
 	/**
 	 * Sends an answer to the new node.
-	 * @param hostname	the name of the node you want
-	 * @return Node		returns the previous node of the host
+	 * @param hostname	The name of the node you want.
+	 * @return The previous node of the host.
 	 */
 	public Node getPrevNode(String hostname) throws RemoteException;
 }

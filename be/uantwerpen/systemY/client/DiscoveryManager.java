@@ -54,7 +54,6 @@ public class DiscoveryManager
 				{
 					sendNetworkInfo(clientname, ipAddress, client.getThisNode(), oldNext);								//Send prevNode (this node) and nextNode (oldNext) to the new node
 				}
-				client.discoveryFileTransfer();
 			}
 		}
 	}
@@ -77,7 +76,7 @@ public class DiscoveryManager
 			{
 				bInterface.setLinkedNodes(prevNode, nextNode);
 			}
-			catch(RemoteException e)
+			catch(NullPointerException | RemoteException e)
 			{
 				System.err.println("RMI message to: " + ip + " failed!");
 				this.client.nodeConnectionFailure(clientname);

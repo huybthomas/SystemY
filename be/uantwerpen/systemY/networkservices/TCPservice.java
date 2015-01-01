@@ -19,8 +19,8 @@ public class TCPservice implements Runnable
 	
 	/**
 	 * Starts a TCP service.
-	 * @param int	packetSize		size of the packets
-	 * @param int 	tcpPort		port for the service
+	 * @param sendPort		The port that needs to send the message.
+	 * @param receivePort	The port that needs to receive the message.
 	 */
 	public TCPservice(int sendPort, int receivePort)
 	{
@@ -35,6 +35,10 @@ public class TCPservice implements Runnable
 		return this.observer;
 	}
 	
+	/**
+	 * Creates a TCP listener.
+	 * @return	boolean
+	 */
 	public boolean setupTCPListener()
 	{
 		try
@@ -54,6 +58,10 @@ public class TCPservice implements Runnable
 		return true;
 	}
 	
+	/**
+	 * Terminates the socket responsible for listening to connections.
+	 * @return	boolean
+	 */
 	public boolean terminate()
 	{
 		running = false;		//disable running flag
@@ -80,6 +88,9 @@ public class TCPservice implements Runnable
 		return false;
 	}
 	
+	/**
+	 * Makes a listenSocket and sets up a connection if a request is found.
+	 */
 	@Override
 	public void run()
 	{
@@ -113,6 +124,11 @@ public class TCPservice implements Runnable
 		}
 	}
     
+	/**
+	 * Makes a new socket
+	 * @param ip	String
+	 * @return	TCPConnection
+	 */
     public TCPConnection getConnection(String ip)
     {
     	try

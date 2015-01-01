@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 
+import be.uantwerpen.systemY.shared.HashFunction;
 import be.uantwerpen.systemY.shared.Node;
 
 public class FileProperties implements Serializable
@@ -12,13 +13,15 @@ public class FileProperties implements Serializable
 	
 	private String filename;
 	private Node owner;
-	private HashMap<Integer, Node> replications;
+	private Node replicationLocation;
+	private HashMap<Integer, Node> downloadLocations;
 	
 	public FileProperties(String filename, Node owner)
 	{
 		this.filename = filename;
 		this.owner = owner;
-		this.replications = new HashMap<Integer, Node>();
+		this.replicationLocation = null;
+		this.downloadLocations = new HashMap<Integer, Node>();
 	}
 	
 	public String getFilename()
@@ -31,21 +34,31 @@ public class FileProperties implements Serializable
 		return this.owner;
 	}
 	
-	public Collection<Node> getReplicationLocations()
+	public void setOwner(Node node)
 	{
-		return this.replications.values();
+		this.owner = node;
 	}
 	
-	public Node checkReplicationOnNode(String hostname)
+	public void setReplicationLocation(Node node)
 	{
-		return this.replications.get(new Node(hostname, null).getHash());
+		this.replicationLocation = node;
 	}
 	
-	public boolean addReplicationLocation(Node node)
+	public Node getReplicationLocation()
 	{
-		if(checkReplicationOnNode(node.getHostname()) == null)
+		return this.replicationLocation;
+	}
+	
+	public Collection<Node> getDownloadLocations()
+	{
+		return this.downloadLocations.values();
+	}
+	
+	public boolean addDownloadLocation(Node node)
+	{
+		if(!downloadLocationExist(node))
 		{
-			this.replications.put(node.getHash(), node);
+			this.downloadLocations.put(node.getHash(), node);
 			return true;
 		}
 		else
@@ -54,9 +67,9 @@ public class FileProperties implements Serializable
 		}
 	}
 	
-	public boolean delReplicationLocation(Node node)
+	public boolean delDownloadLocation(Node node)
 	{
-		if(this.replications.remove(node.getHash()) != null)
+		if(this.downloadLocations.remove(node.getHash()) != null)
 		{
 			return true;
 		}
@@ -68,9 +81,7 @@ public class FileProperties implements Serializable
 	
 	public int getHash()
 	{
-		int i = filename.hashCode();
-		i = Math.abs(i % 32768);
-		return i;
+		return new HashFunction().getHash(this.filename);
 	}
 	
 	@Override
@@ -94,5 +105,17 @@ public class FileProperties implements Serializable
 			return true;
 		}
 		return false;
+	}
+	
+	private boolean downloadLocationExist(Node node)
+	{
+		if(this.downloadLocations.get(node.getHash()) != null)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 }

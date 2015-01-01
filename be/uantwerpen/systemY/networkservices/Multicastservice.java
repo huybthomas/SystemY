@@ -14,6 +14,7 @@ public class Multicastservice implements Runnable
 {
 	private int port;
 	private String multicastIP;
+	private String interfaceIP;
 	private MulticastSocket socket;
 	private MulticastObserver observer;
 	private boolean running;
@@ -21,12 +22,14 @@ public class Multicastservice implements Runnable
 	
 	/**
 	 * Creates the MulticastService Object
-	 * @param String	multicastIP
-	 * @param int	port
+	 * @param multicastIP	The ip of the multicast.
+	 * @param interfaceIP 	The ip of the interface to broadcast the multicast.
+	 * @param port			The port on which the multicast needs to be send.
 	 */
-	public Multicastservice(String multicastIP, int port)
+	public Multicastservice(String multicastIP, String interfaceIP, int port)
 	{
 		this.multicastIP = multicastIP;
+		this.interfaceIP = interfaceIP;
 		this.port = port;
 		this.observer = new MulticastObserver();
 		this.running = false;
@@ -34,7 +37,7 @@ public class Multicastservice implements Runnable
 	
 	/**
 	 * Get a multicast observer
-	 * @return	MulticastObserver	the observer
+	 * @return	The observer.
 	 */
 	public MulticastObserver getObserver()
 	{
@@ -51,6 +54,7 @@ public class Multicastservice implements Runnable
 		{
 			InetAddress ipAddress = InetAddress.getByName(multicastIP);
 			socket = new MulticastSocket(port);
+			socket.setInterface(InetAddress.getByName(this.interfaceIP));
 			socket.joinGroup(ipAddress);
 		}
 		catch(SocketException e)
@@ -68,8 +72,8 @@ public class Multicastservice implements Runnable
 	
 	/**
 	 * Send a multicast message
-	 * @param byte[]	message		the message you want to send
-	 * @return boolean 	true when success, false when failed
+	 * @param message	The message you want to send.
+	 * @return boolean 	True when success, false when failed.
 	 */
 	public boolean sendMulticast(byte[] message)
 	{

@@ -12,7 +12,7 @@ import be.uantwerpen.systemY.shared.Node;
  */
 public class Server
 {
-	private static final String version = "v0.2";
+	private static final String version = "v0.6";
 	private Terminal terminal;
 	private Networkinterface networkinterface;
 	private FileSystemManager fileManager;
@@ -64,9 +64,9 @@ public class Server
 	
 	/**
 	 * Adds a Node to the NodeList.
-	 * @param String	hostname
-	 * @param String 	ipAddress
-	 * @return boolean True if successful, false otherwise
+	 * @param hostname	The name of the node you want to add.
+	 * @param ipAddress	The ip address of the node you want to add.
+	 * @return True if successful, false otherwise.
 	 */
 	public boolean addNode(String hostname, String ipAddress)
 	{
@@ -75,8 +75,8 @@ public class Server
 	
 	/**
 	 * Deletes a node from the NodeList.
-	 * @param String 	hostname
-	 * @return	boolean True if successful, false otherwise
+	 * @param hostname	The name of the node you want to remove.
+	 * @return	True if successful, false otherwise.
 	 */
 	public boolean delNode(String hostname)
 	{
@@ -84,9 +84,17 @@ public class Server
 	}
 	
 	/**
+	 * Clear all nodes from the list
+	 */
+	public void clearList()
+	{
+		nodeManager.clearList();
+	}
+	
+	/**
 	 * Loads a Nodelist from file.
-	 * @param String	fileLocation	location of the file in String format
-	 * @return	boolean True if successful, false otherwise
+	 * @param fileLocation	Location of the file in String format.
+	 * @return True if successful, false otherwise.
 	 */
 	public boolean loadNodeList(String fileLocation)
 	{
@@ -112,8 +120,8 @@ public class Server
 	
 	/**
 	 * Saves a node to file.
-	 * @param String 		fileLocation	location in String format
-	 * @return	boolean 	True if successful, false otherwise
+	 * @param fileLocation	Location in String format.
+	 * @return	True if successful, false otherwise.
 	 */
 	public boolean saveNodeList(String fileLocation)
 	{
@@ -122,8 +130,8 @@ public class Server
 	
 	/**
 	 * Returns the node where the file can be found.
-	 * @param filename	filename in String format
-	 * @return	Node	fileowner
+	 * @param filename	Filename in String format.
+	 * @return	The fileowner.
 	 */
 	public Node getFileLocation(String filename)
 	{
@@ -132,7 +140,7 @@ public class Server
 	
 	/**
 	 * Returns the HashMap of the NodeList.
-	 * @return HashMap<Integer, Node>
+	 * @return A map with all the nodes.
 	 */
 	public HashMap<Integer, Node> getNodeList()
 	{
@@ -141,7 +149,7 @@ public class Server
 	
 	/**
 	 * Get server IP.
-	 * @return	String 	server IP
+	 * @return	The server IP.
 	 */
 	public String getServerIP()
 	{
@@ -150,7 +158,7 @@ public class Server
 	
 	/**
 	 * Get the size of the node list.
-	 * @return	int		size of node list
+	 * @return	Size of node list.
 	 */
 	public int getNetworkSize()
 	{
@@ -159,8 +167,8 @@ public class Server
 	
 	/**
 	 * Get the next node in the network for a given node hostname.
-	 * @param String 	hostname	
-	 * @return	Node 	the next node of the given node
+	 * @param hostname	The name of the host you want to know the next node of.
+	 * @return	The next node of the given node.
 	 */
 	public Node getNextNode(String hostname)
 	{
@@ -169,8 +177,8 @@ public class Server
 	
 	/**
 	 * Get the previous node in the network for a given node hostname.
-	 * @param String	hostname	
-	 * @return	Node 	the previous node of the given node
+	 * @param hostname	The name of the host you want to know the next node of.
+	 * @return	The previous node of the given node.
 	 */
 	public Node getPrevNode(String hostname)
 	{
@@ -179,8 +187,8 @@ public class Server
 	
 	/**
 	 * Get the interface bound to a specific location.
-	 * @param bindLocation	
-	 * @return	(Object) interface
+	 * @param bindLocation	The location where the interface needs to be bound.
+	 * @return	boolean
 	 */
 	public Object getRMIInterface(String bindLocation)
 	{
@@ -212,7 +220,7 @@ public class Server
 	
 	/**
 	 * Prints to the Terminal.
-	 * @param message	String
+	 * @param message	The message that needs to be printed.
 	 */
 	public void printTerminal(String message)
 	{
@@ -221,7 +229,7 @@ public class Server
 	
 	/**
 	 * Prints info message on the Terminal.
-	 * @param message	String
+	 * @param message	The message that needs to be printed.
 	 */
 	public void printTerminalInfo(String message)
 	{
@@ -230,7 +238,7 @@ public class Server
 	
 	/**
 	 * Prints error message on the Terminal.
-	 * @param message	String
+	 * @param message	The error that needs to be printed.
 	 */
 	public void printTerminalError(String message)
 	{
@@ -239,7 +247,7 @@ public class Server
 	
 	/**
 	 * start RMI-server and multicastservice
-	 * @return boolean True if successful, false if failed
+	 * @return boolean True if successful, false if failed.
 	 */
 	private boolean startupProcedure()
 	{

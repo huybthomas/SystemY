@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 	
 	private FileSystemManager fileSystemManager;
 	private FileInventoryManager fileInventoryManager;
+	private FileTransferManager fileTransferManager;
 	private DownloadManager downloadManager;
 	private Client client;
 	private String downloadLocation;
@@ -38,6 +40,7 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 		this.client = client;
 		this.fileSystemManager = new FileSystemManager();
 		this.fileInventoryManager = new FileInventoryManager();
+		this.fileTransferManager = new FileTransferManager(this);
 		this.downloadManager = new DownloadManager(this);
 		
 		tcpObserver.addObserver(new Observer()
@@ -59,11 +62,13 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 	
 	public boolean startService()
 	{
+		fileSystemManager.startFileWatcher();
 		return client.bindRMIservice(this, "FileManager_" + client.getHostname());
 	}
 	
 	public boolean stopService()
 	{
+		fileSystemManager.stopFileWatcher();
 		return client.unbindRMIservice("FileManager_" + client.getHostname());
 	}
 	
@@ -73,9 +78,9 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 		return this.fileInventoryManager.getOwnerFile(fileName);
 	}
 	
-	public boolean addOwnerFile(String fileName, Node node)
+	public boolean addOwnerFile(String fileName, Node ownerNode)
 	{
-		return this.fileInventoryManager.addOwnerFile(fileName, node);
+		return this.fileInventoryManager.addOwnerFile(fileName, ownerNode);
 	}
 	
 	public boolean addOwnerFile(FileProperties file)
@@ -88,9 +93,25 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 		return this.fileInventoryManager.delOwnerFile(fileName);
 	}
 	
-	public ArrayList<FileProperties> getOwnedFiles()
+	public ArrayList<FileProperties> getOwnedOwnerFiles()
+	{
+		return this.fileInventoryManager.getOwnedOwnerFiles();
+	}
+	
+	public ArrayList<String> getOwnedFiles()
 	{
 		return this.fileInventoryManager.getOwnedFiles();
+	}
+	
+	public boolean checkFileOwned(String fileName)
+	{
+		return this.fileInventoryManager.checkOwnerFileExist(fileName);
+	}
+	
+	//File replication section
+	public ArrayList<String> getReplicatedFile()
+	{
+		return this.fileInventoryManager.getReplicatedFiles();
 	}
 	
 	//File local section
@@ -125,20 +146,148 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 		return this.fileInventoryManager.getNetworkFiles();
 	}
 	
+	public void importFile(File file) 
+	{
+		if(file != null)
+		{
+			if(!checkSystemFileExistence(file.getName()))
+			{
+				File newFile = new File(downloadLocation + File.separator + file.getName());
+				try
+				{
+					Files.copy(file.toPath(), newFile.toPath());
+				}
+				catch(IOException e)
+				{
+					System.err.println("Can't copy file to SystemY folder location: " + e.getMessage());
+				}
+				
+			}
+			else
+			{
+				System.out.println("File already exists!");
+			}
+		}
+	}
+	
 	//File system section
-	public boolean checkLocalFileExistence(String fileName)
+	public boolean checkSystemFileExistence(String fileName)
 	{
 		return fileSystemManager.fileExist(downloadLocation, fileName);
 	}
 	
-	public boolean createNewLocalFile(String fileName) throws IOException
+	public boolean createNewSystemFile(String fileName) throws IOException
 	{
 		return fileSystemManager.createFile(downloadLocation, fileName);
 	}
 	
-	public boolean deleteLocalFile(String fileName) throws IOException
+	public boolean openFile(String fileName) 
+	{
+		if(fileSystemManager.fileExist(downloadLocation, fileName)) 
+		{
+			try 
+			{
+				if(this.getOwnerFile(fileName) == null)		//When node is no owner of the file, add himself as downloadlocation (needed for replication location)
+				{
+					try
+					{
+						NodeManagerInterface iFace = (NodeManagerInterface) getNodeServerInterface();
+						Node ownerNode = iFace.getFileLocation(fileName);
+						
+						this.updateDownloadLocation(ownerNode, fileName);
+					}
+					catch(NullPointerException | RemoteException e)
+					{
+						System.err.println("Can't contact server for owner location: " + e.getMessage());
+						client.serverConnectionFailure();
+					}
+				}
+				
+				return fileSystemManager.openFile(downloadLocation, fileName);
+			} 
+			catch(IOException e) 
+			{
+				System.err.println("Can't open the file: " + fileName + ".");
+				System.err.println(e.getMessage());
+				return false;
+			}
+		} 
+		else 
+		{
+			downloadFile(fileName);
+			return true;
+		}
+	}
+	
+	public boolean canBeDeleted(String fileName) 
+	{
+		return fileInventoryManager.canBeDeleted(fileName);
+	}
+	
+	public boolean deleteSystemFile(String fileName) throws IOException
 	{
 		return fileSystemManager.deleteFile(downloadLocation, fileName);
+	}
+	
+	public boolean deleteFileRequest(String fileName)
+	{
+		if(!fileInventoryManager.getLocalFiles().contains(fileName))
+		{
+			try
+			{
+				return deleteSystemFile(fileName);
+			}
+			catch(IOException e)
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	public void deleteFilesFromNetwork(ArrayList<String> files)
+	{
+		client.deleteFilesFromNetwork(files);
+	}
+	
+	public boolean deleteFilesFromSystem(ArrayList<String> deleteFileRequests) 
+	{
+		boolean status = true;
+		
+		if(deleteFileRequests != null) 
+		{
+			for(String fileName : deleteFileRequests) 
+			{
+				ArrayList<String> localfiles = fileInventoryManager.getLocalFiles();
+				if(localfiles != null)
+				{
+					boolean isLocal = localfiles.contains(fileName);
+					fileInventoryManager.delOwnerFile(fileName);
+					fileInventoryManager.delReplicatedFile(fileName);
+					
+					if(!isLocal)
+					{
+						try
+						{
+							deleteSystemFile(fileName);
+						}
+						catch(IOException e)
+						{
+							System.err.println("Could not delete file: " + e.getMessage());
+							status = false;
+						}
+					}
+				} 
+				else 
+				{
+					return false;
+				}
+			}
+		}
+		return status;
 	}
 	
 	public FileOutputStream getFileOutputStream(String fileName) throws FileNotFoundException
@@ -146,16 +295,46 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 		return fileSystemManager.getFileOutputStream(downloadLocation, fileName);
 	}
 	
+	public File getSystemFile(String file)
+	{
+		return fileSystemManager.getFile(downloadLocation, file);
+	}
 	
+	public boolean shutdownFileClear()
+	{
+		boolean status = true;
+		
+		for(File f: this.getLocalSystemFiles())
+		{
+			String fileName = f.getName();
+			
+			if(this.getNetworkFiles().contains(fileName))
+			{
+				if(!this.getLocalFiles().contains(fileName))
+				{
+					try
+					{
+						this.deleteSystemFile(fileName);
+					}
+					catch(IOException e)
+					{
+						System.err.println("Could not delete file: " + e.getMessage());
+						status = false;
+					}
+				}
+			}
+		}
+		return status;
+	}
 	
 	//File replication locations section
-	public boolean addReplicationLocation(String fileName, Node replicationNode)
+	public boolean addDownloadLocation(String fileName, Node downloadNode)
 	{
 		FileProperties fileProperties = getOwnerFile(fileName);
 		
 		if(fileProperties != null)
 		{
-			return fileProperties.addReplicationLocation(replicationNode);
+			return fileProperties.addDownloadLocation(downloadNode);
 		}
 		else
 		{
@@ -163,13 +342,13 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 		}
 	}
 	
-	public boolean delReplicationLocation(String fileName, Node replicationNode)
+	public boolean delDownloadLocation(String fileName, Node downloadNode)
 	{
 		FileProperties fileProperties = getOwnerFile(fileName);
 		
 		if(fileProperties != null)
 		{
-			return fileProperties.delReplicationLocation(replicationNode);
+			return fileProperties.delDownloadLocation(downloadNode);
 		}
 		else
 		{
@@ -177,119 +356,71 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 		}
 	}
 	
-	public boolean updateReplicationLocation(Node fileOwner, String fileName)
+	public boolean setReplicationLocation(String fileName, Node replicationNode)
 	{
-		try
+		FileProperties fileProperties = getOwnerFile(fileName);
+		
+		if(fileProperties != null)
 		{
-			FileManagerInterface iFace = (FileManagerInterface) getFileManagerInterface(fileOwner);
-			return iFace.addReplicationLocation(fileName, client.getThisNode());
+			fileProperties.setReplicationLocation(replicationNode);
+			return true;
 		}
-		catch(RemoteException e)
+		else
 		{
-			System.err.println("Can't contact owner node for new replication location: " + e.getMessage());
-			client.nodeConnectionFailure(fileOwner.getHostname());
 			return false;
 		}
 	}
 	
 	//File transfer action section
-	public void bootTransfer()
+	public boolean bootTransfer()
 	{
-		try
-		{			
-			File[] files = getLocalSystemFiles();
-			
-			for(File f : files)
-			{
-				if(f.isFile())
-				{
-					addOwnerFile(f.getName(), client.getThisNode());
-					addLocalFile(f.getName());
-					
-					if(client.getPrevNode().equals(client.getThisNode()))
-					{
-						continue;		//Only one node connected to the system
-					}
-					
-					Node ownerNode;
-					try
-					{
-						NodeManagerInterface iFaceServer = (NodeManagerInterface) getNodeServerInterface();
-						
-						ownerNode = iFaceServer.getFileLocation(f.getName());
-					}
-					catch(RemoteException e)
-					{
-						System.err.println("Failed to contact the server: " + e.getMessage());
-						client.serverConnectionFailure();
-						return;
-					}
-					
-					try
-					{
-						if(ownerNode.equals(client.getThisNode()))
-						{
-							FileManagerInterface iFaceNode = (FileManagerInterface) client.getFileManagerInterface(client.getPrevNode());
-
-							iFaceNode.downloadFile(f.getName());
-						}
-						else
-						{
-							FileManagerInterface iFaceNode = (FileManagerInterface) client.getFileManagerInterface(ownerNode);
-							
-							iFaceNode.ownerSwitchFile(f.getName(), client.getThisNode());
-						}
-					}
-					catch(RemoteException e)
-					{
-						System.err.println("Failed to contact to node '" + ownerNode.getHostname() + "': " + e.getMessage());
-						client.nodeConnectionFailure(ownerNode.getHostname());
-						continue;
-					}
-				}
-			}
-		}
-		catch(SecurityException e)
-		{
-			System.err.println("Security Exception: " + e.getMessage());
-			return;
-		}
+		return fileTransferManager.bootTransfer();
 	}
 	
 	public void discoveryTransfer()
 	{
-		if(client.getPrevNode().equals(client.getNextNode()))		//When second node is connected to the network, all files on this system need to be replicated
-		{
-			bootTransfer();
-		}
-		else
-		{
-			for(FileProperties f : fileInventoryManager.getOwnedFiles())
-			{
-				if(f.getHash() > client.getNextNode().getHash())
-				{
-					try
-					{
-						FileManagerInterface iFaceNode = (FileManagerInterface) client.getFileManagerInterface(client.getNextNode());
-						
-						iFaceNode.ownerSwitchFile(f.getFilename(), client.getThisNode());
-					}
-					catch(RemoteException e)
-					{
-						System.err.println("Failed to contact to node '" + client.getNextNode().getHostname() + "': " + e.getMessage());
-						client.nodeConnectionFailure(client.getNextNode().getHostname());
-						continue;
-					}
-				}
-			}
-		}
+		fileTransferManager.discoveryTransfer();
 	}
 	
-	public void shutdownTransfer()
+	public boolean shutdownTransfer()
 	{
-		for(FileProperties f: fileInventoryManager.getOwnedFiles())
+		return fileTransferManager.shutdownTransfer();
+	}
+	
+	public boolean shutdownFileUpdate()
+	{
+		return fileTransferManager.shutdownFileUpdate();
+	}
+	
+	public void ownerSwitchFile(String fileName, Node ownerNode)
+	{
+		Download newDownload = new Download(downloadManager, fileName, ownerNode, 1);		//Mode 1: file owner switch
+		
+		this.client.downloadRequest(newDownload);
+	}
+	
+	public void replicateFile(String fileName, Node ownerNode)
+	{
+		Download newDownload = new Download(downloadManager, fileName, ownerNode, 2);		//Mode 2: replicate file
+		
+		this.client.downloadRequest(newDownload);
+	}
+	
+	public void replicateFile(String fileName)
+	{
+		try
 		{
-			//if()
+			NodeManagerInterface iFace = (NodeManagerInterface) getNodeServerInterface();
+			Node ownerNode = iFace.getFileLocation(fileName);
+			
+			Download newDownload = new Download(downloadManager, fileName, ownerNode, 2);	//Mode 2: replicate file
+			
+			this.client.downloadRequest(newDownload);
+		}
+		catch(NullPointerException | RemoteException e)
+		{
+			System.err.println("Can't contact server for downloadlocation: " + e.getMessage());
+			client.serverConnectionFailure();
 		}
 	}
 	
@@ -300,39 +431,69 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 			NodeManagerInterface iFace = (NodeManagerInterface) getNodeServerInterface();
 			Node ownerNode = iFace.getFileLocation(fileName);
 			
-			Download newDownload = new Download(downloadManager, fileName, ownerNode, false);
+			Download newDownload = new Download(downloadManager, fileName, ownerNode, 3);	//Mode 3: download file
 			
-			this.downloadManager.addDownload(newDownload);
+			this.client.downloadRequest(newDownload);
 		}
-		catch(RemoteException e)
+		catch(NullPointerException | RemoteException e)
 		{
 			System.err.println("Can't contact server for downloadlocation: " + e.getMessage());
 			client.serverConnectionFailure();
 		}
 	}
 	
-	public void ownerSwitchFile(String fileName, Node ownerNode)
+	public void runDownload(Download download)
 	{
-		Download newDownload = new Download(downloadManager, fileName, ownerNode, true);
-		
-		this.downloadManager.addDownload(newDownload);
+		this.downloadManager.addDownload(download);
 	}
 	
-	public boolean transferOwnerFile(Node newOwner, String fileName)
+	public void downloadFinished(Download download, boolean successful)
+	{
+		if(successful)
+		{
+			switch(download.getDownloadMode())
+			{
+				//File owner switch
+				case 1: this.transferOwnerFile(download.getDownloadFileOwner(), download.getFileName());
+						break;
+				//Replicate file
+				case 2:	this.updateReplicationLocation(download.getDownloadFileOwner(), download.getFileName());
+						break;
+				//Download file
+				case 3:	this.updateDownloadLocation(download.getDownloadFileOwner(), download.getFileName());
+						this.openFile(download.getFileName());
+						break;
+			}
+		}
+		else
+		{
+			this.client.printTerminalError("Download: '" + download.getFileName() + "' failed.");
+		}
+		client.downloadFinished(download.getFileName());
+	}
+	
+	public int getDownloadsHosting()
+	{
+		return downloadManager.getDownloadsHosting();
+	}
+	
+	public boolean transferOwnerFile(Node oldOwner, String fileName)
 	{
 		try
 		{
-			FileManagerInterface iFace = (FileManagerInterface) getFileManagerInterface(newOwner);
+			FileManagerInterface iFace = (FileManagerInterface) getFileManagerInterface(oldOwner);
 			FileProperties transferedOwnerFile = iFace.getOwnerFile(fileName);
 			
 			if(transferedOwnerFile != null)
-			{
-				transferedOwnerFile.addReplicationLocation(newOwner);
-				transferedOwnerFile.delReplicationLocation(client.getThisNode());
-				
+			{				
 				this.addOwnerFile(transferedOwnerFile);
 				
 				iFace.delOwnerFile(fileName);
+				
+				if(!transferedOwnerFile.getDownloadLocations().contains(oldOwner) && !(transferedOwnerFile.getReplicationLocation() == null))
+				{
+					iFace.deleteFileRequest(fileName);
+				}
 				
 				return true;
 			}
@@ -341,17 +502,116 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 				return false;
 			}
 		}
-		catch(RemoteException e)
+		catch(NullPointerException | RemoteException e)
 		{
 			System.err.println("Can't contact node for owner switch: " + e.getMessage());
-			client.nodeConnectionFailure(newOwner.getHostname());
+			client.nodeConnectionFailure(oldOwner.getHostname());
 			return false;
 		}
+	}
+	
+	public boolean updateReplicationLocation(Node fileOwner, String fileName)
+	{
+		try
+		{
+			FileManagerInterface iFace = (FileManagerInterface) getFileManagerInterface(fileOwner);
+			if(iFace.setReplicationLocation(fileName, client.getThisNode()))
+			{
+				fileInventoryManager.addReplicatedFile(fileName);
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		catch(NullPointerException | RemoteException e)
+		{
+			System.err.println("Can't contact owner node for new replication location: " + e.getMessage());
+			client.nodeConnectionFailure(fileOwner.getHostname());
+			return false;
+		}
+	}
+	
+	public boolean updateDownloadLocation(Node fileOwner, String fileName)
+	{
+		try
+		{
+			FileManagerInterface iFace = (FileManagerInterface) getFileManagerInterface(fileOwner);
+			return iFace.addDownloadLocation(fileName, this.getThisNode());
+		}
+		catch(NullPointerException | RemoteException e)
+		{
+			System.err.println("Can't contact owner node for new download location: " + e.getMessage());
+			client.nodeConnectionFailure(fileOwner.getHostname());
+			return false;
+		}
+	}
+	
+	public boolean deleteDownloadLocation(Node fileOwner, String fileName)
+	{
+		try
+		{
+			FileManagerInterface iFace = (FileManagerInterface) getFileManagerInterface(fileOwner);
+			return iFace.delDownloadLocation(fileName, this.getThisNode());
+		}
+		catch(NullPointerException | RemoteException e)
+		{
+			System.err.println("Can't contact owner node for deleting download location: " + e.getMessage());
+			client.nodeConnectionFailure(fileOwner.getHostname());
+			return false;
+		}
+	}
+	
+	public boolean deleteDownloadLocation(String fileName)
+	{
+		try
+		{
+			NodeManagerInterface iFaceServer = (NodeManagerInterface) client.getNodeServerInterface();
+			Node fileOwner = iFaceServer.getFileLocation(fileName);
+			
+			try
+			{
+				if(fileOwner != null)
+				{
+					FileManagerInterface iFace = (FileManagerInterface) getFileManagerInterface(fileOwner);
+					return iFace.delDownloadLocation(fileName, this.getThisNode());
+				}
+				else
+				{
+					System.err.println("Can't find owner node for deleting download location.");
+					return false;
+				}
+			}
+			catch(NullPointerException | RemoteException e)
+			{
+				System.err.println("Can't contact owner node for deleting download location: " + e.getMessage());
+				client.nodeConnectionFailure(fileOwner.getHostname());
+				return false;
+			}
+		}
+		catch(NullPointerException | RemoteException e)
+		{
+			System.err.println("Can't contact server for deleting download location: " + e.getMessage());
+			client.serverConnectionFailure();
+			return false;
+		}
+		
+	}
+	
+	public void resetFileLists()
+	{
+		this.fileInventoryManager.resetFileLists();
 	}
 	
 	public boolean nodeConnectionFailure(String hostname)
 	{
 		return client.nodeConnectionFailure(hostname);
+	}
+	
+	public void serverConnectionFailure()
+	{
+		client.serverConnectionFailure();
 	}
 	
 	//RMI section
@@ -363,6 +623,11 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 	public Object getFileManagerInterface(Node node)
 	{
 		return client.getFileManagerInterface(node);
+	}
+	
+	public Object getNodeLinkInterface(Node node)
+	{
+		return client.getNodeLinkInterface(node);
 	}
 	
 	//TCP section
@@ -391,9 +656,36 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 		downloadManager.downloadRequest(connection);
 	}
 	
+	public int getQueuedDownloads()
+	{
+		return downloadManager.getQueuedDownloads();
+	}
+	
 	public String getDownloadLocation()
 	{
 		return this.downloadLocation;
+	}
+	
+	public boolean setDownloadLocation(String location)
+	{
+		try
+		{
+			File newLocation = new File(location);
+			
+			if(newLocation.isDirectory())
+			{
+				this.downloadLocation = location;
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		catch(NullPointerException e)
+		{
+			return false;
+		}
 	}
 	
 	public void printTerminalError(String message)
@@ -401,24 +693,7 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 		client.printTerminalError(message);
 	}
 	
-	//File change detection section
-	private void fileChangeDetected(FileSystemObserver.FileNotification notification)
-	{
-		switch(notification.getEvent())
-		{
-			case "ENTRY_CREATE":
-				System.out.println("File creation detected: " + notification.getFileLocation());
-				break;
-			case "ENTRY_DELETE":
-				System.out.println("File deletion detected: " + notification.getFileLocation());
-				break;
-			case "ENTRY_MODIFY":
-				System.out.println("File modification detected: " + notification.getFileLocation());
-				break;
-		}
-	}
-	
-	private File[] getLocalSystemFiles() 
+	public File[] getLocalSystemFiles() 
 	{
 		File directory = fileSystemManager.getDirectory(downloadLocation);
 		
@@ -429,5 +704,69 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 		}
 		
 		return directory.listFiles().clone();
+	}
+	
+	public Node getThisNode()
+	{
+		return this.client.getThisNode();
+	}
+	
+	public Node getPrevNode()
+	{
+		return this.client.getPrevNode();
+	}
+	
+	public Node getNextNode()
+	{
+		return this.client.getNextNode();
+	}
+	
+	//File change detection section
+	private void fileChangeDetected(FileSystemObserver.FileNotification notification)
+	{
+		switch(notification.getEvent())
+		{
+			case "ENTRY_CREATE":
+				String fileName = notification.getFileName();
+				
+				if(this.client.getSessionState())
+				{
+					if(this.fileExist(downloadLocation, fileName))
+					{
+						if(!this.getNetworkFiles().contains(fileName))
+						{
+							ArrayList<String> downloads = downloadManager.getRunningDownloads();
+							
+							//Check if filecreation is from running download
+							for(String download : downloads)
+							{
+								if(download.equals(fileName))
+								{
+									return;			//File creation is from running download
+								}
+							}
+							
+							//Add file to owned and local files
+							addOwnerFile(fileName, client.getThisNode());
+							addLocalFile(fileName);
+							
+							//Start the transfer procedure to the system
+							ArrayList<String> fileList = new ArrayList<String>();
+							fileList.add(fileName);
+							
+							this.fileTransferManager.fileReplicationTransfer(fileList);
+						}
+					}
+				}
+				break;
+				
+			case "ENTRY_DELETE":
+				//Implementation later on
+				break;
+				
+			case "ENTRY_MODIFY":
+				//Implementation later on
+				break;
+		}
 	}
 }

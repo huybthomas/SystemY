@@ -17,12 +17,12 @@ public class FileSystemObserver extends Observable
 	public class FileNotification
 	{
 		private String event;
-		private String fileLocation;
+		private String fileName;
 		
-		public FileNotification(String event, String fileLocation)
+		public FileNotification(String event, String fileName)
 		{
 			this.event = event;
-			this.fileLocation = fileLocation;
+			this.fileName = fileName;
 		}
 		
 		public String getEvent()
@@ -30,9 +30,9 @@ public class FileSystemObserver extends Observable
 			return this.event;
 		}
 		
-		public String getFileLocation()
+		public String getFileName()
 		{
-			return this.fileLocation;
+			return this.fileName;
 		}
 	}
 }

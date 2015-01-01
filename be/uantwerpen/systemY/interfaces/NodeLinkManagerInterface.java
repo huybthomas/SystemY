@@ -11,32 +11,32 @@ public interface NodeLinkManagerInterface extends Remote
 {
 	/**
 	 * Sets previous and next node.
-	 * @param Node	prevNode
-	 * @param Node	nextNode
+	 * @param prevNode	The node that needs to be set as previous node.
+	 * @param nextNode	The node that needs to be set as next node.
 	 */
 	public void setLinkedNodes(Node prevNode, Node nextNode) throws RemoteException;
 	
 	/**
 	 * Sets the next node.
-	 * @param Node node
+	 * @param node	The node that needs to be set as next node.
 	 */
 	public void setNext(Node node) throws RemoteException;
 	
 	/**
 	 * Sets previous node.
-	 * @param Node node
+	 * @param node	The node that needs to be set as previous node.
 	 */
 	public void setPrev(Node node) throws RemoteException;
 	
 	/**
-	 * get prev node.
-	 * @return Node
+	 * get the previous node.
+	 * @return node
 	 */
 	public Node getPrev() throws RemoteException;
 	
 	/**
 	 * get next node.
-	 * @return Node
+	 * @return node
 	 */
 	public Node getNext() throws RemoteException;
 }

@@ -1,34 +1,63 @@
 package be.uantwerpen.systemY.client.agent;
 
-public class AgentFileEntry 
-{
-	
-	private String name;
-	private boolean lock;
-	
-	public AgentFileEntry(String name, boolean lock)
-	{
-		this.name = name;
-		this.lock = lock;
-	}
+import java.io.Serializable;
 
-	public String getName()
+public class AgentFileEntry implements Serializable
+{
+	private static final long serialVersionUID = 1L;
+
+	private String lockNode;
+	private boolean available;
+	
+	public AgentFileEntry()
 	{
-		return this.name;
+		this.lockNode = null;
+		this.available = true;
 	}
 	
-	public boolean getLock()
+	/**
+	 * Puts a new file in the list on the agent.
+	 * @param lockNode	The node who locked the file.
+	 */
+	public AgentFileEntry(String lockNode)
 	{
-		return this.lock;
+		this.lockNode = lockNode;
+		this.available = true;
 	}
 	
-	public void setName(String name)
+	/**
+	 * Get the node who locked the file.
+	 * @return	Get the name of the node who locked the file or null if the file is not locked.
+	 */
+	public String getLock()
 	{
-		this.name = name;
+		return this.lockNode;
 	}
 	
-	public void setLock(boolean lock)
+	/**
+	 * Set a lock to the file.
+	 * @param lockNode	The name of the node who locks the file.
+	 */
+	public void setLock(String lockNode)
 	{
-		this.lock = lock;
+		this.lockNode = lockNode;
+	}
+	
+	/**
+	 * Unlock the file.
+	 */
+	public void unlock()
+	{
+		this.lockNode = null;
+	}
+	
+	public void setAvailability(boolean available)
+	{
+		this.available = available;
+	}
+	
+	public boolean getAvailability()
+	{
+		return this.available;
 	}
 }

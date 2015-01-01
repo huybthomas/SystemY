@@ -15,7 +15,7 @@ public class Main
 {
 	/**
 	 * Creates 3 clients and then instantiates a DebugManager object.
-	 * @param	args	not used.
+	 * @param	args	not used, the arguments added in the run config.
 	 */
 	public static void main(String[] args) throws RemoteException
 	{
@@ -41,9 +41,9 @@ public class Main
 			multicastPort = 2453;
 			
 			Server server = new Server(false, networkIP, tcpPort, rmiPort, multicastIP, multicastPort);
-			Client c1 = new Client(false, "Node_1", networkIP, tcpPort, rmiPort, multicastIP, multicastPort);
-			Client c2 = new Client(false, "failureNode", networkIP, tcpPort, rmiPort, multicastIP, multicastPort);
-			Client c3 = new Client(false, "Node_3", networkIP, tcpPort, rmiPort, multicastIP, multicastPort);
+			Client c1 = new Client(false, "Node_1", networkIP, tcpPort, tcpPort, rmiPort, multicastIP, multicastPort);
+			Client c2 = new Client(false, "failureNode", networkIP, tcpPort, tcpPort, rmiPort, multicastIP, multicastPort);
+			Client c3 = new Client(false, "Node_3", networkIP, tcpPort, tcpPort, rmiPort, multicastIP, multicastPort);
 		  
 			@SuppressWarnings("unused")
 			DebugManager debug = new DebugManager(c1, c2, c3, server);

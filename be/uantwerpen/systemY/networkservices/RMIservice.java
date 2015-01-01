@@ -17,9 +17,9 @@ public class RMIservice
 	private int RMIPort;
 	
 	/**
-	 * Load the existing RMIip and RMIPort
-	 * @param String	RMIip
-	 * @param int	RMIPort
+	 * Sets the RMIip and RMIPort.
+	 * @param RMIip		The ip on which the RMI needs to be.
+	 * @param RMIPort	The port on which the RMI needs to be.
 	 */
 	public RMIservice(String RMIip, int RMIPort)
 	{
@@ -39,7 +39,7 @@ public class RMIservice
 		}
 		catch(RemoteException e)
 		{
-			System.err.println("JAVA RMI registry already exists or port: " + RMIPort + " is already in use.");
+			System.err.println("JAVA RMI registry already exists or port " + RMIPort + " is already in use.");
 			return false;
 		}
 		return true;
@@ -47,8 +47,8 @@ public class RMIservice
 	
 	/**
 	 * Binds the RMI server to specific object.
-	 * @param Object	object to bind to
-	 * @param String	bindName	RMI server name
+	 * @param object	object to bind to.
+	 * @param bindName	RMI server name.
 	 * @return	boolean True if successful, false if failed
 	 */
 	public boolean bindRMIServer(Object object, String bindName)
@@ -75,7 +75,7 @@ public class RMIservice
 	
 	/**
 	 * Unbind the RMI server.
-	 * @param String	bindName	name of the server
+	 * @param bindName	name of the server.
 	 * @return	boolean	True if successful, false if failed
 	 */
 	public boolean unbindRMIServer(String bindName)
@@ -101,7 +101,7 @@ public class RMIservice
 	
 	/**
 	 * Get the interface of a specific RMI
-	 * @param String	bindLocation
+	 * @param bindLocation	The location on which you search a RMI.
 	 * @return Object	interface object
 	 */
 	public Object getRMIInterface(String bindLocation)

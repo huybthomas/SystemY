@@ -11,6 +11,11 @@ public class TCPConnection
 	private DataInputStream in;
 	private DataOutputStream out;
 	
+	/**
+	 * Sets up a TCP connection on a specific socket by making an DataInput- and -OutputStream.
+	 * @param socket	On which socket the streams need to be made.
+	 * @throws IOException
+	 */
 	public TCPConnection(Socket socket) throws IOException 
 	{
 		this.socket = socket;
@@ -19,6 +24,12 @@ public class TCPConnection
 		this.out = new DataOutputStream(socket.getOutputStream());
 	}
 	
+	/**
+	 * Creates a TCP connection, by first creating the socket.
+	 * @param ip	The ip on which the TCP needs to be set up.
+	 * @param port	The port on which the TCP needs to be set up.
+	 * @throws IOException
+	 */
 	public TCPConnection(String ip, int port) throws IOException 
 	{
 		this.socket = new Socket(ip, port);
@@ -27,21 +38,38 @@ public class TCPConnection
 		this.out = new DataOutputStream(socket.getOutputStream());
 	}
 	
+	/**
+	 * Get the DataInputStream.
+	 * @return	DataInputStream
+	 */
 	public DataInputStream getDataInputStream()
 	{
 		return this.in;
 	}
 	
+	/**
+	 * Get the DataOutputStream.
+	 * @return	DataOutputStream
+	 */
 	public DataOutputStream getDataOutputStream()
 	{
 		return this.out;
 	}
 	
+	/**
+	 * Returns the connected host.
+	 * @return	String
+	 */
 	public String getConnectedHost()
 	{
 		return this.socket.getInetAddress().getHostName();
 	}
-
+	
+	/**
+	 * Makes a buffer of the length of the DataInputStream.
+	 * @return b	byte[]
+	 * @throws IOException
+	 */
     public byte[] receiveData() throws IOException
     {
     	byte[] b;
@@ -52,12 +80,21 @@ public class TCPConnection
     	return b;
     }
     
+    /**
+     * Sends data over the DataOutputStream.
+     * @param data	The data that needs to be send over the output stream.
+     * @throws IOException
+     */
     public void sendData(byte[] data) throws IOException
     {
 		out.writeLong((long) data.length);
 		out.write(data);
     }
     
+    /**
+     * Closes the connection to a socket.
+     * @return	Boolean
+     */
     public boolean closeConnection()
     {
     	try

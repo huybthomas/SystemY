@@ -16,7 +16,8 @@ public class ClientMain
 	private static boolean enableTerminal;
 	private static String hostname;
 	private static String networkIP;
-	private static int tcpPort;
+	private static int tcpReceivePort;
+	private static int tcpSendPort;
 	private static int rmiPort;
 	private static String multicastIP;
 	private static int multicastPort;
@@ -39,7 +40,8 @@ public class ClientMain
 			networkIP = "localhost";
 			hostname = "Node" + networkIP + "-" + Math.abs(new Random().nextInt());
 		}
-		tcpPort = 1304;
+		tcpReceivePort = 1304;
+		tcpSendPort = 1305;
 		rmiPort = 1099;
 		multicastIP = "224.13.4.94";
 		multicastPort = 2453;
@@ -51,7 +53,7 @@ public class ClientMain
 		//Read arguments
 		argsCommand(args);
 		
-		Client c = new Client(enableTerminal, hostname, networkIP, tcpPort, rmiPort, multicastIP, multicastPort);
+		Client c = new Client(enableTerminal, hostname, networkIP, tcpReceivePort, tcpSendPort, rmiPort, multicastIP, multicastPort);
 		
 		//Activate GUI
 		if(enableGUI)
@@ -93,8 +95,12 @@ public class ClientMain
 						System.out.println("Invalid arguments for -ip");
 					}
 					break;
-				case "-tcp":
-					tcpPort = Integer.parseInt(args[i+1].trim());
+				case "-tcpreceive":
+					tcpReceivePort = Integer.parseInt(args[i+1].trim());
+					i++;
+					break;
+				case "-tcpsend":
+					tcpSendPort = Integer.parseInt(args[i+1].trim());
 					i++;
 					break;
 				case "-multicast":
@@ -109,6 +115,18 @@ public class ClientMain
 						System.out.println("Invalid arguments for -multicast");
 					}
 					break;
+				case "-help":
+					System.out.println("SystemY Client application - 2014");
+					System.out.println("Starts the client for connecting to SystemY. SystemY is a distributed file system for local networks.");
+					System.out.println("\nOptions: ");
+					System.out.println("\t-noGUI\t\t\tStart the client without a the GUI interface.");
+					System.out.println("\t-terminal\t\tStart a CLI interface to run commands from the terminal.");
+					System.out.println("\t-hostname {name}\tThe given parameter {name} will be used to indentify the client in the network.\n\t\t\t\tThe hostname must be unique in the system.");
+					System.out.println("\t-ip {ip}:{port}\t\tThe given ip will be used for all communication from the client to the network.\n\t\t\t\tThe ip must be the ip of the physical interface connected to the local network with SystemY.");
+					System.out.println("\t-tcpReceive {port}\tThe given port will be used for receiving file request.");
+					System.out.println("\t-tcpSend {port}\t\tThe given port will be used for sending file request.");
+					System.out.println("\t-multicast {ip}:{port}\tThe given ip will be used to indentifing new clients in the network.\n\t\t\t\tThe ip must be in the legal range of multicast addresses.");
+					System.exit(0);
 				default:
 					System.out.println("Unkown option '" + args[i] + "'");
 					break;

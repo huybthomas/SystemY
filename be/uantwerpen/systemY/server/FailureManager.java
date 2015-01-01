@@ -20,7 +20,7 @@ public class FailureManager
 	
 	/**
 	 * Deletes a node that suddenly failed to connect in the network and updates it's surrounding nodes.
-	 * @param String 	hostname
+	 * @param hostname	the hostname of the failed node.
 	 */
 	public void nodeConnectionFailure(String hostname)
 	{
@@ -29,23 +29,26 @@ public class FailureManager
 		Node prevNode = server.getPrevNode(hostname);
 		Node nextNode = server.getNextNode(hostname);
 		
-		if(prevNode != null)
-		{
-			updateNode(prevNode, null, nextNode);
-		}
-		if(nextNode != null)
-		{
-			updateNode(nextNode, prevNode, null);
-		}
-		
 		server.delNode(hostname);
+		
+		if(!hostname.equals(prevNode.getHostname()))
+		{
+			if(prevNode != null)
+			{
+				updateNode(prevNode, null, nextNode);
+			}
+			if(nextNode != null)
+			{
+				updateNode(nextNode, prevNode, null);
+			}
+		}
 	}
 	
 	/**
 	 * Update a given node with a new previous node and new next node.
-	 * @param Node	updateNode 	the given node.
-	 * @param Node	prevNode	the new previous node.
-	 * @param Node 	nextNode	the new next node.
+	 * @param updateNode 	The node that needs to be updated.
+	 * @param prevNode		The new previous node.
+	 * @param nextNode		The new next node.
 	 */
 	private void updateNode(Node updateNode, Node prevNode, Node nextNode)
 	{		

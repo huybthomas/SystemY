@@ -24,9 +24,9 @@ public class DebugManager
 	
 	/**
 	 * Does tests on 3 client instances
-	 * @param Client1
-	 * @param Client2
-	 * @param Client3
+	 * @param Client1	One of the 3 clients made for the test.
+	 * @param Client2	One of the 3 clients made for the test.
+	 * @param Client3	One of the 3 clients made for the test.
 	 */
 	public DebugManager(Client c1, Client c2, Client c3, Server server)
 	{		
@@ -219,9 +219,9 @@ public class DebugManager
 		{
 			printDebugInfo("Bootstrap", e.getMessage());
 		}
-		catch (RemoteException e) 
+		catch(NullPointerException | RemoteException e) 
 		{
-			System.err.println("NodeServer exception"+ e.getMessage());
+			System.err.println("NodeServer exception: "+ e.getMessage());
 		}
 	}
 	
@@ -322,7 +322,7 @@ public class DebugManager
 		{
 			printDebugInfo("Shutdown", e.getMessage());
 		}
-		catch (RemoteException e) 
+		catch(NullPointerException | RemoteException e) 
 		{
 			System.err.println("NodeServer exception"+ e.getMessage());
 		}
@@ -409,7 +409,7 @@ public class DebugManager
 		{
 			printDebugInfo("Failure", e.getMessage());
 		}
-		catch(RemoteException e) 
+		catch(NullPointerException | RemoteException e) 
 		{
 			System.err.println("NodeServer exception: "+ e.getMessage());
 		}
@@ -417,8 +417,8 @@ public class DebugManager
 	
 	/**
 	 * Prints debug information.
-	 * @param String	header	
-	 * @param String	message	
+	 * @param header	The nature of the message.
+	 * @param message	The message that needs to be printed.
 	 */
 	private void printDebugInfo(String header, String message)
 	{

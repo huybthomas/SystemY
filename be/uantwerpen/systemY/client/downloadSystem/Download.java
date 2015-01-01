@@ -15,15 +15,16 @@ public class Download
 	private DownloadObserver observer;
 	private String fileName;
 	private Node fileOwner;
-	private boolean ownerSwitch;
+	private int downloadMode;
 	private Thread downloadThread;
+	private TCPConnection connection;
 	
-	public Download(DownloadManager downloadManager, String fileName, Node fileOwner, boolean ownerSwitch)
+	public Download(DownloadManager downloadManager, String fileName, Node fileOwner, int downloadMode)
 	{
 		this.downloadManager = downloadManager;
 		this.fileName = fileName;
 		this.fileOwner = fileOwner;
-		this.ownerSwitch = ownerSwitch;
+		this.downloadMode = downloadMode;
 		this.downloadThread = new Thread(downloadProcedure);
 		this.observer = new DownloadObserver();
 	}
@@ -38,9 +39,9 @@ public class Download
 		return this.fileName;
 	}
 	
-	public boolean getOwnerSwitchState()
+	public int getDownloadMode()
 	{
-		return this.ownerSwitch;
+		return this.downloadMode;
 	}
 	
 	public Node getDownloadFileOwner()
@@ -60,15 +61,18 @@ public class Download
 			if(fileProperties != null)
 			{
 				//Get all replications locations and balance load over all these nodes. IMPLEMENTATION FOLLOWS...
-				downloadThread.start();
+				if(downloadThread.getState() == Thread.State.NEW)
+				{
+					downloadThread.start();
+				}
 			}
 			else
 			{
-				System.err.println("File not found on file owner.");
+				System.err.println("File '" + fileName + "' not found on file owner.");
 				return false;
 			}
 		}
-		catch(RemoteException e)
+		catch(NullPointerException | RemoteException e)
 		{
 			System.err.println("Can't contact file owner for download (" + fileName + ") : " + e.getMessage());
 			downloadManager.nodeConnectionFailure(fileOwner.getHostname());
@@ -79,7 +83,14 @@ public class Download
 	
 	public boolean cancelDownload()
 	{
-		return false;					//Implementation later on
+		if(downloadThread.isAlive())
+		{
+			if(connection != null)
+			{
+				return connection.closeConnection();
+			}
+		}
+		return false;
 	}
 	
 	@Override
@@ -107,9 +118,9 @@ public class Download
 	
 	private Runnable downloadProcedure = new Runnable()
 	{
+		@Override
 		public void run()
 		{
-			TCPConnection connection = null;
 			boolean downloadStarted = false;
 			long fileSize = 0;
 			byte[] respons = null;
@@ -117,6 +128,13 @@ public class Download
 			
 			try
 			{
+				if(downloadManager.checkFileExist(fileName))		//File already exists in folder, no need to download
+				{
+					System.out.println("Requested file '" + fileName + "' already exists.");
+					downloadFinished(true, downloadStarted);
+					return;
+				}
+				
 				connection = downloadManager.getTCPConnection(fileOwner.getIpAddress());
 				
 				connection.sendData(fileRequest);
@@ -133,14 +151,6 @@ public class Download
 				{
 					fileSize = Long.valueOf(new String(respons)).longValue();
 				}
-				
-				if(downloadManager.checkLocalFileExist(fileName))
-				{
-					connection.closeConnection();
-					System.out.println("Requested file already exists.");
-					downloadFinished(true, downloadStarted);
-					return;
-				}
 	
 				downloadManager.createNewFile(fileName);
 				downloadStarted = true;
@@ -151,14 +161,19 @@ public class Download
 				byte[] fileBuffer = new byte[1024];		//1kB packetsize
 				long downloadedFileSize = 0;
 				int packetSize = 0;
+				
+				System.out.println("Download '" + fileName + "' started...");
+				
 				while((packetSize = fileReceiver.read(fileBuffer, 0, 1024)) >= 0)		//End of file: packetSize == -1
 				{
-					System.out.println("Downloading '" + fileName + "': " + downloadedFileSize + " bytes - " + fileSize + " bytes.");
+					//System.out.println("Downloading '" + fileName + "': " + downloadedFileSize + " bytes - " + fileSize + " bytes.");
 					downloadedFileSize += packetSize;
 					fileWriter.write(fileBuffer, 0, packetSize);
 					observer.setChanged();
 					observer.notifyObservers(downloadedFileSize + "//" + fileSize);
 				}
+				
+				System.out.println("Download '" + fileName + "' finished.");
 				
 				fileReceiver.close();
 				fileWriter.close();
@@ -167,9 +182,14 @@ public class Download
 			}
 			catch(IOException e)
 			{
-				System.err.println("Download file: " + e.getMessage());
+				System.err.println("Download file: " + fileName + " failed: " + e.getMessage());
 				downloadFinished(false, downloadStarted);
 				connection.closeConnection();
+			}
+			catch(NullPointerException e)
+			{
+				System.err.println("Download file: " + fileName + " failed: No TCP-connection available - " + e.getMessage());
+				downloadFinished(false, downloadStarted);
 			}
 		}
 	};

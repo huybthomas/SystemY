@@ -18,8 +18,8 @@ public class DiscoveryManager
 	
 	/**
 	 * Receives packets from the multicast.
-	 * @param MulticastObserver	observer of the multicast server
-	 * @param Server	the server
+	 * @param observer	Observer of the multicast server.
+	 * @param server	The server that was made.
 	 */
 	public DiscoveryManager(MulticastObserver observer, Server server)
 	{
@@ -36,7 +36,7 @@ public class DiscoveryManager
 	
 	/**
 	 * Reads received packets from the multicast.
-	 * @param DatagramPacket	datagram message that is received from observer of multicast
+	 * @param datagram	datagram message that is received from observer of multicast
 	 */
 	private void multicastReceived(DatagramPacket datagram)
 	{
@@ -53,6 +53,11 @@ public class DiscoveryManager
 				{
 					server.printTerminalInfo("New node connected. Host: " + clientname + " - ip: " + ipAddress);
 				}
+				else
+				{
+					server.delNode(clientname);
+					server.printTerminalError("Can't send connection info to the new node. Host: " + clientname);
+				}
 			}
 			else
 			{
@@ -63,9 +68,9 @@ public class DiscoveryManager
 	
 	/**
 	 * Sends an answer to the new node.
-	 * @param String	clientname 	the name from the node you are trying to reach
-	 * @param String 	ip 			the ip from the node you want to reach
-	 * @return boolean 	True if successful, false if failed
+	 * @param clientname 	The name from the node you are trying to reach.
+	 * @param ip 			The ip from the node you want to reach.
+	 * @return boolean 		True if successful, false if failed.
 	 */
 	private boolean sendNetworkInfo(String clientname, String ip)
 	{	
@@ -77,7 +82,7 @@ public class DiscoveryManager
 			{
 				bInterface.setNetwork(server.getServerIP(), (server.getNetworkSize() - 1));
 			}
-			catch(RemoteException e)
+			catch(NullPointerException | RemoteException e)
 			{
 				System.err.println("RMI message to: " + ip + " failed!");
 				server.nodeConnectionFailure(clientname);

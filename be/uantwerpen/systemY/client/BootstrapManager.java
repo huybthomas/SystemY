@@ -7,10 +7,10 @@ import java.util.Observer;
 
 import be.uantwerpen.systemY.interfaces.BootstrapManagerInterface;
 import be.uantwerpen.systemY.shared.Node;
-import be.uantwerpen.systemY.timeOut.TimeOutService;
+import be.uantwerpen.systemY.timer.TimerService;
 
 /**
- * Class that handles the bootstrap of a client
+ * Class that handles the bootstrap of a client.
  * @extends UnicastRemoteObject
  * @implements BootstrapManagerInterface
  */
@@ -20,17 +20,17 @@ public class BootstrapManager extends UnicastRemoteObject implements BootstrapMa
 	private Client client;
 	private boolean serverRespons, prevNodeRespons;
 	private boolean firstNetworkNode;
-	private TimeOutService timeOut;
+	private TimerService timeOut;
 	
 	/**
 	 * Create the BootstrapManager object.
-	 * @param Client	the client
+	 * @param client	The client where the bootstrapmanager is summoned upon.
 	 * @throws RemoteException
 	 */
 	public BootstrapManager(Client client) throws RemoteException
 	{
 		this.client = client;
-		this.timeOut = new TimeOutService(3000);
+		this.timeOut = new TimerService(3000);	//3 seconds
 		
 		timeOut.getObserver().addObserver(new Observer()
 		{
@@ -42,9 +42,9 @@ public class BootstrapManager extends UnicastRemoteObject implements BootstrapMa
 	}
 	
 	/**
-	 * Sets the linked next and previous nodes to a client
-	 * @param Node 	prevNode
-	 * @param Node 	nextNode
+	 * Sets the links to the next and previous nodes of a client. This is the final step in the bootstrap.
+	 * @param prevNode	The previous node, adjacent to this node.
+	 * @param nextNode	The next node, adjacent to this node.
 	 */
 	public void setLinkedNodes(Node prevNode, Node nextNode)
 	{
@@ -55,9 +55,9 @@ public class BootstrapManager extends UnicastRemoteObject implements BootstrapMa
 	}
 	
 	/**
-	 * Give the server ip address and the network size to the new node.
-	 * @param String	serverIP
-	 * @param int	networkSize
+	 * Give the server's IP address and the network size to the new node.
+	 * @param serverIP	The IP address of the server.
+	 * @param networkSize	Amount of clients connected to the network.
 	 */
 	public void setNetwork(String serverIP, int networkSize)
 	{
@@ -74,8 +74,8 @@ public class BootstrapManager extends UnicastRemoteObject implements BootstrapMa
 	}
 	
 	/**
-	 * Implements the bootstrap service
-	 * @return boolean	True if succcess, false if not
+	 * Implements the bootstrap service: Initialization of the bootstrap. Reset of the node links and the server IP address. Finally, a discovery multicast is sent.
+	 * @return boolean	True if the function succeeded without errors, false if not.
 	 */
 	public boolean startBootstrap()
 	{
@@ -92,7 +92,7 @@ public class BootstrapManager extends UnicastRemoteObject implements BootstrapMa
 		client.setServerIP(null);
 		
 		if(client.bindRMIservice(this, "Bootstrap_" + client.getHostname()))
-		{
+		{			
 			if(sendDiscoveryMulticast())
 			{
 				timeOut.startTimer();												//Start time out detection
@@ -111,8 +111,8 @@ public class BootstrapManager extends UnicastRemoteObject implements BootstrapMa
 	}
 	
 	/**
-	 * Sends out a multicast message when entering network
-	 * @return boolean	True if success, false if not
+	 * Sends out a multicast message when entering network.
+	 * @return boolean	True if the function succeeded without errors, false if not.
 	 */
 	private boolean sendDiscoveryMulticast()
 	{
@@ -121,32 +121,52 @@ public class BootstrapManager extends UnicastRemoteObject implements BootstrapMa
 	}
 	
 	/**
-	 * Finish bootstrap services and enter 'running' mode
+	 * Finish bootstrap services and enter 'running' mode.
 	 */
-	private void finishBootstrap()
+	private synchronized void finishBootstrap()
 	{
 		if(serverRespons && (prevNodeRespons || firstNetworkNode))
 		{
 			timeOut.stopTimer();
 			client.unbindRMIservice("Bootstrap_" + client.getHostname());
-			client.runServices();
-			client.setSessionState(true);
-		}
-	}
-	
-	private void timeOutDetection()
-	{
-		if(!client.getSessionState())
-		{
-			client.logoutSystem();
-			if(!serverRespons)
+			
+			if(firstNetworkNode)			//First node creates the file agent
 			{
-				client.printTerminalError("Login time-out. Server did not respond.");
+				client.setFileAgentMaster();
+				client.createFileAgent();
+			}
+			
+			if(client.runService())
+			{
+				client.getObserver().setChanged();
+				client.getObserver().notifyObservers("Login");
 			}
 			else
 			{
-				client.printTerminalError("Login time-out. Previous node did not respond.");
+				client.loginFailed();
 			}
+		}
+	}
+	
+	/**
+	 * Detect a timeout: If the sessionstate of the client is false, the client will log out from the system.
+	 */
+	private void timeOutDetection()
+	{
+		if(!client.unbindRMIservice("Bootstrap_" + client.getHostname()))
+		{
+			client.printTerminalError("Bootstrap wasn't running.");
+		}
+		
+		client.loginFailed();
+		
+		if(!serverRespons)
+		{
+			client.printTerminalError("Login time-out. Server did not respond.");
+		}
+		else
+		{
+			client.printTerminalError("Login time-out. Previous node did not respond.");
 		}
 	}
 }

@@ -60,7 +60,7 @@ public class Node implements Serializable
 	/**
 	 * Returns the hostname of the node
 	 * 
-	 * @return	String	The hostname of the node
+	 * @return	hostname	The hostname of the node
 	 */
 	public String getHostname()
 	{
@@ -70,7 +70,7 @@ public class Node implements Serializable
 	/**
 	 * Returns the ip address of the node
 	 * 
-	 * @return String	The ip address of the node
+	 * @return ipAddress	The ip address of the node
 	 */
 	public String getIpAddress()
 	{
@@ -80,15 +80,18 @@ public class Node implements Serializable
 	/**
 	 * Calculates the hash of the hostname
 	 * 
-	 * @return int	The calculate hash value
+	 * @return i	The calculate hash value
 	 */
 	public int getHash()
 	{
-		int i = hostname.hashCode();
-		i = Math.abs(i % 32768);
-		return i;
+		return new HashFunction().getHash(hostname);
 	}
 	
+	/**
+	 * Makes a comparison between two nodes.
+	 * @param object	part of the node
+	 * @return	boolean
+	 */
 	@Override
 	public boolean equals(Object object)
 	{

@@ -19,7 +19,7 @@ public class TerminalReader implements Runnable
 	
 	/**
 	 * Get the observer of the TerminalReader. Observer will notified when a new input has been entered.
-	 * @return TerminalObserver		Observer of the TerminalReader
+	 * @return observer		Observer of the TerminalReader
 	 */
 	public TerminalObserver getObserver()
 	{

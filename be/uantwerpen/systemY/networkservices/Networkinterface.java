@@ -12,11 +12,11 @@ public class Networkinterface
 	private Thread tcpThread;
 	
 	/**
-	 * sets up the RMIsevice and multicastservice
-	 * @param String	networkIP
-	 * @param int	rmiPort
-	 * @param String	multicastIP
-	 * @param int	multicastPort
+	 * Sets up the RMIsevice and multicastservice.
+	 * @param networkIP		The ip of the object that makes the network interface.
+	 * @param rmiPort		The port on which the rmi call needs to happen.
+	 * @param multicastIP	The ip of the multicast.
+	 * @param multicastPort	The port on which the multicast needs to happen.
 	 */
 	public Networkinterface(String networkIP, int rmiPort, int tcpSendPort, int tcpReceivePort, String multicastIP, int multicastPort)
 	{
@@ -24,7 +24,7 @@ public class Networkinterface
 		this.rmiService = new RMIservice(networkIP, rmiPort);
 		
 		//Setup multicastservice
-		this.multicastservice = new Multicastservice(multicastIP, multicastPort);
+		this.multicastservice = new Multicastservice(multicastIP, networkIP, multicastPort);
 		
 		//Setup TCPservice
 		this.tcpService = new TCPservice(tcpSendPort, tcpReceivePort);
@@ -34,7 +34,7 @@ public class Networkinterface
 	}
 	
 	/**
-	 * request multicast observer
+	 * Request multicast observer.
 	 * @return MulticastObserver
 	 */
 	public MulticastObserver getMulticastObserver()
@@ -43,7 +43,7 @@ public class Networkinterface
 	}
 	
 	/**
-	 * start RMIServer
+	 * Start RMIServer.
 	 * @return boolean	True if successful, false if failed
 	 */
 	public boolean startRMIServer()
@@ -52,9 +52,9 @@ public class Networkinterface
 	}
 	
 	/**
-	 * bind the RMI server
-	 * @param Object	object to bind	
-	 * @param String	bindName for bindlocation
+	 * Bind the RMI server.
+	 * @param object	Object to bind.	
+	 * @param bindName	Name of the service that needs to be bound.
 	 * @return boolean	True if successful, false if failed
 	 */
 	public boolean bindRMIServer(Object object, String bindName)
@@ -63,9 +63,9 @@ public class Networkinterface
 	}
 	
 	/**
-	 * unbind the RMI server
-	 * @param String 	bindName to unbind
-	 * @return boolean	True if successful, false if failed
+	 * Unbind the RMI server.
+	 * @param bindName 	Name of the service that needs to be unbound.
+	 * @return boolean	True if successful, false if failed.
 	 */
 	public boolean unbindRMIServer(String bindName)
 	{
@@ -73,9 +73,9 @@ public class Networkinterface
 	}
 	
 	/**
-	 * get the RMI Interface
-	 * @param String	bindLocation
-	 * @return boolean	True if successful, false if failed
+	 * Get the RMI Interface.
+	 * @param bindLocation	The location where the RMI needs to be checked.
+	 * @return boolean	True if successful, false if failed.
 	 */
 	public Object getRMIInterface(String bindLocation)
 	{
@@ -83,8 +83,8 @@ public class Networkinterface
 	}
 	
 	/**
-	 * Set up the multi cast service and returns success.
-	 * @return boolean	True if successful, false if failed
+	 * Set up the multicast service and returns success.
+	 * @return boolean	True if successful, false if failed.
 	 */
 	public boolean setupMulticastservice()
 	{
@@ -92,9 +92,9 @@ public class Networkinterface
 	}
 	
 	/**
-	 * send a multicast message
-	 * @param byte[]	message	to send
-	 * @return boolean	True if successful, false if failed
+	 * Send a multicast message.
+	 * @param message	The message that needs to be send.
+	 * @return boolean	True if successful, false if failed.
 	 */
 	public boolean sendMulticast(byte[] message)
 	{
@@ -102,16 +102,19 @@ public class Networkinterface
 	}
 	
 	/**
-	 * start the multicast service
+	 * Start the multicast service.
 	 */
 	public void runMulticastservice()
 	{
-		multicastThread.start();
+		if(multicastThread.getState() == Thread.State.NEW)
+		{
+			multicastThread.start();
+		}
 	}
 	
 	/**
-	 * stop the multicast service
-	 * @return boolean True if successful, false if failed
+	 * Stop the multicast service.
+	 * @return boolean True if successful, false if failed.
 	 */
 	public boolean stopMulticastservice()
 	{

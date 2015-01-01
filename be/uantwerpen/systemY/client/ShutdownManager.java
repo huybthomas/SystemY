@@ -47,7 +47,14 @@ public class ShutdownManager
 				System.err.println("Step 1 in shutdown fail: "+ e.getMessage());
 				if(this.client.nodeConnectionFailure(nextNode.getHostname()))
 				{
-					nextNode = client.getNextNode();
+					if(client.getNextNode().equals(nextNode))		//This node is not located in the network anymore
+					{
+						return false;
+					}
+					else
+					{
+						nextNode = client.getNextNode();
+					}
 				}
 				else
 				{
@@ -62,7 +69,7 @@ public class ShutdownManager
 		{
 			try 
 			{
-				if(!prevNode.equals(client.getThisNode()))		//If previous node is himself, no need to change the prevNode
+				if(!prevNode.equals(client.getThisNode()))			//If previous node is himself, no need to change the prevNode
 				{
 					NodeLinkManagerInterface iFace = (NodeLinkManagerInterface)client.getNodeLinkInterface(prevNode);
 					iFace.setNext(nextNode);
@@ -74,7 +81,14 @@ public class ShutdownManager
 				System.err.println("Step 2 in shutdown fail: "+ e.getMessage());
 				if(this.client.nodeConnectionFailure(prevNode.getHostname()))
 				{
-					prevNode = client.getPrevNode();
+					if(client.getPrevNode().equals(prevNode))		//This node is not located in the network anymore
+					{
+						return false;
+					}
+					else
+					{
+						prevNode = client.getPrevNode();
+					}
 				}
 				else
 				{

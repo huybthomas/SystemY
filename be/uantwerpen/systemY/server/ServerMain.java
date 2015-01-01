@@ -54,7 +54,7 @@ public class ServerMain
 	
 	/**
 	 * Makes it possible to add options as an argument when starting the server.
-	 * @param args
+	 * @param args	The options added in the run configurations.
 	 */
 	private static void argsCommand(String[] args)
 	{
@@ -90,6 +90,14 @@ public class ServerMain
 						System.out.println("Invalid arguments for -multicast");
 					}
 					break;
+				case "-help":
+					System.out.println("SystemY Server application - 2014");
+					System.out.println("Starts the server for connecting to SystemY. SystemY is a distributed file system for local networks.");
+					System.out.println("\nOptions: ");
+					System.out.println("\t-ip {ip}:{port}\t\tThe given ip will be used for all communication from the server to the network.\n\t\t\t\tThe ip must be the ip of the physical interface connected to the local network with SystemY.");
+					System.out.println("\t-tcpPort {port}\tThis feature is for future purposes.");
+					System.out.println("\t-multicast {ip}:{port}\tThis feature is for future purposes.");
+					System.exit(0);
 				default:
 					System.out.println("Unkown option '" + args[i] + "'");
 					break;

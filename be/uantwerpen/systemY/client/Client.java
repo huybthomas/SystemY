@@ -1,9 +1,12 @@
 package be.uantwerpen.systemY.client;
 
+import java.io.File;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import be.uantwerpen.systemY.client.agent.AgentManager;
+import be.uantwerpen.systemY.client.downloadSystem.Download;
 import be.uantwerpen.systemY.client.downloadSystem.FileManager;
 import be.uantwerpen.systemY.client.downloadSystem.FileProperties;
 import be.uantwerpen.systemY.interfaces.NodeLinkManagerInterface;
@@ -12,11 +15,11 @@ import be.uantwerpen.systemY.networkservices.TCPConnection;
 import be.uantwerpen.systemY.shared.Node;
 
 /**
- * Client class is the main class of the network nodes in the SystemY project
+ * Client class is the main class of the network nodes in the SystemY project.
  */
 public class Client
 {
-	private static final String version = "v0.3";
+	private static final String version = "v0.6";
 	private Terminal terminal;
 	private NodeLinkManager nodeLinkManager;
 	private BootstrapManager bootstrap;
@@ -28,27 +31,38 @@ public class Client
 	private FailureManager failureM;
 	private Networkinterface iFace;
 	private boolean activeSession;
+	private boolean forceShutdown;
+	private ClientObserver observer;
 	
 	/**
 	 * Creates the Client Object.
-	 * @param boolean	enableTerminal	make client boot along with a terminal window
-	 * @param String	hostname	the client's hostname
-	 * @param String	networkIP	the client's ip address
-	 * @param int	tcpPort		the port for the tcp connections
-	 * @param int	rmiPort		the port for the remote method invocation calls
-	 * @param String	multicastIP	the ip for multicasts
-	 * @param int	multicastPort	the port for multicasts
+	 * @param enableTerminal	Make client boot along with a terminal window for user input.
+	 * @param hostname			The client's hostname used to identify a node in the network,
+	 * 							this name must be unique in the network.	
+	 * @param networkIP			The client's IP address of the networkcard connected to the systemY network,
+	 * 							given as a String-value.
+	 * @param tcpReceivePort	The port used for receiving file requests through TCP connections
+	 * @param tcpSendPort		The port used for sending file requests through TCP connections
+	 * @param rmiPort			The port used for the remote method invocation calls, this port must be
+	 * 							the same on each node in the network.
+	 * @param multicastIP		The IP address used for multicasts messages on the network, this ip address
+	 * 							must be the same on each node in the network and in the range of valid
+	 * 							broadcast address.
+	 * @param multicastPort		The port used for multicast messages on the network.
 	 * @throws RemoteException
 	 */
-	public Client(boolean enableTerminal, String hostname, String networkIP, int tcpPort, int rmiPort, String multicastIP, int multicastPort) throws RemoteException
+	public Client(boolean enableTerminal, String hostname, String networkIP, int tcpReceivePort, int tcpSendPort, int rmiPort, String multicastIP, int multicastPort) throws RemoteException
 	{
 		activeSession = false;
+		forceShutdown = false;
+		
+		this.observer = new ClientObserver();
 		
 		//setup terminal
 		terminal = new Terminal(this);
 		
 		//setup networkinterface
-		iFace = new Networkinterface(networkIP, rmiPort, tcpPort, tcpPort, multicastIP, multicastPort);
+		iFace = new Networkinterface(networkIP, rmiPort, tcpReceivePort, tcpSendPort, multicastIP, multicastPort);
 		
 		fileManager = new FileManager(this.iFace.getTCPObserver(), this);
 		
@@ -73,16 +87,37 @@ public class Client
 	}
 	
 	/**
-	 * Make client login to SystemY
-	 * @return boolean	True if success, false if not
+	 * Get the client's observer
+	 * @return observer		The Client's Observer
+	 */
+	public ClientObserver getObserver()
+	{
+		return this.observer;
+	}
+	
+	/**
+	 * Make the client log in to SystemY.
+	 * @return True if the function succeeded without errors, false if not.
 	 */
 	public boolean loginSystem()
 	{
-		if(!activeSession)	
+		if(!activeSession)
 		{
+			this.setSessionState(true);
+			
+			//Create services
+			this.createServices();
+			
 			if(!bootstrap.startBootstrap())
 			{
+				this.setSessionState(false);
+				
+				//Stop the created services
+				this.stopServices();
+				
 				printTerminalError("Login failed! Bootstrap didn't launch correctly.");
+				this.observer.setChanged();
+				this.observer.notifyObservers("LoginFailed");
 				return false;
 			}
 		}
@@ -94,37 +129,212 @@ public class Client
 		return true;
 	}
 	
-	/**
-	 * Make client logout of SystemY
-	 * @return boolean	True if success, false if not
-	 */
-	public boolean logoutSystem()
+	public void loginFailed()
 	{
-		if(!activeSession)
-		{
-			if(!iFace.unbindRMIServer("Bootstrap_" + getHostname()))
-			{
-				printTerminalError("Bootstrap wasn't running.");
-			}
-			printTerminalError("No active session running.");
-		}
-		else
-		{
-			fileManager.shutdownTransfer();
-			stopServices();
-		}
+		shutdownM.shutdown();
 		
 		activeSession = false;
+		this.agentM.setFileAgentMaster(false);
+		
+		if(agentM.isAgentMaster() && !this.getPrevNode().equals(this.getThisNode()))		//Next node becomes agent master
+		{
+			this.assignFileAgentMaster(this.getNextNode());
+		}
+		
+		stopServices();
+		
+		fileManager.shutdownFileClear();
+		
+		printTerminalError("Client couldn't login to the system.");
+		this.observer.setChanged();
+		this.observer.notifyObservers("LoginFailed");
+	}
+	
+	/**
+	 * Make the client log out of SystemY
+	 * @return True if the function succeeded without errors, false if not.
+	 */
+	public boolean logoutSystem()
+	{		
+		boolean status = true;
+		
+		if(!activeSession)
+		{
+			printTerminalError("No active session running.");
+			return true;
+		}
+		
+		System.out.println("LOGOUT01");
+		
+		if(fileManager.getQueuedDownloads() > 0 || agentM.getLockQueue().size() > 0 || agentM.getUnlockQueue().size() > 0 || agentM.getFailedNodeQueue().size() > 0 || agentM.getFailureAgentsRunning() > 0 || agentM.getDeleteFileQueue().size() > 0 || agentM.getDeletionAgentsRunning() > 0 || fileManager.getDownloadsHosting() > 0)
+		{
+			printTerminalInfo("Waiting for running downloads to finish.");
+			this.observer.setChanged();
+			this.observer.notifyObservers("WaitingForDownloads");
+		}
+		
+		while((fileManager.getQueuedDownloads() > 0 || agentM.getLockQueue().size() > 0 || agentM.getUnlockQueue().size() > 0 || agentM.getFailedNodeQueue().size() > 0 || agentM.getFailureAgentsRunning() > 0 || agentM.getDeleteFileQueue().size() > 0 || agentM.getDeletionAgentsRunning() > 0 || fileManager.getDownloadsHosting() > 0) && !forceShutdown)
+		{
+			//Wait for downloads to finish or until forceShutdown flag is set
+			// stalling the while loop a little
+			try
+			{
+				Thread.sleep(10);
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		
+		this.observer.setChanged();
+		this.observer.notifyObservers("DownloadsReady");
+		this.forceShutdown = false;
+		
+		System.out.println("LOGOUT02");
+		
+		if(!fileManager.shutdownFileUpdate())
+		{
+			printTerminalError("Shutdown file update failed.");
+			status = false;
+		}
+		
+		if(agentM.getDeletionAgentsRunning() > 0 || agentM.getDeleteFileQueue().size() > 0)
+		{
+			printTerminalInfo("Waiting for the notifications to the network to finish.");
+			this.observer.setChanged();
+			this.observer.notifyObservers("WaitingForDeletionAgents");
+		}
+		
+		while((agentM.getDeletionAgentsRunning() > 0 || agentM.getDeleteFileQueue().size() > 0) && !forceShutdown)
+		{
+			//Wait for deletion agent to finish or until forceShutdown flag is set
+			// stalling the while loop a little
+			try
+			{
+				Thread.sleep(10);
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		
+		this.observer.setChanged();
+		this.observer.notifyObservers("DeletionAgentsReady");
+		this.forceShutdown = false;
+		
+		System.out.println("LOGOUT03");
 		
 		if(!shutdownM.shutdown())
 		{
 			printTerminalError("Client didn't logout correctly out of the system.");
-			return false;
+			status = false;
 		}
-
-		return true;
+		
+		activeSession = false;
+		this.agentM.setFileAgentMaster(false);
+		
+		if(agentM.isAgentMaster() && !this.getPrevNode().equals(this.getThisNode()))		//Next node becomes agent master
+		{
+			this.assignFileAgentMaster(this.getNextNode());
+		}
+		
+		if(agentM.getAgentsRunning() > 0)
+		{
+			printTerminalInfo("Waiting for running agents to finish: " + agentM.getAgentsRunning() + " agents.");
+			this.observer.setChanged();
+			this.observer.notifyObservers("WaitingForAgents");
+		}
+		
+		while(agentM.getAgentsRunning() > 0 && !forceShutdown)
+		{
+			//Wait for agents to finish
+			// stalling the while loop a little
+			try
+			{
+				Thread.sleep(10);
+			}
+			catch(InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		
+		this.observer.setChanged();
+		this.observer.notifyObservers("AgentsReady");
+		this.forceShutdown = false;
+		
+		System.out.println("LOGOUT04");
+		
+		if(!fileManager.shutdownTransfer() && status)
+		{
+			printTerminalError("Shutdown filetransfer failed.");
+			status = false;
+		}
+		
+		System.out.println("LOGOUT05");
+		
+		if(fileManager.getDownloadsHosting() > 0)
+		{
+			printTerminalInfo("Waiting for the hosted downloads to finish.");
+			this.observer.setChanged();
+			this.observer.notifyObservers("WaitingForHostedDownloads");
+		}
+		
+		System.out.println("LOGOUT06");
+		
+		while((fileManager.getDownloadsHosting() > 0 || fileManager.getOwnedOwnerFiles().size() > 0) && !forceShutdown)
+		{
+			//Wait for hosted downloads to finish or until forceShutdown flag is set
+			//stalling the while loop a little
+			try
+			{
+				Thread.sleep(10);
+			}
+			catch(InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		
+		System.out.println("LOGOUT07");
+		
+		this.observer.setChanged();
+		this.observer.notifyObservers("HostedDownloadsReady");
+		this.forceShutdown = false;
+		
+		//End of file transaction, shutting down the system
+		stopServices();
+		
+		fileManager.shutdownFileClear();
+		
+		this.observer.setChanged();
+		this.observer.notifyObservers("Logout");
+		
+		if(!status)
+		{
+			this.observer.setChanged();
+			this.observer.notifyObservers("LogoutFailed");
+		}
+		
+		return status;
 	}
 	
+	public void criticalErrorStop()
+	{
+		this.stopServices();
+		this.setSessionState(false);
+		this.agentM.setFileAgentMaster(false);
+		
+		this.getObserver().setChanged();
+		this.getObserver().notifyObservers("ConnectionFailure");
+	}
+	
+	/**
+	 * Adjust the session state variable to the given parameter.
+	 * @param state	The given state: true if a session is made, false if not. 
+	 */
 	public void setSessionState(boolean state)
 	{
 		this.activeSession = state;
@@ -135,45 +345,96 @@ public class Client
 		return this.activeSession;
 	}
 	
+	public void forceShutdown()
+	{
+		this.forceShutdown = true;
+	}
+	
 	/**
 	 * Start RMI and discovery multicast service
-	 * @return boolean	True if success, false if not
+	 * @return True if success, false if not
 	 */
-	public boolean runServices()
+	public boolean createServices()
 	{
-		//Start RMI-server
+		//Start RMI-server (NodeLinkManager)
 		if(!iFace.bindRMIServer(this.nodeLinkManager, "NodeLinkManager_" + getHostname()))
 		{
 			return false;
 		}
 		
-		//Start discovery multicastservice
-		iFace.runMulticastservice();
+		//Reset queues before starting the agent manager service
+		agentM.reset();
+		
+		//Start RMI-server (AgentManager)
+		if(!iFace.bindRMIServer(this.agentM, "AgentManager_" + getHostname()))
+		{
+			return false;
+		}
 		
 		//Start download tcpservice
 		iFace.runTCPListener();
 		
 		//Start fileManager service
-		fileManager.startService();
-		fileManager.bootTransfer();
-				
+		if(!fileManager.startService())
+		{
+			return false;
+		}
+		
+		//Wait for services to be fully configured
+		try
+		{
+			Thread.sleep(1000);
+		}
+		catch(InterruptedException e)
+		{
+			e.printStackTrace();
+		}
+
 		return true;
 	}
 	
-	/**
-	 * Stop multicast, tcp and rmi services
-	 * @return boolean	True if success, false if not
-	 */
+	public boolean runService()
+	{
+		//Start discovery multicastservice
+		iFace.runMulticastservice();
+		
+		return fileManager.bootTransfer();
+	}
+	
 	public boolean stopServices()
 	{
-		boolean stopSuccessful = true;
-		
+		if(this.stopDiscoveryService() && this.stopConnectionServices())
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	/**
+	 * Stop multicast service
+	 * @return True if success, false if not
+	 */
+	public boolean stopDiscoveryService()
+	{
 		//Stop discovery multicastservice
 		if(!iFace.stopMulticastservice())
 		{
 			printTerminalError("Multicastservice didn't stop properly.");
-			stopSuccessful = false;
+			return false;
 		}
+		return true;
+	}
+	
+	/**
+	 * Stop tcp and rmi services
+	 * @return True if success, false if not
+	 */
+	public boolean stopConnectionServices()
+	{
+		boolean stopSuccessful = true;
 		
 		//Stop download tcpservice
 		if(!iFace.stopTCPListener())
@@ -195,14 +456,21 @@ public class Client
 			printTerminalError("RMI service FileManager didn't stop properly.");
 			stopSuccessful = false;
 		}
+		
+		//Stop RMI-server agentManager
+		if(!iFace.unbindRMIServer("AgentManager_" + getHostname()))
+		{
+			printTerminalError("RMI service AgentManager didn't stop properly.");
+			stopSuccessful = false;
+		}
 
 		return stopSuccessful;
 	}
 	
 	/**
 	 * Send multicast to network
-	 * @param byte[] 	message
-	 * @return boolean	True if success, false if not
+	 * @param message
+	 * @return True if success, false if not
 	 */
 	public boolean sendMulticast(byte[] message)
 	{
@@ -223,7 +491,7 @@ public class Client
 	
 	/**
 	 * Set the ip of the nameserver
-	 * @param String	ip
+	 * @param ip
 	 */
 	public void setServerIP(String ip)
 	{
@@ -232,7 +500,7 @@ public class Client
 	
 	/**
 	 * Get the ip of the nameserver
-	 * @return String	ip
+	 * @return ip
 	 */
 	public String getServerIP()
 	{
@@ -241,7 +509,7 @@ public class Client
 	
 	/**
 	 * Set the hostname of this node
-	 * @param String	name
+	 * @param name
 	 */
 	public boolean setHostname(String name)
 	{
@@ -258,7 +526,7 @@ public class Client
 	
 	/**
 	 * Get the hostname of this node
-	 * @return String	name
+	 * @return name
 	 */
 	public String getHostname()
 	{
@@ -267,7 +535,7 @@ public class Client
 	
 	/**
 	 * Get the ip address of this node
-	 * @return String	ip
+	 * @return ip
 	 */
 	public String getIP()
 	{
@@ -276,7 +544,7 @@ public class Client
 	
 	/**
 	 * Set the ip address of this node
-	 * @param String	ip
+	 * @param ip
 	 */
 	public boolean setIP(String ip)
 	{
@@ -293,26 +561,29 @@ public class Client
 	
 	/**
 	 * Set the next and previous nodes of this node
-	 * @param Node	prevNode
-	 * @param Node	nextNode
+	 * @param prevNode
+	 * @param nextNode
 	 */
 	public void setLinkedNodes(Node prevNode, Node nextNode)
 	{
 		this.nodeLinkManager.setLinkedNodes(prevNode, nextNode);
+		this.agentM.checkFileAgentMaster();
 	}
 	
 	/**
 	 * Let the nodeLinkManager add a newNode
-	 * @param Node	newNode
+	 * @param newNode
 	 */
 	public Node updateLinks(Node newNode)
 	{
-		return this.nodeLinkManager.updateLinks(newNode);
+		Node oldNode = this.nodeLinkManager.updateLinks(newNode);
+		this.agentM.checkFileAgentMaster();
+		return oldNode;
 	}
 	
 	/**
 	 * Set the next node of this node
-	 * @param Node	nextNode
+	 * @param nextNode
 	 */
 	public boolean setNextNode(Node node)
 	{
@@ -337,7 +608,7 @@ public class Client
 	
 	/**
 	 * Set the previous node of this node
-	 * @param Node	prevNode
+	 * @param prevNode
 	 */
 	public boolean setPrevNode(Node node)
 	{
@@ -346,6 +617,7 @@ public class Client
 			try 
 			{
 				this.nodeLinkManager.setPrev(node);
+				this.agentM.checkFileAgentMaster();
 				return true;
 			}
 			catch(Exception e) 
@@ -362,7 +634,7 @@ public class Client
 	
 	/**
 	 * Get the next node of this node
-	 * @return Node	nextNode
+	 * @return nextNode
 	 */
 	public Node getNextNode()
 	{
@@ -371,7 +643,7 @@ public class Client
 	
 	/**
 	 * Get the previous node of this node
-	 * @return Node	prevNode
+	 * @return prevNode
 	 */
 	public Node getPrevNode()
 	{
@@ -388,11 +660,96 @@ public class Client
 		this.fileManager.discoveryTransfer();
 	}
 	
+	public boolean checkLocalExistence(String fileName)
+	{
+		return fileManager.checkSystemFileExistence(fileName);
+	}
+	
+	public void importFile(File file)
+	{
+		fileManager.importFile(file);
+	}
+	
+	public void openFile(String fileName)
+	{
+		fileManager.openFile(fileName);
+	}
+	
+	public void deleteFileFromNetwork(String fileName) 
+	{
+		ArrayList<String> deleteFileRequests = new ArrayList<String>(Arrays.asList(fileName));
+		agentM.addDeleteFileQueue(deleteFileRequests);
+	}
+	
+	public void deleteFilesFromNetwork(ArrayList<String> files)
+	{
+		agentM.addDeleteFileQueue(files);
+	}
+	
+	public boolean canBeDeleted(String fileName) 
+	{
+		if(checkLocalExistence(fileName)) 
+		{
+			return fileManager.canBeDeleted(fileName);
+		} 
+		else 
+		{
+			return false;
+		}
+	}
+	
+	public boolean deleteLocalFile(String fileName)
+	{
+		if(canBeDeleted(fileName))
+		{
+			fileManager.deleteFileRequest(fileName);
+			fileManager.deleteDownloadLocation(fileName);
+			
+			this.observer.setChanged();
+			this.observer.notifyObservers("UpdateNetworkFiles");
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean deleteFilesFromSystem(ArrayList<String> deleteFileRequests) 
+	{
+		return fileManager.deleteFilesFromSystem(deleteFileRequests);
+	}
+	
+	public void downloadRequest(Download download)
+	{
+		this.agentM.addLockQueue(download);
+	}
+	
+	public void runDownload(Download download)
+	{
+		this.fileManager.runDownload(download);
+	}
+	
+	public void downloadFinished(String filename)
+	{
+		this.agentM.addUnlockQueue(filename);
+		
+		this.observer.setChanged();
+		this.observer.notifyObservers("UpdateNetworkFiles");
+	}
+	
+	public String getDownloadLocation()
+	{
+		return this.fileManager.getDownloadLocation();
+	}
+	
+	public boolean setDownloadLocation(String location)
+	{
+		return this.fileManager.setDownloadLocation(location);
+	}
+	
 	/**
 	 * Bind object to bindlocation
-	 * @param Object	object to bind
-	 * @param String	bindName
-	 * @return boolean	True if success, false if not
+	 * @param object to bind
+	 * @param bindName
+	 * @return True if success, false if not
 	 */
 	public boolean bindRMIservice(Object object, String bindName)
 	{
@@ -401,8 +758,8 @@ public class Client
 	
 	/**
 	 * Unbind bindlocation
-	 * @param String	bindName
-	 * @return boolean	True if success, false if not
+	 * @param bindName
+	 * @return True if success, false if not
 	 */
 	public boolean unbindRMIservice(String bindName)
 	{
@@ -451,15 +808,12 @@ public class Client
 	
 	/**
 	 * Handles the failure of a node, returns true if the failure is handled correctly.
-	 * @param String	hostname
-	 * @return boolean	True if connection failure handled correctly, false if not
+	 * @param hostname
+	 * @return True if connection failure handled correctly, false if not
 	 */
 	public boolean nodeConnectionFailure(String hostname)
 	{
 		return this.failureM.nodeConnectionFailure(hostname);
-		//boolean bool = this.failureM.nodeConnectionFailure(hostname);
-		//this.agentM.FailureAgentNextNode();
-		//return bool;
 	}
 	
 	/**
@@ -470,7 +824,12 @@ public class Client
 		this.failureM.serverConnectionFailure();
 	}
 	
-	public ArrayList<FileProperties> getOwnedFiles()
+	public ArrayList<FileProperties> getOwnedOwnerFiles()
+	{
+		return fileManager.getOwnedOwnerFiles();
+	}
+	
+	public ArrayList<String> getOwnedFiles()
 	{
 		return fileManager.getOwnedFiles();
 	}
@@ -487,12 +846,32 @@ public class Client
 	
 	public void setNetworkFiles(ArrayList<String> networkFiles)
 	{
-		this.fileManager.setNetworkFiles(networkFiles);
+		if(!this.fileManager.getNetworkFiles().containsAll(networkFiles) || (this.fileManager.getNetworkFiles().size() != networkFiles.size()))
+		{
+			this.fileManager.setNetworkFiles(networkFiles);
+			this.observer.setChanged();
+			this.observer.notifyObservers("UpdateNetworkFiles");
+		}
+	}
+	
+	public void createFileAgent()
+	{
+		this.agentM.createFileAgent();
+	}
+	
+	public void setFileAgentMaster()
+	{
+		this.agentM.setFileAgentMaster(true);
+	}
+	
+	public boolean assignFileAgentMaster(Node node)
+	{
+		return this.agentM.assignFileAgentMaster(node);
 	}
 	
 	/**
 	 * Prints to the Terminal.
-	 * @param String	message
+	 * @param message
 	 */
 	public void printTerminal(String message)
 	{
@@ -501,7 +880,7 @@ public class Client
 	
 	/**
 	 * Prints info message on the Terminal.
-	 * @param String	message
+	 * @param message
 	 */
 	public void printTerminalInfo(String message)
 	{
@@ -510,7 +889,7 @@ public class Client
 	
 	/**
 	 * Prints error message on the Terminal.
-	 * @param String 	message
+	 * @param message
 	 */
 	public void printTerminalError(String message)
 	{
@@ -526,10 +905,15 @@ public class Client
 		return activeSession;
 	}
 	
+	public String getVersion()
+	{
+		return version;
+	}
+	
 	/**
 	 * Pings the given node.
-	 * @param Node		the node to be pinged.
-	 * @return boolean	True if connection succeed, otherwise false.
+	 * @param the node to be pinged.
+	 * @return True if connection succeed, otherwise false.
 	 */
 	public boolean ping(Node node)
 	{
@@ -551,20 +935,25 @@ public class Client
 	
 	/**
 	 * Start RMI and multicast services
-	 * @return boolean	True if connection succeed, otherwise false.
+	 * @return True if connection succeed, otherwise false.
 	 */
 	private boolean setupServices()
 	{
+		boolean ready = true;
+		
 		//Start RMI-server
-		iFace.startRMIServer();
+		if(!iFace.startRMIServer())
+		{
+			ready = false;
+		}
 						
 		//Start multicastservice
 		if(!iFace.setupMulticastservice())
 		{
-			return false;
+			ready = false;
 		}
 		
-		return true;
+		return ready;
 	}
 	
 	/**
@@ -577,8 +966,23 @@ public class Client
 		System.out.println("Next: " + this.nodeLinkManager.getNext().getHostname() + " - HASH: " + this.nodeLinkManager.getNext().getHash());
 	}
 	
-	public void downloadFile(String filename)
+	public void TESTprintOwnerFiles()
 	{
-		this.fileManager.downloadFile(filename);
+		ArrayList<FileProperties> list = this.fileManager.getOwnedOwnerFiles();
+		
+		for(FileProperties fp : list)
+		{
+			System.out.println("Owner of file: " + fp.getFilename());
+			if(fp.getReplicationLocation() != null)
+			{
+				System.out.println("Replication location: " + fp.getReplicationLocation().getHostname());
+			}
+			System.out.println("Download locations:");
+			for(Node node: fp.getDownloadLocations())
+			{
+				System.out.println("- " + node.getHostname());
+			}
+			System.out.println("-------------------------------------------------");
+		}
 	}
 }

@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import be.uantwerpen.systemY.shared.HashFunction;
 import be.uantwerpen.systemY.shared.Node;
 
 /**
@@ -33,7 +34,7 @@ public class NodeList implements Serializable
 	
 	/**
 	 * Returns the HashMap of the NodeList.
-	 * @return HashMap<Integer, Node>
+	 * @return nodeMap	
 	 */
 	public HashMap<Integer, Node> getNodeList()
 	{
@@ -42,9 +43,9 @@ public class NodeList implements Serializable
 	
 	/**
 	 * Adds a Node to the NodeList.
-	 * @param String	hostname of the new node
-	 * @param String 	ipAddress of the new node
-	 * @return boolean	true if successful, false otherwise
+	 * @param hostname	Hostname of the new node.
+	 * @param ipAddress	IpAddress of the new node.
+	 * @return boolean	True if successful, false otherwise.
 	 */
 	public boolean addNode(String hostname, String ipAddress)
 	{
@@ -62,8 +63,8 @@ public class NodeList implements Serializable
 	
 	/**
 	 * Deletes a node from the NodeList.
-	 * @param String 	hostname to delete
-	 * @return boolean	True if successful, false otherwise
+	 * @param hostname 	Hostname of node you want to delete.
+	 * @return boolean	True if successful, false otherwise.
 	 */
 	public boolean delNode(String hostname)
 	{
@@ -80,9 +81,17 @@ public class NodeList implements Serializable
 	}
 	
 	/**
+	 * Clear all nodes from the list
+	 */
+	public void clearList()
+	{
+		nodeMap.clear();
+	}
+	
+	/**
 	 * Returns the ip of the given hostname.
-	 * @param String	hostname 
-	 * @return String	ip in String format
+	 * @param hostname		The name of the node you want to get.
+	 * @return ipAddress	Returns the ipAddress of the node.
 	 */
 	public String getNode(String hostname)
 	{
@@ -99,8 +108,8 @@ public class NodeList implements Serializable
 	
 	/**
 	 * Returns the node of the file's location.
-	 * @param String	filename 	name of the requested file
-	 * @return Node		fileowner of the requested file, null if there are no hosts in the list
+	 * @param filename 	Name of the requested file.
+	 * @return Fileowner of the requested file in the form of a node, null if there are no hosts in the list.
 	 */
 	public Node getFileLocation(String filename)
 	{
@@ -143,8 +152,8 @@ public class NodeList implements Serializable
 	
 	/**
 	 * Calculates the next node.
-	 * @param String	hostname	the hostname of the host
-	 * @return Node		returns the next node of the host, null if the host is not in the list
+	 * @param hostname	The hostname of the host you want to calculate next node of.
+	 * @return The next node of the host, null if the host is not in the list.
 	 */
 	public Node getNextNode(String hostname) 
 	{
@@ -174,8 +183,8 @@ public class NodeList implements Serializable
 	
 	/**
 	 * Calculates the previous node.
-	 * @param String	hostname	the hostname of the host
-	 * @return Node		returns the previous node of the host, null if the host is not in the list
+	 * @param hostname	The hostname of the host you want the previous node of.
+	 * @return The previous node of the host, null if the host is not in the list.
 	 */
 	public Node getPrevNode(String hostname) 
 	{
@@ -205,8 +214,8 @@ public class NodeList implements Serializable
 	
 	/**
 	 * Checks if a hostname exists.
-	 * @param String	hostname	name of the host to be checked
-	 * @return	boolean	True if successful, false otherwise
+	 * @param hostname	Name of the host to be checked.
+	 * @return	boolean	True if successful, false otherwise.
 	 */
 	private boolean checkNodeExistence(String hostname)
 	{
@@ -215,13 +224,11 @@ public class NodeList implements Serializable
 	
 	/**
 	 * Calculates the hash of a string.
-	 * @param String	name	String to be hashed
-	 * @return int		The hash
+	 * @param name	String to be hashed.
+	 * @return i	The hashvalue.
 	 */
 	private int calculateHash(String name)
 	{
-		int i = name.hashCode();
-		i = Math.abs(i % 32768);
-		return i;
+		return new HashFunction().getHash(name);
 	}
 }
