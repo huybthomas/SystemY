@@ -19,7 +19,7 @@ public class TerminalReader implements Runnable
 	
 	/**
 	 * Get the observer of the TerminalReader. Observer will notified when a new input has been entered.
-	 * @return observer		Observer of the TerminalReader
+	 * @return The observer instance of the TerminalReader.
 	 */
 	public TerminalObserver getObserver()
 	{
@@ -27,7 +27,8 @@ public class TerminalReader implements Runnable
 	}
 	
 	/**
-	 * Runnable interface of the TerminalReader. Execute to get the input of the console once.
+	 * Run code of the TerminalReader. 
+	 * This will be executed to get the input of a console line.
 	 */
 	@Override
 	public void run()

@@ -8,9 +8,9 @@ import be.uantwerpen.systemY.interfaces.NodeManagerInterface;
 import be.uantwerpen.systemY.shared.Node;
 
 /**
- * Nodemanager class to execute operations on nodes in the NodeList.
- * @extends UnicastRemoteObject
- * @implements NodeManagerInterface
+ * Node manager class to execute operations on nodes in the NodeList.
+ * @extends UnicastRemoteObject.
+ * @implements NodeManagerInterface.
  */
 public class NodeManager extends UnicastRemoteObject implements NodeManagerInterface
 {
@@ -30,7 +30,7 @@ public class NodeManager extends UnicastRemoteObject implements NodeManagerInter
 	 * Adds a Node to the NodeList.
 	 * @param hostname	The hostname you want to add.
 	 * @param ipAddress The ipAddress of the host.
-	 * @return boolean 	True if successful, false otherwise
+	 * @return True if successful, false otherwise
 	 */
 	public boolean addNode(String hostname, String ipAddress)
 	{
@@ -40,7 +40,7 @@ public class NodeManager extends UnicastRemoteObject implements NodeManagerInter
 	/**
 	 * Deletes a node from the NodeList.
 	 * @param hostname	The name of the node you want to delete.
-	 * @return	boolean True if successful, false otherwise.
+	 * @return	True if successful, false otherwise.
 	 */
 	public boolean delNode(String hostname)
 	{
@@ -48,7 +48,7 @@ public class NodeManager extends UnicastRemoteObject implements NodeManagerInter
 	}
 	
 	/**
-	 * Clear all nodes from the list
+	 * Clear all nodes from the list.
 	 */
 	public void clearList()
 	{
@@ -66,7 +66,7 @@ public class NodeManager extends UnicastRemoteObject implements NodeManagerInter
 	
 	/**
 	 * Get the node list.
-	 * @return nodeList
+	 * @return nodeList.
 	 */
 	public NodeList getNodeList()
 	{
@@ -74,9 +74,9 @@ public class NodeManager extends UnicastRemoteObject implements NodeManagerInter
 	}
 	
 	/**
-	 * Get ip address of a node.
+	 * Get ip address of a hostname.
 	 * @param hostname	The name of the node you want.
-	 * @return 	Ip address.
+	 * @return Ip address of the given hostname.
 	 */
 	public String getNode(String hostname)
 	{

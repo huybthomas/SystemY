@@ -32,6 +32,10 @@ public class LogoutStatusWindow extends JFrame implements ActionListener
 	
 	private final Image SYIcon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("pictures/SystemYSettings.png"));
 	
+	/**
+	 * Create a JFrame that contains info on the logout procedure.
+	 * @param clientGUI The GUI that created it.
+	 */
 	public LogoutStatusWindow(ClientGUI clientGUI)
 	{
 		this.clientGUI = clientGUI;
@@ -73,6 +77,9 @@ public class LogoutStatusWindow extends JFrame implements ActionListener
 		initialisation();
 	}
 	
+	/**
+	 * Initialise the JFrame.
+	 */
 	private void initialisation()
 	{
 		this.setTitle("Logout status");
@@ -117,6 +124,10 @@ public class LogoutStatusWindow extends JFrame implements ActionListener
 		}
 	}
 	
+	/**
+	 * Sets the status of text in the JFrame.
+	 * @param message
+	 */
 	public void setStatus(String message)
 	{
 		textPane.add(new JLabel(message));

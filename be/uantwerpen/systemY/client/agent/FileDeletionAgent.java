@@ -14,6 +14,12 @@ public class FileDeletionAgent implements Runnable, Serializable
 	private Node startNode;
 	private ArrayList<String> deleteFilesRequests;
 	
+	/**
+	 * Create a file deletion agent.
+	 * @param deleteFilesRequests The files requested for deletion.
+	 * @param startNode The Node on which the agent starts.
+	 * @param agentManager The agent's manager.
+	 */
 	public FileDeletionAgent(ArrayList<String> deleteFilesRequests, Node startNode, AgentManager agentManager)
 	{
 		this.agentM = agentManager;
@@ -22,16 +28,28 @@ public class FileDeletionAgent implements Runnable, Serializable
 		this.observer = new AgentObserver();
 	}
 	
+	/**
+	 * Get the agent's observer.
+	 * @return
+	 */
 	public AgentObserver getObserver()
 	{
 		return this.observer;
 	}
 	
+	/**
+	 * Set the agent's manager.
+	 * @param agentManager
+	 */
 	public void setManager(AgentManager agentManager)
 	{
 		this.agentM = agentManager;
 	}
 	
+	/**
+	 * Get this agent's starting node.
+	 * @return The node.
+	 */
 	public Node getStartNode()
 	{
 		return this.startNode;

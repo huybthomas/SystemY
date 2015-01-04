@@ -11,7 +11,7 @@ import be.uantwerpen.systemY.shared.Node;
 import be.uantwerpen.systemY.terminal.TerminalReader;
 
 /**
- * Terminal class to interpret the input of the console and execute methods of the server class
+ * Terminal class to interpret the input of the console and execute methods of the server class.
  */
 public class Terminal
 {
@@ -177,7 +177,7 @@ public class Terminal
 	 * Adds a Node to the NodeList.
 	 * @param hostname	The name of the node you want to add.
 	 * @param ipAddress	The ip of the node you want to add.
-	 * @return Boolean	True if successful, false otherwise.
+	 * @return True if successful, false otherwise.
 	 */
 	private boolean addNode(String hostname, String ipAddress)
 	{
@@ -196,7 +196,7 @@ public class Terminal
 	/**
 	 * Deletes a Node from the NodeList.
 	 * @param hostname	Name of the Node to be deleted.
-	 * @return	boolean True if successful false otherwise.
+	 * @return True if successful, false otherwise.
 	 */
 	private boolean delNode(String hostname)
 	{
@@ -215,7 +215,7 @@ public class Terminal
 	/**
 	 * Loads the NodeList from a file.
 	 * @param fileLocation	Location of the file to be read.
-	 * @return	boolean 	True if successful, false otherwise.
+	 * @return True if successful, false otherwise.
 	 */
 	private boolean loadNodeList(String fileLocation)
 	{
@@ -234,7 +234,7 @@ public class Terminal
 	/**
 	 * Saves the NodeList to a file.
 	 * @param fileLocation	Location of the file to be saved.
-	 * @return	boolean		True if successful, false otherwise
+	 * @return	True if successful, false otherwise.
 	 */
 	private boolean saveNodeList(String fileLocation)
 	{
@@ -251,7 +251,7 @@ public class Terminal
 	}
 	
 	/**
-	 * Clear all nodes from the list
+	 * Clear all nodes from the list.
 	 */
 	private void clearNodeList()
 	{
@@ -262,7 +262,7 @@ public class Terminal
 	/**
 	 * Returns the ip where a file can be found.
 	 * @param filename	The name of the file you want the location of.
-	 * @return	boolean	True if successful, false otherwise.
+	 * @return	True if successful, false otherwise.
 	 */
 	private boolean getFileLocation(String filename)
 	{

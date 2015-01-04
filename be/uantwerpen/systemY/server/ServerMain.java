@@ -21,7 +21,7 @@ public class ServerMain
 	
 	/**
 	 * Starts the server.
-	 * @param args	The input arguments
+	 * @param args	The input arguments.
 	 * @throws RemoteException
 	 */
 	public static void main(String[] args) throws RemoteException

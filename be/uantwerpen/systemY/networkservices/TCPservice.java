@@ -30,6 +30,10 @@ public class TCPservice implements Runnable
 		this.running = false;
 	}
 	
+	/**
+	 * Get function to get the observer of this TCP service class.
+	 * @return The TCP observer object.
+	 */
 	public TCPObserver getTCPObserver()
 	{
 		return this.observer;
@@ -37,7 +41,7 @@ public class TCPservice implements Runnable
 	
 	/**
 	 * Creates a TCP listener.
-	 * @return	boolean
+	 * @return	True if successful, false otherwise.
 	 */
 	public boolean setupTCPListener()
 	{
@@ -59,8 +63,8 @@ public class TCPservice implements Runnable
 	}
 	
 	/**
-	 * Terminates the socket responsible for listening to connections.
-	 * @return	boolean
+	 * Terminates the socket responsible for listening to TCP connections.
+	 * @return	True if successful, false otherwise.
 	 */
 	public boolean terminate()
 	{
@@ -125,9 +129,9 @@ public class TCPservice implements Runnable
 	}
     
 	/**
-	 * Makes a new socket
-	 * @param ip	String
-	 * @return	TCPConnection
+	 * Makes a new TCP socket and returns the TCP connection object.
+	 * @param ip	The ip address to set up the connection with.
+	 * @return	The TCPConnection object
 	 */
     public TCPConnection getConnection(String ip)
     {

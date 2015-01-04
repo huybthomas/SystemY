@@ -47,6 +47,8 @@ public class FileSystemManager
 		try
 		{
 			File file = new File(fileLocation);
+			file.getParentFile().mkdirs();
+
 			if(!file.exists())
 			{
 				file.createNewFile();													//Make new file if not existing

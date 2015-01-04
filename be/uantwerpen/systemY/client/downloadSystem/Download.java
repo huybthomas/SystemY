@@ -19,6 +19,13 @@ public class Download
 	private Thread downloadThread;
 	private TCPConnection connection;
 	
+	/**
+	 * Start a download object.
+	 * @param downloadManager The Download's manager.
+	 * @param fileName The file's name.
+	 * @param fileOwner The file's owner.
+	 * @param downloadMode The downloadMode.
+	 */
 	public Download(DownloadManager downloadManager, String fileName, Node fileOwner, int downloadMode)
 	{
 		this.downloadManager = downloadManager;
@@ -29,26 +36,46 @@ public class Download
 		this.observer = new DownloadObserver();
 	}
 	
+	/**
+	 * Get the download observer.
+	 * @return
+	 */
 	public DownloadObserver getObserver()
 	{
 		return this.observer;
 	}
 	
+	/**
+	 * Get the file's name.
+	 * @return
+	 */
 	public String getFileName()
 	{
 		return this.fileName;
 	}
 	
+	/**
+	 * Get the download's mode.
+	 * @return
+	 */
 	public int getDownloadMode()
 	{
 		return this.downloadMode;
 	}
 	
+	/**
+	 * Get the download's file owner.
+	 * @return
+	 */
 	public Node getDownloadFileOwner()
 	{
 		return this.fileOwner;
 	}
 	
+	/**
+	 * Start the download.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean startDownload()
 	{ 
 		FileProperties fileProperties = null;
@@ -81,6 +108,10 @@ public class Download
 		return true;
 	}
 	
+	/**
+	 * Cancel the download.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean cancelDownload()
 	{
 		if(downloadThread.isAlive())
@@ -116,6 +147,9 @@ public class Download
 		return false;
 	}
 	
+	/**
+	 * The download's actual runnable
+	 */
 	private Runnable downloadProcedure = new Runnable()
 	{
 		@Override
@@ -194,6 +228,11 @@ public class Download
 		}
 	};
 	
+	/**
+	 * A function that checks whether the download has finished.
+	 * @param downloadSuccessful 
+	 * @param downloadStarted
+	 */
 	private void downloadFinished(boolean downloadSuccessful, boolean downloadStarted)
 	{
 		if(!downloadSuccessful && downloadStarted)

@@ -3,6 +3,9 @@ package be.uantwerpen.systemY.timer;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * Class that enables a timer in a separate thread.
+ */
 public class TimerService
 {
 	private long time;
@@ -12,7 +15,7 @@ public class TimerService
 	
 	/**
 	 * Sets the time and starts the timer.
-	 * @param time	the time when the observers will be notified
+	 * @param The time when the observers will be notified.
 	 */
 	public TimerService(long time)
 	{
@@ -22,14 +25,18 @@ public class TimerService
 	}
 	
 	/**
-	 * Set the duration of the timer
-	 * @param time	the time when the observers will be notified
+	 * Set the duration of the timer.
+	 * @param The time when the observers will be notified.
 	 */
 	public void setTimer(long time)
 	{
 		this.time = time;
 	}
 	
+	/**
+	 * Get the observer instance of the TimerService.
+	 * @return The observer instance of the TimerService.
+	 */
 	public TimerObserver getObserver()
 	{
 		return this.observer;
@@ -37,7 +44,7 @@ public class TimerService
 	
 	/**
 	 * Function to start the timer.
-	 * Creates a new timer with the given time.
+	 * Creates a new timer with the given time in the construction of the TimerService.
 	 */
 	public void startTimer()
 	{
@@ -73,6 +80,9 @@ public class TimerService
 		timerTask.cancel();
 	}
 	
+	/**
+	 * Make the timer finish and notify the timer observer.
+	 */
 	private void timerFinished()
 	{
 		timerTask.cancel();

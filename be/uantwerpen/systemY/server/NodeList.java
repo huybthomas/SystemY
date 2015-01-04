@@ -14,7 +14,6 @@ import be.uantwerpen.systemY.shared.Node;
 
 /**
  * NodeList class that contains the Nodes in the network and operations on them.
- * @implements	Serializable
  */
 @XmlRootElement(name = "NodeList")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -34,7 +33,7 @@ public class NodeList implements Serializable
 	
 	/**
 	 * Returns the HashMap of the NodeList.
-	 * @return nodeMap	
+	 * @return nodeMap.	
 	 */
 	public HashMap<Integer, Node> getNodeList()
 	{
@@ -45,7 +44,7 @@ public class NodeList implements Serializable
 	 * Adds a Node to the NodeList.
 	 * @param hostname	Hostname of the new node.
 	 * @param ipAddress	IpAddress of the new node.
-	 * @return boolean	True if successful, false otherwise.
+	 * @return True if successful, false otherwise.
 	 */
 	public boolean addNode(String hostname, String ipAddress)
 	{
@@ -64,7 +63,7 @@ public class NodeList implements Serializable
 	/**
 	 * Deletes a node from the NodeList.
 	 * @param hostname 	Hostname of node you want to delete.
-	 * @return boolean	True if successful, false otherwise.
+	 * @return True if successful, false otherwise.
 	 */
 	public boolean delNode(String hostname)
 	{
@@ -81,7 +80,7 @@ public class NodeList implements Serializable
 	}
 	
 	/**
-	 * Clear all nodes from the list
+	 * Clear all nodes from the list.
 	 */
 	public void clearList()
 	{
@@ -90,8 +89,8 @@ public class NodeList implements Serializable
 	
 	/**
 	 * Returns the ip of the given hostname.
-	 * @param hostname		The name of the node you want to get.
-	 * @return ipAddress	Returns the ipAddress of the node.
+	 * @param hostname	The name of the node you want to get.
+	 * @return Returns the ipAddress of the node.
 	 */
 	public String getNode(String hostname)
 	{
@@ -215,7 +214,7 @@ public class NodeList implements Serializable
 	/**
 	 * Checks if a hostname exists.
 	 * @param hostname	Name of the host to be checked.
-	 * @return	boolean	True if successful, false otherwise.
+	 * @return True if successful, false otherwise.
 	 */
 	private boolean checkNodeExistence(String hostname)
 	{
@@ -225,7 +224,7 @@ public class NodeList implements Serializable
 	/**
 	 * Calculates the hash of a string.
 	 * @param name	String to be hashed.
-	 * @return i	The hashvalue.
+	 * @return The hashvalue.
 	 */
 	private int calculateHash(String name)
 	{

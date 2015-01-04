@@ -68,6 +68,9 @@ public class AgentManager extends UnicastRemoteObject implements AgentManagerInt
 		});
 	}
 	
+	/**
+	 * Reset the manager
+	 */
 	public void reset()
 	{
 		lockQueue = new ArrayList<Download>();
@@ -98,6 +101,11 @@ public class AgentManager extends UnicastRemoteObject implements AgentManagerInt
 		addAgentsRunning();
 	}
 	
+	/**
+	 * Assign the specified node as the file agent's master
+	 * @param node the node
+	 * @return true if successful, false otherwise
+	 */
 	public boolean assignFileAgentMaster(Node node)
 	{
 		try
@@ -173,6 +181,10 @@ public class AgentManager extends UnicastRemoteObject implements AgentManagerInt
 		}
 	}
 	
+	/**
+	 * Send the file Agent to the next node
+	 * @param agent This agent
+	 */
 	public void fileAgentSend(FileAgent agent)
 	{
 		if(agent != null)
@@ -446,11 +458,20 @@ public class AgentManager extends UnicastRemoteObject implements AgentManagerInt
 		return client.getLocalFiles();
 	}
 	
+	/**
+	 * Get the owned files.
+	 * @return the files.
+	 */
 	public ArrayList<String> getOwnedFiles()
 	{
 		return client.getOwnedFiles();
 	}
 	
+	/**
+	 * Delete files locally.
+	 * @param deleteFileRequests The files.
+	 * @return True is successful, false otherwise.
+	 */
 	public boolean deleteFilesFromSystem(ArrayList<String> deleteFileRequests) 
 	{
 		return client.deleteFilesFromSystem(deleteFileRequests);
@@ -534,6 +555,11 @@ public class AgentManager extends UnicastRemoteObject implements AgentManagerInt
 		}
 	}
 	
+	/**
+	 * Add a delete file queue for files.
+	 * @param deleteFiles The files.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean addDeleteFileQueue(ArrayList<String> deleteFiles)
 	{
 		synchronized(deleteFileQueue)
@@ -569,21 +595,37 @@ public class AgentManager extends UnicastRemoteObject implements AgentManagerInt
 		return this.failedNodeQueue;
 	}
 	
+	/**
+	 * Get the delete file queue.
+	 * @return The queue
+	 */
 	public ArrayList<String> getDeleteFileQueue()
 	{
 		return this.deleteFileQueue;
 	}
 	
+	/**
+	 * Run a donwload.
+	 * @param download The download0
+	 */
 	public void runDownload(Download download)
 	{
 		client.runDownload(download);
 	}
 	
+	/**
+	 * Cancel a donwload.
+	 * @param download The download.
+	 */
 	public void cancelDownload(Download download)
 	{
 		client.printTerminalError("File: " + download.getFileName() + " not available in the network.");
 	}
 	
+	/**
+	 * Cancel a delete request.
+	 * @param fileName The file's name.
+	 */
 	public void cancelDelete(String fileName)
 	{
 		client.printTerminalError("File: " + fileName + " not available for deletion in the network.");
@@ -638,46 +680,76 @@ public class AgentManager extends UnicastRemoteObject implements AgentManagerInt
 		return client.getHostname();
 	}
 	
+	/**
+	 * Get the number of running agents.
+	 * @return The number of running agents.
+	 */
 	public int getAgentsRunning()
 	{
 		return this.agentsRunning;
 	}
 	
+	/**
+	 * Get the number of failure agents running.
+	 * @return The number of running failure agents.
+	 */
 	public int getFailureAgentsRunning()
 	{
 		return this.failureAgentsRunning;
 	}
 	
+	/**
+	 * Get the number of deletion agents running.
+	 * @return The number of deletion agents.
+	 */
 	public int getDeletionAgentsRunning()
 	{
 		return this.deletionAgentsRunning;
 	}
 	
+	/**
+	 * Add one to the number of running agents.
+	 */
 	private synchronized void addAgentsRunning()
 	{
 		this.agentsRunning = this.agentsRunning + 1;
 	}
 	
+	/**
+	 * Delete one from the number of running agents.
+	 */
 	private synchronized void delAgentsRunning()
 	{
 		this.agentsRunning = this.agentsRunning - 1;
 	}
 	
+	/**
+	 * Add one to the number of running failure agents.
+	 */
 	private synchronized void addFailureAgentsRunning()
 	{
 		this.failureAgentsRunning = this.failureAgentsRunning + 1;
 	}
 	
+	/**
+	 * Delete one from the running failure agents.
+	 */
 	private synchronized void delFailureAgentsRunning()
 	{
 		this.failureAgentsRunning = this.failureAgentsRunning - 1;
 	}
 	
+	/**
+	 * Add one to the number of deletion agents.
+	 */
 	private synchronized void addDeletionAgentsRunning()
 	{
 		this.deletionAgentsRunning = this.deletionAgentsRunning + 1;
 	}
 	
+	/**
+	 * remove one from the number of deletion agents.
+	 */
 	private synchronized void delDeletionAgentsRunning()
 	{
 		this.deletionAgentsRunning = this.deletionAgentsRunning - 1;

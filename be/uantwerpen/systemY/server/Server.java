@@ -76,7 +76,7 @@ public class Server
 	/**
 	 * Deletes a node from the NodeList.
 	 * @param hostname	The name of the node you want to remove.
-	 * @return	True if successful, false otherwise.
+	 * @return True if successful, false otherwise.
 	 */
 	public boolean delNode(String hostname)
 	{
@@ -84,7 +84,7 @@ public class Server
 	}
 	
 	/**
-	 * Clear all nodes from the list
+	 * Clear all nodes from the list.
 	 */
 	public void clearList()
 	{
@@ -121,7 +121,7 @@ public class Server
 	/**
 	 * Saves a node to file.
 	 * @param fileLocation	Location in String format.
-	 * @return	True if successful, false otherwise.
+	 * @return True if successful, false otherwise.
 	 */
 	public boolean saveNodeList(String fileLocation)
 	{
@@ -131,7 +131,7 @@ public class Server
 	/**
 	 * Returns the node where the file can be found.
 	 * @param filename	Filename in String format.
-	 * @return	The fileowner.
+	 * @return The file owner.
 	 */
 	public Node getFileLocation(String filename)
 	{
@@ -140,7 +140,7 @@ public class Server
 	
 	/**
 	 * Returns the HashMap of the NodeList.
-	 * @return A map with all the nodes.
+	 * @return HashMap	A map with all the nodes.
 	 */
 	public HashMap<Integer, Node> getNodeList()
 	{
@@ -188,23 +188,38 @@ public class Server
 	/**
 	 * Get the interface bound to a specific location.
 	 * @param bindLocation	The location where the interface needs to be bound.
-	 * @return	boolean
+	 * @return	True if successful, false otherwise.
 	 */
 	public Object getRMIInterface(String bindLocation)
 	{
 		return this.networkinterface.getRMIInterface(bindLocation);
 	}
 	
+	/**
+	 * Get the RMI interface object of the NodeLinkManager class of a given node.
+	 * @param node	The node whose NodeLinkManager is requested.
+	 * @return The RMI interface object
+	 */
 	public Object getNodeLinkInterface(Node node)
 	{
 		return this.networkinterface.getRMIInterface("//" + node.getIpAddress() + "/NodeLinkManager_" + node.getHostname());
 	}
 	
+	/**
+	 * Get the RMI interface object of the BootstrapManager class of a given node.
+	 * @param node	The node whose BootstrapManager is requested.
+	 * @return The RMI interface object
+	 */
 	public Object getBootstrapInterface(Node node)
 	{
 		return this.networkinterface.getRMIInterface("//" + node.getIpAddress() + "/Bootstrap_" + node.getHostname());
 	}
 	
+	/**
+	 * Call the failure manager to delete a node that suddenly failed to connect to the network.
+	 * Also, the failing node's surrounding nodes will be updated.
+	 * @param hostname	The hostname of the failed node.
+	 */
 	public void nodeConnectionFailure(String hostname) 
 	{
 		this.failureManager.nodeConnectionFailure(hostname);
@@ -246,8 +261,8 @@ public class Server
 	}
 	
 	/**
-	 * start RMI-server and multicastservice
-	 * @return boolean True if successful, false if failed.
+	 * start RMI-server and multicast service.
+	 * @return True if successful, false if failed.
 	 */
 	private boolean startupProcedure()
 	{

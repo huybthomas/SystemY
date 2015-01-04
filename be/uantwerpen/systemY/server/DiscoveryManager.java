@@ -36,7 +36,7 @@ public class DiscoveryManager
 	
 	/**
 	 * Reads received packets from the multicast.
-	 * @param datagram	datagram message that is received from observer of multicast
+	 * @param datagram	datagram message that is received from observer of multicast.
 	 */
 	private void multicastReceived(DatagramPacket datagram)
 	{
@@ -67,10 +67,10 @@ public class DiscoveryManager
 	}
 	
 	/**
-	 * Sends an answer to the new node.
+	 * Sends an answer to the new node as response to it's discovery multicast.
 	 * @param clientname 	The name from the node you are trying to reach.
 	 * @param ip 			The ip from the node you want to reach.
-	 * @return boolean 		True if successful, false if failed.
+	 * @return True if successful, false if failed.
 	 */
 	private boolean sendNetworkInfo(String clientname, String ip)
 	{	

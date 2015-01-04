@@ -87,7 +87,7 @@ public class NodeLinks
 	
 	/**
 	 * Gets the previous node of the given node.
-	 * @return Node		the previous node
+	 * @return Node		The previous node.
 	 */
 	public Node getPrev()
 	{
@@ -96,7 +96,7 @@ public class NodeLinks
 	
 	/**
 	 * Sets the previous node of the given node.
-	 * @param Node	new prevNode
+	 * @param Node	The new prevNode.
 	 */
 	public void setPrev(Node node)
 	{

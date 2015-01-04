@@ -20,7 +20,7 @@ public class FailureManager
 	
 	/**
 	 * Deletes a node that suddenly failed to connect in the network and updates it's surrounding nodes.
-	 * @param hostname	the hostname of the failed node.
+	 * @param hostname	The hostname of the failed node.
 	 */
 	public void nodeConnectionFailure(String hostname)
 	{

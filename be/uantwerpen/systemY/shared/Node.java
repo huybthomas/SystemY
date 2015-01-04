@@ -28,8 +28,8 @@ public class Node implements Serializable
 	/**
 	 * Creates a node Object.
 	 * 
-	 * @param hostname	Hostname of the node
-	 * @param ipAddress	ip of the node
+	 * @param hostname	Hostname of the node.
+	 * @param ipAddress	Ip address of the node.
 	 */
 	public Node(String hostname, String ipAddress)
 	{
@@ -38,9 +38,9 @@ public class Node implements Serializable
 	}
 	
 	/**
-	 * Sets the hostname of the node
+	 * Sets the hostname of the node.
 	 * 
-	 * @param hostname	New hostname of the node
+	 * @param hostname	New hostname of the node.
 	 */
 	public void setHostname(String hostname)
 	{
@@ -48,9 +48,9 @@ public class Node implements Serializable
 	}
 	
 	/**
-	 * Sets the ip address of the node
+	 * Sets the ip address of the node.
 	 * 
-	 * @param ipAddress	New ip of the node
+	 * @param ipAddress	New ip of the node.
 	 */
 	public void setIpAddress(String ipAddress)
 	{
@@ -58,9 +58,9 @@ public class Node implements Serializable
 	}
 	
 	/**
-	 * Returns the hostname of the node
+	 * Returns the hostname of this node.
 	 * 
-	 * @return	hostname	The hostname of the node
+	 * @return The hostname of the node.
 	 */
 	public String getHostname()
 	{
@@ -68,9 +68,9 @@ public class Node implements Serializable
 	}
 	
 	/**
-	 * Returns the ip address of the node
+	 * Returns the ip address of this node.
 	 * 
-	 * @return ipAddress	The ip address of the node
+	 * @return The ip address of the node.
 	 */
 	public String getIpAddress()
 	{
@@ -78,9 +78,9 @@ public class Node implements Serializable
 	}
 	
 	/**
-	 * Calculates the hash of the hostname
+	 * Calculates the hash of the hostname.
 	 * 
-	 * @return i	The calculate hash value
+	 * @return The calculated hash value.
 	 */
 	public int getHash()
 	{
@@ -89,8 +89,8 @@ public class Node implements Serializable
 	
 	/**
 	 * Makes a comparison between two nodes.
-	 * @param object	part of the node
-	 * @return	boolean
+	 * @param object	The object which will be compared to the node.
+	 * @return	True if the given object is the same as the executing node.
 	 */
 	@Override
 	public boolean equals(Object object)

@@ -6,7 +6,6 @@ import be.uantwerpen.systemY.shared.Node;
 
 /**
  * Interface to the NodeManager class of the Server.
- * @extends Remote
  */
 public interface NodeManagerInterface extends Remote
 {
@@ -14,19 +13,19 @@ public interface NodeManagerInterface extends Remote
 	 * Adds a Node to the NodeList.
 	 * @param hostname	The name of the node that needs to be added.
 	 * @param ipAddress	The ip of the node that needs to be added.
-	 * @return boolean 	True if successful, false otherwise
+	 * @return True if successful, false otherwise.
 	 */
 	public boolean addNode(String hostname, String ipAddress) throws RemoteException;
 	
 	/**
-	 * Deletes a node from the NodeList.
+	 * Delete the given node from the NodeList.
 	 * @param hostname	The name of the node that needs to be deleted.
-	 * @return	boolean True if successful, false otherwise
+	 * @return	True if successful, false otherwise.
 	 */
 	public boolean delNode(String hostname) throws RemoteException;
 	
 	/**
-	 * Get ip address of a node.
+	 * Get ip address of a given hostname.
 	 * @param hostname	The name of the node you want
 	 * @return The ip address of the requested node.
 	 */

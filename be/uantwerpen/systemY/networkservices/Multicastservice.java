@@ -7,8 +7,7 @@ import java.net.MulticastSocket;
 import java.net.SocketException;
 
 /**
- * Class that enables multi casts in the network.
- * @implements	Runnable
+ * Class that enables multicasts in the network.
  */
 public class Multicastservice implements Runnable
 {
@@ -21,7 +20,7 @@ public class Multicastservice implements Runnable
 	private final int bufferSize = 1024;
 	
 	/**
-	 * Creates the MulticastService Object
+	 * Creates the MulticastService Object.
 	 * @param multicastIP	The ip of the multicast.
 	 * @param interfaceIP 	The ip of the interface to broadcast the multicast.
 	 * @param port			The port on which the multicast needs to be send.
@@ -36,7 +35,7 @@ public class Multicastservice implements Runnable
 	}
 	
 	/**
-	 * Get a multicast observer
+	 * Get a multicast observer.
 	 * @return	The observer.
 	 */
 	public MulticastObserver getObserver()
@@ -45,8 +44,8 @@ public class Multicastservice implements Runnable
 	}
 	
 	/**
-	 * Setup the Multicast Service
-	 * @return	boolean	True if successful, false otherwise
+	 * Setup the Multicast Service.
+	 * @return	True if successful, false otherwise.
 	 */
 	public boolean setupMulticastservice()
 	{
@@ -71,9 +70,9 @@ public class Multicastservice implements Runnable
 	}
 	
 	/**
-	 * Send a multicast message
+	 * Send a multicast message.
 	 * @param message	The message you want to send.
-	 * @return boolean 	True when success, false when failed.
+	 * @return True if successful, false otherwise.
 	 */
 	public boolean sendMulticast(byte[] message)
 	{
@@ -107,8 +106,8 @@ public class Multicastservice implements Runnable
 	}
 	
 	/**
-	 * Terminate the multicast service
-	 * @return boolean	True if successful, false if failed
+	 * Terminate the multicast service.
+	 * @return True if successful, false otherwise.
 	 */
 	public boolean terminate()
 	{

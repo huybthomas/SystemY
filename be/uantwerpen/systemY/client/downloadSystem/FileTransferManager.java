@@ -13,11 +13,19 @@ public class FileTransferManager
 {
 	private FileManager fileManager;
 	
+	/**
+	 * Create a file tranfer manager.
+	 * @param manager The file manager that created the manager.
+	 */
 	public FileTransferManager(FileManager manager)
 	{
 		this.fileManager = manager;
 	}
 	
+	/**
+	 * Start the boot transfer.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean bootTransfer()
 	{
 		fileManager.resetFileLists();
@@ -53,6 +61,9 @@ public class FileTransferManager
 		return true;
 	}
 	
+	/**
+	 * Start the discovery transfer.
+	 */
 	public void discoveryTransfer()
 	{
 		if(fileManager.getPrevNode().equals(fileManager.getNextNode()))		//When second node is connected to the network, all files on this system need to be replicated
@@ -82,6 +93,11 @@ public class FileTransferManager
 		}
 	}
 	
+	/**
+	 * Start the shutdown update procedure for the files.
+	 * Update download locations or delete file from system if it's a local file that's not downloaded
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean shutdownFileUpdate()
 	{
 		ArrayList<String> deleteFiles = new ArrayList<String>();
@@ -149,6 +165,10 @@ public class FileTransferManager
 		return true;
 	}
 	
+	/**
+	 * Start the transfer of files preceding a shutdown.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean shutdownTransfer()
 	{
 		Node prevPrevNode;
@@ -262,6 +282,10 @@ public class FileTransferManager
 		return true;
 	}
 	
+	/**
+	 * The transfer for the replicated files.
+	 * @param fileList The replicated files.
+	 */
 	public void fileReplicationTransfer(ArrayList<String> fileList)
 	{
 		synchronized(fileList)

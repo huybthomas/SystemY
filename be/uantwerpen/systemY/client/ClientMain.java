@@ -24,7 +24,7 @@ public class ClientMain
 	
 	/**
 	 * Starts a client.
-	 * @param args	The input arguments
+	 * @param args	The input arguments.
 	 * @throws RemoteException
 	 */
 	public static void main(String[] args) throws RemoteException

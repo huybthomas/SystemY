@@ -19,10 +19,10 @@ public class ShutdownManager
 	/**
 	 * Let the client log off the SystemY and close the connection.
 	 * Log out is in 3 steps:
-	 * 1. Set the prevNode on the client's nextNode as my prevNode
-	 * 2. Set the nextNode on the client's prevNode as my nextNode
-	 * 3. Delete client on nameserver
-	 * @return boolean	True if success, false if not
+	 * 1. Set the prevNode on the client's nextNode as my prevNode.
+	 * 2. Set the nextNode on the client's prevNode as my nextNode.
+	 * 3. Delete client on name server.
+	 * @return boolean	True if success, false if not.
 	 */
 	public boolean shutdown()
 	{		
@@ -104,8 +104,8 @@ public class ShutdownManager
 	}
 	
 	/**
-	 * Implementation of the deletion of the client node on the nameserver
-	 * @return boolean	True if success, false if not
+	 * Implementation of the deletion of the client node on the name server.
+	 * @return boolean	True if success, false if not.
 	 */
 	private boolean deleteMyNode()
 	{

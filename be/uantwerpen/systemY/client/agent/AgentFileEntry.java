@@ -51,11 +51,19 @@ public class AgentFileEntry implements Serializable
 		this.lockNode = null;
 	}
 	
+	/**
+	 * Set the file's availability.
+	 * @param available availability.
+	 */
 	public void setAvailability(boolean available)
 	{
 		this.available = available;
 	}
 	
+	/**
+	 * Get the file's availability.
+	 * @return True if available, false otherwise.
+	 */
 	public boolean getAvailability()
 	{
 		return this.available;

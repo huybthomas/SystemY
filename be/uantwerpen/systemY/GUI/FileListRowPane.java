@@ -17,7 +17,14 @@ public class FileListRowPane extends JPanel
 	private ClientGUI clientGUI;
 	
 	private GridBagConstraints constr;
-
+	
+	/**
+	 * A JPane that holds the name of a file and buttons to perform action on the file. 
+	 * @param clientGUI
+	 * @param fileName
+	 * @param y The idnetifier for the buttons.
+	 * @param localExistence If the file exists locally.
+	 */
 	public FileListRowPane(ClientGUI clientGUI, String fileName, int y, boolean localExistence)
 	{	
 		this.clientGUI = clientGUI;

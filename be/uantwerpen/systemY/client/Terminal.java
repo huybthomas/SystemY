@@ -80,8 +80,8 @@ public class Terminal
 	}
 	
 	/**
-	 * Executes a command
-	 * @param String	commandString	Command to be executed in String format
+	 * Executes a command.
+	 * @param String	commandString	Command to be executed in String format.
 	 */
 	private void executeCommand(String commandString)
 	{
@@ -202,7 +202,7 @@ public class Terminal
 	 * METHOD STILL UNDER CONSTRUCTION
 	 * Returns the ip where a file can be found.
 	 * @param String	filename
-	 * @return	boolean	True if successful, false otherwise
+	 * @return	boolean	True if successful, false otherwise.
 	 */
 	private String getFileLocation(String filename)
 	{
@@ -218,7 +218,7 @@ public class Terminal
 	}
 	
 	/**
-	 * Prints the host Information (hostname & ip address)
+	 * Prints the host Information (hostname & ip address).
 	 */
 	private void getHostInfo()
 	{
@@ -228,7 +228,7 @@ public class Terminal
 	/**
 	 * Change the host name.
 	 * @param String	name
-	 * @return boolean	True if successful, false if failed
+	 * @return boolean	True if successful, false if failed.
 	 */
 	private boolean setHostname(String name)
 	{
@@ -246,8 +246,8 @@ public class Terminal
 	
 	/**
 	 * Change the host ip address.
-	 * @param String	ip
-	 * @return boolean	True if successful, false if failed
+	 * @param String	The ip.
+	 * @return boolean	True if successful, false if failed.
 	 */
 	private boolean setIP(String ip)
 	{
@@ -263,6 +263,9 @@ public class Terminal
 		}
 	}
 	
+	/**
+	 * Get the files on the network.
+	 */
 	private void getNetworkFiles()
 	{
 		if(client.getSessionState())
@@ -285,6 +288,10 @@ public class Terminal
 		}
 	}
 	
+	/**
+	 * Open the file.
+	 * @param filename The file.
+	 */
 	private void openFile(String filename)
 	{
 		if(client.getSessionState())
@@ -297,6 +304,10 @@ public class Terminal
 		}
 	}
 	
+	/**
+	 * Delete a file.
+	 * @param filename The file.
+	 */
 	private void deleteFile(String filename)
 	{
 		if(client.getSessionState())
@@ -309,6 +320,10 @@ public class Terminal
 		}
 	}
 	
+	/**
+	 * Delete a file locally.
+	 * @param filename The file.
+	 */
 	private void deleteFileLocal(String filename)
 	{
 		if(client.getSessionState())
@@ -324,6 +339,9 @@ public class Terminal
 		}
 	}
 	
+	/**
+	 * Print the local files.
+	 */
 	private void printLocalFiles()
 	{
 		printTerminal("Filename");
@@ -333,6 +351,9 @@ public class Terminal
 		
 	}
 	
+	/**
+	 * Print the owned files.
+	 */
 	private void printOwnedFiles()
 	{
 		printTerminal("Filename");
@@ -347,6 +368,9 @@ public class Terminal
 		printTerminal("");
 	}
 	
+	/**
+	 * Test the node's links.
+	 */
 	private void testLinks()
 	{
 		boolean linksUp = true;

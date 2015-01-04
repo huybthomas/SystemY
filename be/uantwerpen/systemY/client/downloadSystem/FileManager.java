@@ -176,6 +176,13 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 		return fileSystemManager.fileExist(downloadLocation, fileName);
 	}
 	
+	/**
+	 * Creates a file.
+	 * @param location	Where the file needs to be made.
+	 * @param name		The name of the file.
+	 * @return	True when file is made, false when failed.
+	 * @throws IOException
+	 */
 	public boolean createNewSystemFile(String fileName) throws IOException
 	{
 		return fileSystemManager.createFile(downloadLocation, fileName);
@@ -224,6 +231,13 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 		return fileInventoryManager.canBeDeleted(fileName);
 	}
 	
+	/**
+	 * Deletes a file.
+	 * @param location	The location of the file.
+	 * @param name		The name of the file.
+	 * @return	True when the file is deleted, false when failed.
+	 * @throws IOException
+	 */
 	public boolean deleteSystemFile(String fileName) throws IOException
 	{
 		return fileSystemManager.deleteFile(downloadLocation, fileName);
@@ -290,6 +304,13 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 		return status;
 	}
 	
+	/**
+	 * Creates a file output stream to write to the file represented by the specified File object.
+	 * @param location	The location where the file needs to be written.
+	 * @param name		The name of the file.
+	 * @return	The created OutputStream.
+	 * @throws FileNotFoundException
+	 */
 	public FileOutputStream getFileOutputStream(String fileName) throws FileNotFoundException
 	{
 		return fileSystemManager.getFileOutputStream(downloadLocation, fileName);
@@ -604,6 +625,11 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 		this.fileInventoryManager.resetFileLists();
 	}
 	
+	/**
+	 * Handles the failure of a node, returns true if the failure is handled correctly.
+	 * @param hostname
+	 * @return True if connection failure handled correctly, false if not.
+	 */
 	public boolean nodeConnectionFailure(String hostname)
 	{
 		return client.nodeConnectionFailure(hostname);

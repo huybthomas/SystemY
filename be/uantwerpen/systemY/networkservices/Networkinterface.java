@@ -34,8 +34,8 @@ public class Networkinterface
 	}
 	
 	/**
-	 * Request multicast observer.
-	 * @return MulticastObserver
+	 * Get the observer of the multicast service.
+	 * @return The MulticastObserver object.
 	 */
 	public MulticastObserver getMulticastObserver()
 	{
@@ -44,7 +44,7 @@ public class Networkinterface
 	
 	/**
 	 * Start RMIServer.
-	 * @return boolean	True if successful, false if failed
+	 * @return True if successful, false otherwise.
 	 */
 	public boolean startRMIServer()
 	{
@@ -55,7 +55,7 @@ public class Networkinterface
 	 * Bind the RMI server.
 	 * @param object	Object to bind.	
 	 * @param bindName	Name of the service that needs to be bound.
-	 * @return boolean	True if successful, false if failed
+	 * @return True if successful, false otherwise.
 	 */
 	public boolean bindRMIServer(Object object, String bindName)
 	{
@@ -65,7 +65,7 @@ public class Networkinterface
 	/**
 	 * Unbind the RMI server.
 	 * @param bindName 	Name of the service that needs to be unbound.
-	 * @return boolean	True if successful, false if failed.
+	 * @return True if successful, false otherwise.
 	 */
 	public boolean unbindRMIServer(String bindName)
 	{
@@ -75,7 +75,7 @@ public class Networkinterface
 	/**
 	 * Get the RMI Interface.
 	 * @param bindLocation	The location where the RMI needs to be checked.
-	 * @return boolean	True if successful, false if failed.
+	 * @return True if successful, false otherwise.
 	 */
 	public Object getRMIInterface(String bindLocation)
 	{
@@ -84,7 +84,7 @@ public class Networkinterface
 	
 	/**
 	 * Set up the multicast service and returns success.
-	 * @return boolean	True if successful, false if failed.
+	 * @return True if successful, false otherwise.
 	 */
 	public boolean setupMulticastservice()
 	{
@@ -94,7 +94,7 @@ public class Networkinterface
 	/**
 	 * Send a multicast message.
 	 * @param message	The message that needs to be send.
-	 * @return boolean	True if successful, false if failed.
+	 * @return True if successful, false otherwise.
 	 */
 	public boolean sendMulticast(byte[] message)
 	{
@@ -114,7 +114,7 @@ public class Networkinterface
 	
 	/**
 	 * Stop the multicast service.
-	 * @return boolean True if successful, false if failed.
+	 * @return True if successful, false otherwise.
 	 */
 	public boolean stopMulticastservice()
 	{
@@ -124,21 +124,36 @@ public class Networkinterface
 		return state;
 	}
 	
+	/**
+	 * Create a TCP listener on the preset port.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean setupTCPListener()
 	{
 		return tcpService.setupTCPListener();
 	}
 	
+	/**
+	 * Get the observer of the TCP service.
+	 * @return The TCPObserver object.
+	 */
 	public TCPObserver getTCPObserver()
 	{
 		return tcpService.getTCPObserver();
 	}
 	
+	/**
+	 * Initiate the TCP listener thread.
+	 */
 	public void runTCPListener()
 	{
 		tcpThread.start();
 	}
 	
+	/**
+	 * Terminate the TCP listener thread.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean stopTCPListener()
 	{
 		boolean state = tcpService.terminate();
@@ -147,6 +162,11 @@ public class Networkinterface
 		return state;
 	}
 	
+	/**
+	 * Get the object of the TCP connection with a given ip address. 
+	 * @param destinationIP.
+	 * @return The TCP connection object.
+	 */
 	public TCPConnection getTCPConnection(String destinationIP)
 	{
 		return tcpService.getConnection(destinationIP);

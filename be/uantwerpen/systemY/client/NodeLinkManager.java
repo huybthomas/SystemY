@@ -19,7 +19,7 @@ public class NodeLinkManager extends UnicastRemoteObject implements NodeLinkMana
 	private String serverIP;
 	
 	/**
-	 * Creates NodelinkManager object of a node
+	 * Creates NodelinkManager object of a node.
 	 * @param Node node
 	 * @throws RemoteException
 	 */
@@ -129,6 +129,10 @@ public class NodeLinkManager extends UnicastRemoteObject implements NodeLinkMana
 		return this.serverIP;
 	}
 	
+	/**
+	 * Get this Node
+	 * @return This Node
+	 */
 	public Node getThisNode()
 	{
 		return this.nodeLinks.getThis();

@@ -21,7 +21,7 @@ public class FailureManager
 	}
 	
 	/**
-	 * Handles the failure of a client connection, returns true if the failure is handled correctly
+	 * Handles the failure of a client connection, returns true if the failure is handled correctly.
 	 * @param String	hostname of a failed client
 	 * @return boolean	True if connection failure handled correctly, false if not.
 	 */

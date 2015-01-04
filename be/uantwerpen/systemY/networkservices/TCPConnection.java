@@ -5,6 +5,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
+/**
+ * Class that is responsible for the TCP connection between two instances in the network.
+ * Files can be sent and received with this connection.
+ */
 public class TCPConnection
 {
 	private Socket socket;
@@ -40,7 +44,7 @@ public class TCPConnection
 	
 	/**
 	 * Get the DataInputStream.
-	 * @return	DataInputStream
+	 * @return	DataInputStream object.
 	 */
 	public DataInputStream getDataInputStream()
 	{
@@ -49,7 +53,7 @@ public class TCPConnection
 	
 	/**
 	 * Get the DataOutputStream.
-	 * @return	DataOutputStream
+	 * @return	DataOutputStream object.
 	 */
 	public DataOutputStream getDataOutputStream()
 	{
@@ -58,7 +62,7 @@ public class TCPConnection
 	
 	/**
 	 * Returns the connected host.
-	 * @return	String
+	 * @return	The hostname of the host that is connected.
 	 */
 	public String getConnectedHost()
 	{
@@ -67,7 +71,7 @@ public class TCPConnection
 	
 	/**
 	 * Makes a buffer of the length of the DataInputStream.
-	 * @return b	byte[]
+	 * @return The buffered inputstream.
 	 * @throws IOException
 	 */
     public byte[] receiveData() throws IOException
@@ -93,7 +97,7 @@ public class TCPConnection
     
     /**
      * Closes the connection to a socket.
-     * @return	Boolean
+     * @return True if successful, false otherwise.
      */
     public boolean closeConnection()
     {

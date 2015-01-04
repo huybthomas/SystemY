@@ -28,8 +28,8 @@ public class RMIservice
 	}
 	
 	/**
-	 * Start the RMI server
-	 * @return boolean	True if successful, false if failed
+	 * Start the RMI server.
+	 * @return boolean	True if successful, false otherwise.
 	 */
 	public boolean startRMIServer() 
 	{
@@ -49,7 +49,7 @@ public class RMIservice
 	 * Binds the RMI server to specific object.
 	 * @param object	object to bind to.
 	 * @param bindName	RMI server name.
-	 * @return	boolean True if successful, false if failed
+	 * @return	True if successful, false otherwise.
 	 */
 	public boolean bindRMIServer(Object object, String bindName)
 	{
@@ -76,7 +76,7 @@ public class RMIservice
 	/**
 	 * Unbind the RMI server.
 	 * @param bindName	name of the server.
-	 * @return	boolean	True if successful, false if failed
+	 * @return	True if successful, false otherwise.
 	 */
 	public boolean unbindRMIServer(String bindName)
 	{
@@ -100,9 +100,9 @@ public class RMIservice
 	}
 	
 	/**
-	 * Get the interface of a specific RMI
+	 * Get the interface object of a specific RMI service.
 	 * @param bindLocation	The location on which you search a RMI.
-	 * @return Object	interface object
+	 * @return The RMI interface object of the given bindlocation.
 	 */
 	public Object getRMIInterface(String bindLocation)
 	{

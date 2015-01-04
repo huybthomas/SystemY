@@ -87,8 +87,7 @@ public class Client
 	}
 	
 	/**
-	 * Get the client's observer
-	 * @return observer		The Client's Observer
+	 * Get the client's observer.
 	 */
 	public ClientObserver getObserver()
 	{
@@ -129,6 +128,9 @@ public class Client
 		return true;
 	}
 	
+	/**
+	 * The Procedure to be done when the client's login fails.
+	 */
 	public void loginFailed()
 	{
 		shutdownM.shutdown();
@@ -151,7 +153,7 @@ public class Client
 	}
 	
 	/**
-	 * Make the client log out of SystemY
+	 * Make the client log out of SystemY.
 	 * @return True if the function succeeded without errors, false if not.
 	 */
 	public boolean logoutSystem()
@@ -321,6 +323,9 @@ public class Client
 		return status;
 	}
 	
+	/**
+	 * The procedure to be executed after a connection failure.
+	 */
 	public void criticalErrorStop()
 	{
 		this.stopServices();
@@ -340,19 +345,26 @@ public class Client
 		this.activeSession = state;
 	}
 	
+	/**
+	 * Get the session state.
+	 * @return	True if session active, false if not.
+	 */
 	public boolean getSessionState()
 	{
 		return this.activeSession;
 	}
 	
+	/**
+	 * Set the forceShutdown variable of the client.
+	 */
 	public void forceShutdown()
 	{
 		this.forceShutdown = true;
 	}
 	
 	/**
-	 * Start RMI and discovery multicast service
-	 * @return True if success, false if not
+	 * Start RMI and discovery multicast service.
+	 * @return True if success, false if not.
 	 */
 	public boolean createServices()
 	{
@@ -393,6 +405,10 @@ public class Client
 		return true;
 	}
 	
+	/**
+	 * Start the MulticastService.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean runService()
 	{
 		//Start discovery multicastservice
@@ -401,6 +417,10 @@ public class Client
 		return fileManager.bootTransfer();
 	}
 	
+	/**
+	 * Stop the DiscoveryService and the ConnectionServices.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean stopServices()
 	{
 		if(this.stopDiscoveryService() && this.stopConnectionServices())
@@ -414,8 +434,8 @@ public class Client
 	}
 	
 	/**
-	 * Stop multicast service
-	 * @return True if success, false if not
+	 * Stop multicast service.
+	 * @return True if success, false if not.
 	 */
 	public boolean stopDiscoveryService()
 	{
@@ -429,8 +449,8 @@ public class Client
 	}
 	
 	/**
-	 * Stop tcp and rmi services
-	 * @return True if success, false if not
+	 * Stop tcp and rmi services.
+	 * @return True if success, false if not.
 	 */
 	public boolean stopConnectionServices()
 	{
@@ -468,9 +488,9 @@ public class Client
 	}
 	
 	/**
-	 * Send multicast to network
-	 * @param message
-	 * @return True if success, false if not
+	 * Send multicast to network.
+	 * @param message	The message you wnat to send.
+	 * @return True if success, false if not.
 	 */
 	public boolean sendMulticast(byte[] message)
 	{
@@ -490,8 +510,8 @@ public class Client
 	}
 	
 	/**
-	 * Set the ip of the nameserver
-	 * @param ip
+	 * Set the ip of the nameserver.
+	 * @param ip	The IP of the server you want to set.
 	 */
 	public void setServerIP(String ip)
 	{
@@ -499,8 +519,8 @@ public class Client
 	}
 	
 	/**
-	 * Get the ip of the nameserver
-	 * @return ip
+	 * Get the ip of the nameserver.
+	 * @return ip	The IP of the server.
 	 */
 	public String getServerIP()
 	{
@@ -508,8 +528,8 @@ public class Client
 	}
 	
 	/**
-	 * Set the hostname of this node
-	 * @param name
+	 * Set the hostname of this node.
+	 * @param name	The name of the host.
 	 */
 	public boolean setHostname(String name)
 	{
@@ -525,8 +545,8 @@ public class Client
 	}
 	
 	/**
-	 * Get the hostname of this node
-	 * @return name
+	 * Get the hostname of this node.
+	 * @return name	The name of the host.
 	 */
 	public String getHostname()
 	{
@@ -534,8 +554,8 @@ public class Client
 	}
 	
 	/**
-	 * Get the ip address of this node
-	 * @return ip
+	 * Get the ip address of this node.
+	 * @return ip	The IP of the node.
 	 */
 	public String getIP()
 	{
@@ -543,8 +563,8 @@ public class Client
 	}
 	
 	/**
-	 * Set the ip address of this node
-	 * @param ip
+	 * Set the ip address of this node.
+	 * @param ip	The IP you want to set.
 	 */
 	public boolean setIP(String ip)
 	{
@@ -560,9 +580,9 @@ public class Client
 	}
 	
 	/**
-	 * Set the next and previous nodes of this node
-	 * @param prevNode
-	 * @param nextNode
+	 * Set the next and previous nodes of this node.
+	 * @param prevNode	The previous node you want to set.
+	 * @param nextNode	The next node you want to set.
 	 */
 	public void setLinkedNodes(Node prevNode, Node nextNode)
 	{
@@ -571,8 +591,8 @@ public class Client
 	}
 	
 	/**
-	 * Let the nodeLinkManager add a newNode
-	 * @param newNode
+	 * Let the nodeLinkManager add a new node.
+	 * @param newNode	The new node you want to add.
 	 */
 	public Node updateLinks(Node newNode)
 	{
@@ -582,8 +602,8 @@ public class Client
 	}
 	
 	/**
-	 * Set the next node of this node
-	 * @param nextNode
+	 * Set the next node of this node.
+	 * @param nextNode	The next node you want to set.
 	 */
 	public boolean setNextNode(Node node)
 	{
@@ -607,8 +627,8 @@ public class Client
 	}
 	
 	/**
-	 * Set the previous node of this node
-	 * @param prevNode
+	 * Set the previous node of this node.
+	 * @param prevNode	The previous node that needs to be set.
 	 */
 	public boolean setPrevNode(Node node)
 	{
@@ -633,8 +653,8 @@ public class Client
 	}
 	
 	/**
-	 * Get the next node of this node
-	 * @return nextNode
+	 * Get the next node of this node.
+	 * @return nextNode	The next node of the current node.
 	 */
 	public Node getNextNode()
 	{
@@ -642,50 +662,83 @@ public class Client
 	}
 	
 	/**
-	 * Get the previous node of this node
-	 * @return prevNode
+	 * Get the previous node of this node.
+	 * @return prevNode	The previous node of the current node.
 	 */
 	public Node getPrevNode()
 	{
 		return this.nodeLinkManager.getPrev();
 	}
 	
+	/**
+	 * Return this node.
+	 * @return This node.
+	 */
 	public Node getThisNode()
 	{
 		return this.nodeLinkManager.getThisNode();
 	}
 	
+	/**
+	 * Execute DiscoveryFileTransfer.
+	 */
 	public void discoveryFileTransfer()
 	{
 		this.fileManager.discoveryTransfer();
 	}
 	
+	/**
+	 * Check if this filename exist on this node.
+	 * @param fileName	The name of the file.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean checkLocalExistence(String fileName)
 	{
 		return fileManager.checkSystemFileExistence(fileName);
 	}
 	
+	/**
+	 * Import a file.
+	 * @param file The file to be imported.
+	 */
 	public void importFile(File file)
 	{
 		fileManager.importFile(file);
 	}
 	
+	/**
+	 * Open a file.
+	 * @param fileName	The name of the file.
+	 */
 	public void openFile(String fileName)
 	{
 		fileManager.openFile(fileName);
 	}
 	
+	/**
+	 * Delete a file from the network.
+	 * @param fileName	The name of the file.
+	 */
 	public void deleteFileFromNetwork(String fileName) 
 	{
 		ArrayList<String> deleteFileRequests = new ArrayList<String>(Arrays.asList(fileName));
 		agentM.addDeleteFileQueue(deleteFileRequests);
 	}
 	
+	/**
+	 * Delete multiple files from the network.
+	 * @param files	The files to be deleted.
+	 */
 	public void deleteFilesFromNetwork(ArrayList<String> files)
 	{
 		agentM.addDeleteFileQueue(files);
 	}
 	
+	/**
+	 * Check if a file can be deleted.
+	 * @param fileName	The name of the file.
+	 * @return	True if successful, false otherwise.
+	 */
 	public boolean canBeDeleted(String fileName) 
 	{
 		if(checkLocalExistence(fileName)) 
@@ -698,6 +751,11 @@ public class Client
 		}
 	}
 	
+	/**
+	 * Delete a file locally.
+	 * @param fileName The name of the file.
+	 * @return	True of successful, false otherwise.
+	 */
 	public boolean deleteLocalFile(String fileName)
 	{
 		if(canBeDeleted(fileName))
@@ -712,21 +770,38 @@ public class Client
 		return false;
 	}
 	
+	/**
+	 * Delete multiple files locally.
+	 * @param deleteFileRequests The files to be deleted.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean deleteFilesFromSystem(ArrayList<String> deleteFileRequests) 
 	{
 		return fileManager.deleteFilesFromSystem(deleteFileRequests);
 	}
 	
+	/**
+	 * Request a download.
+	 * @param download	The download.
+	 */
 	public void downloadRequest(Download download)
 	{
 		this.agentM.addLockQueue(download);
 	}
 	
+	/**
+	 * Run a donwload.
+	 * @param download Download.
+	 */
 	public void runDownload(Download download)
 	{
 		this.fileManager.runDownload(download);
 	}
 	
+	/**
+	 * Unlock the download after its finished.
+	 * @param filename The file to be unlocked.
+	 */
 	public void downloadFinished(String filename)
 	{
 		this.agentM.addUnlockQueue(filename);
@@ -735,21 +810,30 @@ public class Client
 		this.observer.notifyObservers("UpdateNetworkFiles");
 	}
 	
+	/**
+	 * Get the download location.
+	 * @return The download location.
+	 */
 	public String getDownloadLocation()
 	{
 		return this.fileManager.getDownloadLocation();
 	}
 	
+	/**
+	 * Set the download location.
+	 * @param location The location
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean setDownloadLocation(String location)
 	{
 		return this.fileManager.setDownloadLocation(location);
 	}
 	
 	/**
-	 * Bind object to bindlocation
+	 * Bind object to bindlocation.
 	 * @param object to bind
 	 * @param bindName
-	 * @return True if success, false if not
+	 * @return True if success, false if not.
 	 */
 	public boolean bindRMIservice(Object object, String bindName)
 	{
@@ -757,9 +841,9 @@ public class Client
 	}
 	
 	/**
-	 * Unbind bindlocation
+	 * Unbind bindlocation.
 	 * @param bindName
-	 * @return True if success, false if not
+	 * @return True if success, false if not.
 	 */
 	public boolean unbindRMIservice(String bindName)
 	{
@@ -767,40 +851,69 @@ public class Client
 	}
 	
 	/**
-	 * Get object from bindlocation
+	 * Get object from bindlocation.
 	 * @param String	bindName
-	 * @return Object	the RMI object
+	 * @return Object	the RMI object.
 	 */
 	public Object getRMIInterface(String bindLocation)
 	{
 		return this.iFace.getRMIInterface(bindLocation);
 	}
 	
+	/**
+	 * Get the node server's interface.
+	 * @return The interface.
+	 */
 	public Object getNodeServerInterface()
 	{
 		return this.iFace.getRMIInterface("//" + this.getServerIP() + "/NodeServer");
 	}
 	
+	/**
+	 * Get the node's link interface.
+	 * @param node The node
+	 * @return The interface.
+	 */
 	public Object getNodeLinkInterface(Node node)
 	{
 		return this.iFace.getRMIInterface("//" + node.getIpAddress() + "/NodeLinkManager_" + node.getHostname());
 	}
 	
+	/**
+	 * Get the node's bootstrap interface.
+	 * @param node The node
+	 * @return The interface.
+	 */
 	public Object getBootstrapInterface(Node node)
 	{
 		return this.iFace.getRMIInterface("//" + node.getIpAddress() + "/Bootstrap_" + node.getHostname());
 	}
 	
+	/**
+	 * Get the node's file manager interface.
+	 * @param node The node
+	 * @return The interface.
+	 */
 	public Object getFileManagerInterface(Node node)
 	{
 		return this.iFace.getRMIInterface("//" + node.getIpAddress() + "/FileManager_" + node.getHostname());
 	}
 	
+	/**
+	 * Get the node's agent manager interface.
+	 * @param node The node
+	 * @return The interface.
+	 */
 	public Object getAgentManagerInterface(Node node)
 	{
 		return this.iFace.getRMIInterface("//" + node.getIpAddress() + "/AgentManager_" + node.getHostname());
 	}
 	
+	/**
+	 * Get the tcp connection.
+	 * @param destinationIP The ip of the connection.
+	 * @return The connection.
+	 */
 	public TCPConnection getTCPConnection(String destinationIP)
 	{
 		return this.iFace.getTCPConnection(destinationIP);
@@ -809,7 +922,7 @@ public class Client
 	/**
 	 * Handles the failure of a node, returns true if the failure is handled correctly.
 	 * @param hostname
-	 * @return True if connection failure handled correctly, false if not
+	 * @return True if connection failure handled correctly, false if not.
 	 */
 	public boolean nodeConnectionFailure(String hostname)
 	{
@@ -824,26 +937,46 @@ public class Client
 		this.failureM.serverConnectionFailure();
 	}
 	
+	/**
+	 * Get the owned owner files.
+	 * @return The owned owner files
+	 */
 	public ArrayList<FileProperties> getOwnedOwnerFiles()
 	{
 		return fileManager.getOwnedOwnerFiles();
 	}
 	
+	/**
+	 * Get the owned files.
+	 * @return the files
+	 */
 	public ArrayList<String> getOwnedFiles()
 	{
 		return fileManager.getOwnedFiles();
 	}
 	
+	/**
+	 * Get the local files.
+	 * @return the files
+	 */
 	public ArrayList<String> getLocalFiles()
 	{
 		return fileManager.getLocalFiles();
 	}
 	
+	/**
+	 * Get the network files.
+	 * @return the files
+	 */
 	public ArrayList<String> getNetworkFiles()
 	{
 		return fileManager.getNetworkFiles();
 	}
 	
+	/**
+	 * Set the network's files.
+	 * @param networkFiles the network's files.
+	 */
 	public void setNetworkFiles(ArrayList<String> networkFiles)
 	{
 		if(!this.fileManager.getNetworkFiles().containsAll(networkFiles) || (this.fileManager.getNetworkFiles().size() != networkFiles.size()))
@@ -854,16 +987,27 @@ public class Client
 		}
 	}
 	
+	/**
+	 * Create the fileAgent.
+	 */
 	public void createFileAgent()
 	{
 		this.agentM.createFileAgent();
 	}
 	
+	/**
+	 * Set this node as the file agent's master.
+	 */
 	public void setFileAgentMaster()
 	{
 		this.agentM.setFileAgentMaster(true);
 	}
 	
+	/**
+	 * Assign the node as the file agent's master.
+	 * @param node The node.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean assignFileAgentMaster(Node node)
 	{
 		return this.agentM.assignFileAgentMaster(node);
@@ -897,7 +1041,7 @@ public class Client
 	}
 	
 	/**
-	 * Returns the value of activeSession
+	 * Returns the value of activeSession.
 	 * @return	boolean
 	 */
 	public boolean returnActiveSession()
@@ -905,6 +1049,10 @@ public class Client
 		return activeSession;
 	}
 	
+	/**
+	 * Get the system's version.
+	 * @return The Version.
+	 */
 	public String getVersion()
 	{
 		return version;
@@ -934,7 +1082,7 @@ public class Client
 	}
 	
 	/**
-	 * Start RMI and multicast services
+	 * Start RMI and multicast services.
 	 * @return True if connection succeed, otherwise false.
 	 */
 	private boolean setupServices()

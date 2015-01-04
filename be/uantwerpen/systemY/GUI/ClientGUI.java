@@ -34,8 +34,8 @@ public class ClientGUI extends JFrame implements ActionListener
 	private ClientGUI clientGUI = this;
 	
 	/**
-	 * Sets up the client interface
-	 * @param Client	the client on which the GUI is working
+	 * Sets up the client interface.
+	 * @param client	The client on which the GUI is working.
 	 */
 	public ClientGUI(Client client)
 	{
@@ -126,8 +126,8 @@ public class ClientGUI extends JFrame implements ActionListener
 	}
 	
 	/**
-	 * Checks for events
-	 * @param Actionevent	the action that is performed
+	 * Checks for events.
+	 * @param e	The action that is performed.
 	 */
 	public void actionPerformed(ActionEvent e)
 	{
@@ -204,7 +204,7 @@ public class ClientGUI extends JFrame implements ActionListener
 	}
 	
 	/**
-	 * Initializes the work window
+	 * Initializes the work window.
 	 */
 	private void initialisation()
 	{
@@ -245,14 +245,18 @@ public class ClientGUI extends JFrame implements ActionListener
 		this.setVisible(true);
 	}
 	
+	/**
+	 * Get all the files in that are in the network.
+	 * @return	The list with all the files.
+	 */
 	public ArrayList<String> getNetworkFiles()
 	{
 		return client.getNetworkFiles();
 	}
 	
 	/**
-	 * Get the client's hostname
-	 * @return String	client hostname
+	 * Get the client's hostname.
+	 * @return The client hostname.
 	 */
 	public String getClientHostname() 
 	{
@@ -260,8 +264,8 @@ public class ClientGUI extends JFrame implements ActionListener
 	}
 	
 	/**
-	 * Set the client's hostname
-	 * @param String	client hostname
+	 * Set the client's hostname.
+	 * @param The client hostname.
 	 */
 	public boolean setClientHostname(String hostname)
 	{
@@ -270,8 +274,8 @@ public class ClientGUI extends JFrame implements ActionListener
 	}
 	
 	/**
-	 * Get the client's ip address
-	 * @return String	client ip address
+	 * Get the client's ip address.
+	 * @return The IP address of the client.
 	 */
 	public String getClientIP()
 	{
@@ -279,49 +283,82 @@ public class ClientGUI extends JFrame implements ActionListener
 	}
 	
 	/**
-	 * Set the client's ip address
-	 * @param String	client ip address
+	 * Set the client's ip address.
+	 * @param the IP address of the client.
 	 */
 	public boolean setClientIP(String ip)
 	{
 		return this.client.setIP(ip);
 	}
 	
+	/**
+	 * Request the location of the file directory.
+	 * @return The location of the files.
+	 */
 	public String getClientFiledir()
 	{
 		return client.getDownloadLocation();
 	}
 	
+	/**
+	 * Set the location of the file directory.
+	 * @param filedir	The location you want the directory to be.
+	 * @return	True if successful, false otherwise.
+	 */
 	public boolean setClientFiledir(String filedir)
 	{
 		return client.setDownloadLocation(filedir);
 	}
 	
+	/**
+	 * Get the hostname of the previous node.
+	 * @return	The name of the previous node.
+	 */
 	public String getPrevHostname()
 	{
 		return client.getPrevNode().getHostname();
 	}
 	
+	/**
+	 * Get the hostname of the node.
+	 * @return	The name of the node.
+	 */
 	public String getOwnHostname()
 	{
 		return client.getHostname();
 	}
 	
+	/**
+	 * Get the hostname of the next node.
+	 * @return	The name of the next node.
+	 */
 	public String getNextHostname()
 	{
 		return client.getNextNode().getHostname();
 	}
 	
+	/**
+	 * Get the hash value of the previous node.
+	 * @return	The hash value of the previous node.
+	 */
 	public int getPrevHash()
 	{
 		return client.getPrevNode().getHash();
 	}
 	
+	/**
+	 * Get the hash value of the next node.
+	 * @return	The hash value of the next node.
+	 */
 	public int getNextHash()
 	{
 		return client.getNextNode().getHash();
 	}
 	
+	/**
+	 * Get the hash value of the node.
+	 * @return	The hash value of the node.
+	 */
 	public int getOwnHash()
 	{
 		return client.getThisNode().getHash();
@@ -329,13 +366,16 @@ public class ClientGUI extends JFrame implements ActionListener
 	
 	/**
 	 * Get whether the client is connected or not.
-	 * @return boolean	Get the login status
+	 * @return Get the login status.
 	 */
 	public boolean getLoginStatus()
 	{
 		return client.getSessionState();
 	}
 	
+	/**
+	 * Updates the list of files on the GUI.
+	 */
 	private void updateFileList()
 	{
 		int y = 0;
@@ -352,7 +392,7 @@ public class ClientGUI extends JFrame implements ActionListener
 	
 	/**
 	 * Executes the command associated with the parameter.
-	 * @param text	The text to be handled.
+	 * @param The text to be handled.
 	 */
 	private void execute(String text)
 	{
@@ -463,17 +503,27 @@ public class ClientGUI extends JFrame implements ActionListener
 		}
 	}
 	
+	/**
+	 * Forces the client to logout.
+	 */
 	public void skipLogoutStep()
 	{
 		client.forceShutdown();
 	}
 	
+	/**
+	 * Update the label on the logout menu.
+	 * @param message	The message that needs to be displayed.
+	 */
 	private void updateStatusLabel(String message)
 	{
 		this.statusLabel.setText(message);
 		this.statusLabel.updateUI();
 	}
-
+	
+	/**
+	 * Closes the logout window.
+	 */
 	public void disposeLogoutStatusWindow() 
 	{
 		logoutStatusWindow.dispose();

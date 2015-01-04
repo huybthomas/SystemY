@@ -17,7 +17,7 @@ public class DiscoveryManager
 	private Client client;
 	
 	/**
-	 * Creates a DiscoveryManager object instance with a given multicast observer and client
+	 * Creates a DiscoveryManager object instance with a given multicast observer and client.
 	 * @param MulticastObserver
 	 * @param Client
 	 */
@@ -36,7 +36,7 @@ public class DiscoveryManager
 	
 	/**
 	 * Receive a multicast datagram packet.
-	 * @param DatagramPacket 	the multicast packet
+	 * @param DatagramPacket 	The multicast packet.
 	 */
 	private void multicastReceived(DatagramPacket datagram)
 	{
@@ -59,12 +59,12 @@ public class DiscoveryManager
 	}
 	
 	/**
-	 * Send info to the new node who just joined the network right next to this client node
+	 * Send info to the new node who just joined the network right next to this client node.
 	 * @param String	clientname
 	 * @param String	ip
 	 * @param Node	prevNode
 	 * @param Node	nextNode
-	 * @return boolean	True if success, false if not
+	 * @return boolean	True if success, false if not.
 	 */
 	private boolean sendNetworkInfo(String clientname, String ip, Node prevNode, Node nextNode)
 	{		

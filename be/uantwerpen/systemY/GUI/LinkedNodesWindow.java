@@ -22,7 +22,10 @@ public class LinkedNodesWindow extends JFrame implements ActionListener
 	
 	private final Image settingsIcon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("pictures/SystemYSettings.png"));
 	
-	
+	/**
+	 * Create a JFrame that contains onformation on the links of this node.
+	 * @param clientGUI The Gui that created this window.
+	 */
 	public LinkedNodesWindow(ClientGUI clientGUI)
 	{
 		this.clientGUI = clientGUI;
@@ -61,6 +64,9 @@ public class LinkedNodesWindow extends JFrame implements ActionListener
 		initialisation();
 	}
 	
+	/**
+	 * initialize the window's parameters.
+	 */
 	private void initialisation()
 	{
 		this.setTitle("Link info");

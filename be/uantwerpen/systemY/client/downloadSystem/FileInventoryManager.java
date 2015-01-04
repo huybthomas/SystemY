@@ -13,6 +13,9 @@ public class FileInventoryManager
 	private ArrayList<String> replicatedFiles;
 	private ArrayList<String> networkFiles;
 	
+	/**
+	 * Create a new file inventory manager.
+	 */
 	public FileInventoryManager()
 	{
 		ownedFiles = new HashMap<Integer, FileProperties>();
@@ -21,6 +24,9 @@ public class FileInventoryManager
 		networkFiles = new ArrayList<String>();
 	}
 	
+	/**
+	 * Reset the file Lists.
+	 */
 	public void resetFileLists()
 	{
 		ownedFiles = new HashMap<Integer, FileProperties>();
@@ -29,11 +35,20 @@ public class FileInventoryManager
 		networkFiles = new ArrayList<String>();
 	}
 	
+	/**
+	 * Get an owner file.
+	 * @param fileName The file of which to get the owner file.
+	 * @return The file properties of the requested file.
+	 */
 	public FileProperties getOwnerFile(String fileName)
 	{
 		return this.ownedFiles.get(new FileProperties(fileName, null).getHash());
 	}
 	
+	/**
+	 * Get the owned files.
+	 * @return The owned files.
+	 */
 	public ArrayList<String> getOwnedFiles()
 	{
 		ArrayList<String> ownedFilesList = new ArrayList<String>();
@@ -49,6 +64,10 @@ public class FileInventoryManager
 		return ownedFilesList;
 	}
 	
+	/**
+	 * Get the owned owner files.
+	 * @return The owned owner files.
+	 */
 	public ArrayList<FileProperties> getOwnedOwnerFiles()
 	{
 		ArrayList<FileProperties> ownedFilesList = new ArrayList<FileProperties>();
@@ -56,6 +75,12 @@ public class FileInventoryManager
 		return ownedFilesList;
 	}
 	
+	/**
+	 * Add an owner file.
+	 * @param fileName The name of the file.
+	 * @param node The node that created the file.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean addOwnerFile(String fileName, Node node)
 	{
 		if(!checkOwnerFileExist(fileName))
@@ -73,6 +98,11 @@ public class FileInventoryManager
 		}
 	}
 	
+	/**
+	 * Add an owner file.
+	 * @param file The file.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean addOwnerFile(FileProperties file)
 	{
 		if(!checkOwnerFileExist(file.getFilename()))
@@ -89,6 +119,11 @@ public class FileInventoryManager
 		}
 	}
 	
+	/**
+	 * Delete an owner file.
+	 * @param fileName The file's name.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean delOwnerFile(String fileName)
 	{
 		if(checkOwnerFileExist(fileName))
@@ -105,6 +140,11 @@ public class FileInventoryManager
 		}
 	}
 	
+	/**
+	 * Check if an owner file exists for a given file.
+	 * @param fileName The file's name.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean checkOwnerFileExist(String fileName)
 	{
 		if(getOwnerFile(fileName) != null)
@@ -117,6 +157,10 @@ public class FileInventoryManager
 		}
 	}
 	
+	/**
+	 * Set the local files.
+	 * @param localFiles The local files.
+	 */
 	public void setLocalFiles(ArrayList<String> localFiles)
 	{
 		synchronized(localFiles)
@@ -125,11 +169,20 @@ public class FileInventoryManager
 		}
 	}
 	
+	/**
+	 * Get the local files.
+	 * @return The local files.
+	 */
 	public ArrayList<String> getLocalFiles()
 	{
 		return this.localFiles;
 	}
 	
+	/**
+	 * Check if a file can be deleted.
+	 * @param fileName The file's name.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean canBeDeleted(String fileName) 
 	{
 		if(localFiles.contains(fileName) || replicatedFiles.contains(fileName) || checkOwnerFileExist(fileName))
@@ -142,6 +195,11 @@ public class FileInventoryManager
 		}
 	}
 	
+	/**
+	 * Add a local file.
+	 * @param fileName The file's name.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean addLocalFile(String fileName)
 	{
 		if(!this.localFiles.contains(fileName))
@@ -158,6 +216,11 @@ public class FileInventoryManager
 		}
 	}
 	
+	/**
+	 * Delete the local files.
+	 * @param fileName The file's name.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean delLocalFile(String fileName)
 	{
 		if(this.localFiles.contains(fileName))
@@ -174,11 +237,20 @@ public class FileInventoryManager
 		}
 	}
 	
+	/**
+	 * Get the replicated file list.
+	 * @return The replicated file list.
+	 */
 	public ArrayList<String> getReplicatedFiles()
 	{
 		return this.replicatedFiles;
 	}
 	
+	/**
+	 * Add a file to the list of replicated files.
+	 * @param fileName The file's name.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean addReplicatedFile(String fileName)
 	{
 		if(!this.replicatedFiles.contains(fileName))
@@ -195,6 +267,11 @@ public class FileInventoryManager
 		}
 	}
 	
+	/**
+	 * Delete a replicated file.
+	 * @param fileName The file's name.
+	 * @return True if successful, false otherwise.
+	 */
 	public boolean delReplicatedFile(String fileName)
 	{
 		if(this.replicatedFiles.contains(fileName))
@@ -211,6 +288,10 @@ public class FileInventoryManager
 		}
 	}
 	
+	/**
+	 * Set the network's files
+	 * @param networkFiles The network's files.
+	 */
 	public void setNetworkFiles(ArrayList<String> networkFiles)
 	{
 		synchronized(networkFiles)
@@ -219,6 +300,10 @@ public class FileInventoryManager
 		}
 	}
 	
+	/**
+	 * Get the network's files.
+	 * @return The network's files.
+	 */
 	public ArrayList<String> getNetworkFiles()
 	{
 		return this.networkFiles;
