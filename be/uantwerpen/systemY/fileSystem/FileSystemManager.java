@@ -6,6 +6,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
 
 import javax.swing.JFileChooser;
 import javax.xml.bind.JAXBContext;
@@ -216,6 +218,24 @@ public class FileSystemManager
 		}
 	}
 	
+	public boolean copyFile(String oldLocation, String newLocation) throws IOException
+	{
+		try
+		{
+			File file = new File(oldLocation);
+			File newFile = new File(newLocation);
+			
+			Files.copy(file.toPath(), newFile.toPath());
+		}
+		catch(Exception e)
+		{
+			System.err.println("Error while copying file '" + oldLocation + "': " + e.getMessage());
+			return false;
+		}
+		
+		return true;
+	}
+	
 	/**
 	 * Open a file if it is on the local host.
 	 * If this is not the case, the file will be downloaded from SystemY first.
@@ -232,7 +252,7 @@ public class FileSystemManager
 		{
 			if(OSDetector.isWindows())
 			{
-				// Windows only.
+				//Windows only.
 				Desktop.getDesktop().open(file);
 				return true;
 			}

@@ -95,9 +95,12 @@ public class FileAgent implements Runnable, Serializable
 						
 						for(Entry<String, AgentFileEntry> entry : networkFiles.entrySet())
 						{
-							if(entry.getValue().getLock().equals(name))
+							if(entry.getValue().getLock() != null)
 							{
-								entry.getValue().unlock();
+								if(entry.getValue().getLock().equals(name))
+								{
+									entry.getValue().unlock();
+								}
 							}
 						}
 						failedNodeIterator.remove();
@@ -134,6 +137,7 @@ public class FileAgent implements Runnable, Serializable
 		}
 		
 		ArrayList<Download> lockQueue = agentM.getLockQueue();
+		ArrayList<Download> failLocked = new ArrayList<Download>();
 		
 		if(!lockQueue.isEmpty() && this.oneRoundCompleted)
 		{
@@ -162,11 +166,55 @@ public class FileAgent implements Runnable, Serializable
 						}
 						else
 						{
-							agentM.cancelDownload(download);
+							failLocked.add(download);
 						}
 						lockIterator.remove();
 					}
 				}
+			}
+		}
+		
+		ArrayList<Download> secondAttemptLockQueue = agentM.getSecondChangeLockQueue();
+		if(!secondAttemptLockQueue.isEmpty() && this.oneRoundCompleted)
+		{
+			synchronized(secondAttemptLockQueue)
+			{
+				Iterator<Download> secondLockIterator = secondAttemptLockQueue.iterator();
+				while(secondLockIterator.hasNext())
+				{
+					Download download = secondLockIterator.next();
+					
+					if(networkFiles.containsKey(download.getFileName()))
+					{
+						if((networkFiles.get(download.getFileName()).getLock() == null))
+						{
+							networkFiles.get(download.getFileName()).setLock(agentM.getHostname());
+							
+							agentM.runDownload(download);
+						}
+						else
+						{
+							synchronized(lockQueue)
+							{
+								lockQueue.add(download);
+							}
+						}
+					}
+					else
+					{
+						agentM.cancelDownload(download);
+					}
+					secondLockIterator.remove();
+				}
+			}
+		}
+		
+		//Add failed first attempt locks to second attempt queue
+		if(!failLocked.isEmpty())
+		{
+			synchronized(secondAttemptLockQueue)
+			{
+				secondAttemptLockQueue.addAll(failLocked);
 			}
 		}
 		

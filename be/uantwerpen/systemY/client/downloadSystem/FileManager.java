@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -109,7 +110,7 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 	}
 	
 	//File replication section
-	public ArrayList<String> getReplicatedFile()
+	public ArrayList<String> getReplicatedFiles()
 	{
 		return this.fileInventoryManager.getReplicatedFiles();
 	}
@@ -281,6 +282,7 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 					boolean isLocal = localfiles.contains(fileName);
 					fileInventoryManager.delOwnerFile(fileName);
 					fileInventoryManager.delReplicatedFile(fileName);
+					fileInventoryManager.delLocalFile(fileName);
 					
 					if(!isLocal)
 					{
@@ -291,6 +293,67 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 						catch(IOException e)
 						{
 							System.err.println("Could not delete file: " + e.getMessage());
+							status = false;
+						}
+					}
+					else
+					{
+						//Copy local file to back-up location
+						try
+						{
+							String backupDirectory = this.downloadLocation + File.separator + "Local_Backup";
+							
+							if(this.fileSystemManager.getDirectory(backupDirectory) == null)
+							{
+								this.fileSystemManager.createDirectory(backupDirectory);
+							}
+							
+							//Check if copied file already exist in backup location
+							int i = 0;
+							boolean match = true;
+							String copylocationName = this.downloadLocation + File.separator + "Local_Backup" + File.separator + fileName;
+							
+							while(match)
+							{
+								if(i == 0)
+								{
+									if(!this.fileSystemManager.fileExist(this.downloadLocation + File.separator + "Local_Backup", fileName))
+									{
+										match = false;
+									}
+								}
+								else
+								{
+									if(!this.fileSystemManager.fileExist(this.downloadLocation + File.separator + "Local_Backup", "(" + i + ")_" + fileName))
+									{
+										copylocationName = this.downloadLocation + File.separator + "Local_Backup" + File.separator + "(" + i + ")_" + fileName;
+										match = false;
+									}
+								}
+								i++;
+							}
+							
+							if(this.fileSystemManager.copyFile(this.downloadLocation + File.separator + fileName , copylocationName))
+							{
+								try
+								{
+									deleteSystemFile(fileName);
+								}
+								catch(IOException e)
+								{
+									System.err.println("Could not delete file: " + e.getMessage());
+									status = false;
+								}
+							}
+							else
+							{
+								System.err.println("Local file '" + fileName + "' can not be copied to backup location.");
+								status = false;
+							}
+						}
+						catch(IOException e)
+						{
+							System.err.println("Local file '" + fileName + "' can not be backed up: " + e.getMessage());
 							status = false;
 						}
 					}

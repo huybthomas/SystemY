@@ -78,7 +78,7 @@ public class FileInventoryManager
 	/**
 	 * Add an owner file.
 	 * @param fileName The name of the file.
-	 * @param node The node that created the file.
+	 * @param node The node that owns the file.
 	 * @return True if successful, false otherwise.
 	 */
 	public boolean addOwnerFile(String fileName, Node node)

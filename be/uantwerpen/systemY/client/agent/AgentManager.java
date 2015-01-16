@@ -1,5 +1,6 @@
 package be.uantwerpen.systemY.client.agent;
 
+import java.io.File;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.Set;
 
 import be.uantwerpen.systemY.client.Client;
 import be.uantwerpen.systemY.client.downloadSystem.Download;
+import be.uantwerpen.systemY.client.downloadSystem.FileProperties;
 import be.uantwerpen.systemY.interfaces.AgentManagerInterface;
 import be.uantwerpen.systemY.interfaces.NodeManagerInterface;
 import be.uantwerpen.systemY.shared.Node;
@@ -28,6 +30,7 @@ public class AgentManager extends UnicastRemoteObject implements AgentManagerInt
 	private int failureAgentsRunning;
 	private FileAgent bufferedFileAgent;
 	private ArrayList<Download> lockQueue;
+	private ArrayList<Download> secondChangeLockQueue;
 	private ArrayList<String> unlockQueue;
 	private ArrayList<String> failedNodeQueue;
 	private ArrayList<String> deleteFileQueue;
@@ -47,6 +50,7 @@ public class AgentManager extends UnicastRemoteObject implements AgentManagerInt
 		this.deletionAgentsRunning = 0;
 		this.failureAgentsRunning = 0;
 		this.lockQueue = new ArrayList<Download>();
+		this.secondChangeLockQueue = new ArrayList<Download>();	//Lock queue to allow file agent to update his list with new files before disposing the lock permanently
 		this.unlockQueue = new ArrayList<String>();
 		this.failedNodeQueue = new ArrayList<String>();
 		this.deleteFileQueue = new ArrayList<String>();
@@ -74,6 +78,7 @@ public class AgentManager extends UnicastRemoteObject implements AgentManagerInt
 	public void reset()
 	{
 		lockQueue = new ArrayList<Download>();
+		secondChangeLockQueue = new ArrayList<Download>();
 		unlockQueue = new ArrayList<String>();
 		failedNodeQueue = new ArrayList<String>();
 		deleteFileQueue = new ArrayList<String>();
@@ -104,19 +109,20 @@ public class AgentManager extends UnicastRemoteObject implements AgentManagerInt
 	/**
 	 * Assign the specified node as the file agent's master
 	 * @param node the node
+	 * @param state the new status of the node as master
 	 * @return true if successful, false otherwise
 	 */
-	public boolean assignFileAgentMaster(Node node)
+	public boolean assignFileAgentMaster(Node node, boolean state)
 	{
 		try
 		{
 			AgentManagerInterface iFace = (AgentManagerInterface) this.client.getAgentManagerInterface(node);
-			iFace.setFileAgentMaster(true);
+			iFace.setFileAgentMaster(state);
 			return true;
 		}
 		catch(NullPointerException | RemoteException e)
 		{
-			System.err.println("Can't assign file agent master to next node: " + e.getMessage());
+			System.err.println("Can't change state of file agent master to next node: " + e.getMessage());
 			client.nodeConnectionFailure(client.getNextNode().getHostname());
 			return false;
 		}
@@ -450,12 +456,12 @@ public class AgentManager extends UnicastRemoteObject implements AgentManagerInt
 	}
 	
 	/**
-	 * Get the list of local files.
-	 * @return	The list of local files.
+	 * Get the list of local system files.
+	 * @return	The list of local system files.
 	 */
-	public ArrayList<String> getLocalFiles()
+	public File[] getLocalSystemFiles()
 	{
-		return client.getLocalFiles();
+		return client.getLocalSystemFiles();
 	}
 	
 	/**
@@ -465,6 +471,16 @@ public class AgentManager extends UnicastRemoteObject implements AgentManagerInt
 	public ArrayList<String> getOwnedFiles()
 	{
 		return client.getOwnedFiles();
+	}
+	
+	public ArrayList<FileProperties> getOwnedOwnerFiles()
+	{
+		return client.getOwnedOwnerFiles();
+	}
+	
+	public ArrayList<String> getReplicatedFiles()
+	{
+		return client.getReplicatedFiles();
 	}
 	
 	/**
@@ -569,8 +585,8 @@ public class AgentManager extends UnicastRemoteObject implements AgentManagerInt
 	}
 	
 	/**
-	 * Get the list with locked files.
-	 * @return	The list with locked files.
+	 * Get the list with lock requests.
+	 * @return	The list with lock requests.
 	 */
 	public ArrayList<Download> getLockQueue()
 	{
@@ -578,8 +594,17 @@ public class AgentManager extends UnicastRemoteObject implements AgentManagerInt
 	}
 	
 	/**
-	 * Get the list with unlocked files.
-	 * @return	The list with unlocked files.
+	 * Get the list with all lock requests for a second attempt to lock the file. File agent will make a second round around the network.
+	 * @return The list with all second attempt lock requests.
+	 */
+	public ArrayList<Download> getSecondChangeLockQueue()
+	{
+		return this.secondChangeLockQueue;
+	}
+	
+	/**
+	 * Get the list with unlock requests.
+	 * @return	The list with unlock requests.
 	 */
 	public ArrayList<String> getUnlockQueue()
 	{
@@ -678,6 +703,26 @@ public class AgentManager extends UnicastRemoteObject implements AgentManagerInt
 	public String getHostname()
 	{
 		return client.getHostname();
+	}
+	
+	public Node getThisNode()
+	{
+		return client.getThisNode();
+	}
+	
+	public Node getPrevNode()
+	{
+		return client.getPrevNode();
+	}
+	
+	public Node getNextNode()
+	{
+		return client.getNextNode();
+	}
+	
+	public boolean addOwnerFile(String fileName, Node ownerNode)
+	{
+		return this.client.addOwnerFile(fileName, ownerNode);
 	}
 	
 	/**

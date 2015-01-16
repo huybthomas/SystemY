@@ -114,4 +114,6 @@ public interface FileManagerInterface extends Remote
 	 * @throws RemoteException
 	 */
 	public boolean setReplicationLocation(String fileName, Node replicationNode) throws RemoteException;
+	
+	public boolean addOwnerFile(String fileName, Node ownerNode) throws RemoteException;
 }

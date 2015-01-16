@@ -135,6 +135,14 @@ public class BootstrapManager extends UnicastRemoteObject implements BootstrapMa
 				client.setFileAgentMaster();
 				client.createFileAgent();
 			}
+			else
+			{
+				if(client.getPrevNode().getHash() > client.getThisNode().getHash())		//This node becomes the new file agent master
+				{
+					client.assignFileAgentMaster(client.getNextNode(), false);
+					client.setFileAgentMaster();
+				}
+			}
 			
 			if(client.runService())
 			{

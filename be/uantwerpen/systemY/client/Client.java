@@ -140,7 +140,7 @@ public class Client
 		
 		if(agentM.isAgentMaster() && !this.getPrevNode().equals(this.getThisNode()))		//Next node becomes agent master
 		{
-			this.assignFileAgentMaster(this.getNextNode());
+			this.assignFileAgentMaster(this.getNextNode(), true);
 		}
 		
 		stopServices();
@@ -165,8 +165,6 @@ public class Client
 			printTerminalError("No active session running.");
 			return true;
 		}
-		
-		System.out.println("LOGOUT01");
 		
 		if(fileManager.getQueuedDownloads() > 0 || agentM.getLockQueue().size() > 0 || agentM.getUnlockQueue().size() > 0 || agentM.getFailedNodeQueue().size() > 0 || agentM.getFailureAgentsRunning() > 0 || agentM.getDeleteFileQueue().size() > 0 || agentM.getDeletionAgentsRunning() > 0 || fileManager.getDownloadsHosting() > 0)
 		{
@@ -193,8 +191,6 @@ public class Client
 		this.observer.notifyObservers("DownloadsReady");
 		this.forceShutdown = false;
 		
-		System.out.println("LOGOUT02");
-		
 		if(!fileManager.shutdownFileUpdate())
 		{
 			printTerminalError("Shutdown file update failed.");
@@ -216,7 +212,7 @@ public class Client
 			{
 				Thread.sleep(10);
 			}
-			catch (InterruptedException e)
+			catch(InterruptedException e)
 			{
 				e.printStackTrace();
 			}
@@ -225,8 +221,6 @@ public class Client
 		this.observer.setChanged();
 		this.observer.notifyObservers("DeletionAgentsReady");
 		this.forceShutdown = false;
-		
-		System.out.println("LOGOUT03");
 		
 		if(!shutdownM.shutdown())
 		{
@@ -239,7 +233,7 @@ public class Client
 		
 		if(agentM.isAgentMaster() && !this.getPrevNode().equals(this.getThisNode()))		//Next node becomes agent master
 		{
-			this.assignFileAgentMaster(this.getNextNode());
+			this.assignFileAgentMaster(this.getNextNode(), true);
 		}
 		
 		if(agentM.getAgentsRunning() > 0)
@@ -267,15 +261,11 @@ public class Client
 		this.observer.notifyObservers("AgentsReady");
 		this.forceShutdown = false;
 		
-		System.out.println("LOGOUT04");
-		
 		if(!fileManager.shutdownTransfer() && status)
 		{
 			printTerminalError("Shutdown filetransfer failed.");
 			status = false;
 		}
-		
-		System.out.println("LOGOUT05");
 		
 		if(fileManager.getDownloadsHosting() > 0)
 		{
@@ -284,12 +274,10 @@ public class Client
 			this.observer.notifyObservers("WaitingForHostedDownloads");
 		}
 		
-		System.out.println("LOGOUT06");
-		
 		while((fileManager.getDownloadsHosting() > 0 || fileManager.getOwnedOwnerFiles().size() > 0) && !forceShutdown)
 		{
 			//Wait for hosted downloads to finish or until forceShutdown flag is set
-			//stalling the while loop a little
+			// stalling the while loop a little
 			try
 			{
 				Thread.sleep(10);
@@ -299,8 +287,6 @@ public class Client
 				e.printStackTrace();
 			}
 		}
-		
-		System.out.println("LOGOUT07");
 		
 		this.observer.setChanged();
 		this.observer.notifyObservers("HostedDownloadsReady");
@@ -829,6 +815,11 @@ public class Client
 		return this.fileManager.setDownloadLocation(location);
 	}
 	
+	public boolean addOwnerFile(String fileName, Node ownerNode)
+	{
+		return this.fileManager.addOwnerFile(fileName, ownerNode);
+	}
+	
 	/**
 	 * Bind object to bindlocation.
 	 * @param object to bind
@@ -955,13 +946,18 @@ public class Client
 		return fileManager.getOwnedFiles();
 	}
 	
+	public ArrayList<String> getReplicatedFiles()
+	{
+		return fileManager.getReplicatedFiles();
+	}
+	
 	/**
-	 * Get the local files.
+	 * Get the local system files.
 	 * @return the files
 	 */
-	public ArrayList<String> getLocalFiles()
+	public File[] getLocalSystemFiles()
 	{
-		return fileManager.getLocalFiles();
+		return fileManager.getLocalSystemFiles();
 	}
 	
 	/**
@@ -995,6 +991,11 @@ public class Client
 		this.agentM.createFileAgent();
 	}
 	
+	public void createFailureAgent(Node failedNode)
+	{
+		this.agentM.createFailureAgent(failedNode);
+	}
+	
 	/**
 	 * Set this node as the file agent's master.
 	 */
@@ -1006,11 +1007,12 @@ public class Client
 	/**
 	 * Assign the node as the file agent's master.
 	 * @param node The node.
+	 * @param state the new status of the node as master
 	 * @return True if successful, false otherwise.
 	 */
-	public boolean assignFileAgentMaster(Node node)
+	public boolean assignFileAgentMaster(Node node, boolean state)
 	{
-		return this.agentM.assignFileAgentMaster(node);
+		return this.agentM.assignFileAgentMaster(node, state);
 	}
 	
 	/**

@@ -31,10 +31,14 @@ public class FailureManager
 
 		Node prevNode = null;
 		Node nextNode = null;
+		Node failedNode = null;
 		
 		try 
 		{
 			NodeManagerInterface iFace = (NodeManagerInterface)client.getNodeServerInterface();
+			
+			String ipFailedNode = iFace.getNode(hostname);
+			failedNode = new Node(hostname, ipFailedNode);
 			
 			prevNode = iFace.getPrevNode(hostname);
 			nextNode = iFace.getNextNode(hostname);
@@ -56,6 +60,8 @@ public class FailureManager
 		{
 			updateNode(nextNode, prevNode, null);
 		}
+		
+		client.createFailureAgent(failedNode);
 		
 		return true;
 	}

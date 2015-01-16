@@ -231,7 +231,7 @@ public class FileTransferManager
 				}
 			}
 			
-			for(String f: fileManager.getReplicatedFile())
+			for(String f: fileManager.getReplicatedFiles())
 			{
 				try
 				{
