@@ -215,50 +215,9 @@ public class DownloadManager
 	 */
 	public void downloadRequest(TCPConnection connection)
 	{
-		byte[] fileRequest = null;
+		DownloadRequest downloadRequest = new DownloadRequest(connection);
 		
-		this.addDownloadHosting();
-		
-		try
-		{
-			fileRequest = connection.receiveData();								//File request
-			
-			if(fileManager.fileExist(fileManager.getDownloadLocation(), new String(fileRequest)))
-			{
-				connection.sendData(String.valueOf(fileManager.getFile(fileManager.getDownloadLocation(), new String(fileRequest)).length()).getBytes());	//Send file size
-			}
-			else
-			{
-				connection.sendData(String.valueOf(0L).getBytes());				//File not found: filesize = 0;
-				connection.closeConnection();
-				return;
-			}
-			
-			BufferedInputStream fileReader = new BufferedInputStream(fileManager.getFileInputStream(fileManager.getDownloadLocation(), new String(fileRequest)));
-			BufferedOutputStream fileSender = new BufferedOutputStream(connection.getDataOutputStream(), 1024);
-			
-			byte[] fileBuffer = new byte[1024];									//1kB packetsize
-			int packetSize = 0;
-			while((packetSize = fileReader.read(fileBuffer, 0, 1024)) >= 0)		//End of file: packetSize == -1
-			{
-				fileSender.write(fileBuffer, 0, packetSize);
-			}
-			
-			fileReader.close();
-			fileSender.close();
-		}
-		catch(FileNotFoundException e)
-		{
-			fileManager.printTerminalError("Requested file '" + new String(fileRequest) + "' not found: " + e.getMessage());
-		}
-		catch(IOException e)
-		{
-			fileManager.printTerminalError("Connection error while transferring file to " + connection.getConnectedHost() + ": " + e.getMessage());
-		}
-
-		this.delDownloadHosting();
-		
-		connection.closeConnection();
+		new Thread(downloadRequest).start();
 	}
 	
 	/**
@@ -284,5 +243,67 @@ public class DownloadManager
 	private synchronized void delDownloadHosting()
 	{
 		this.downloadsHosting = this.downloadsHosting - 1;
+	}
+	
+	/**
+	 * Private class for handling a download request
+	 */
+	private class DownloadRequest implements Runnable
+	{
+		TCPConnection connection;
+		
+		public DownloadRequest(TCPConnection connection)
+		{
+			this.connection = connection;
+		}
+		
+		@Override
+		public void run()
+		{
+			byte[] fileRequest = null;
+			
+			addDownloadHosting();
+			
+			try
+			{
+				fileRequest = connection.receiveData();								//File request
+				
+				if(fileManager.fileExist(fileManager.getDownloadLocation(), new String(fileRequest)))
+				{
+					connection.sendData(String.valueOf(fileManager.getFile(fileManager.getDownloadLocation(), new String(fileRequest)).length()).getBytes());	//Send file size
+				}
+				else
+				{
+					connection.sendData(String.valueOf(0L).getBytes());				//File not found: filesize = 0;
+					connection.closeConnection();
+					return;
+				}
+				
+				BufferedInputStream fileReader = new BufferedInputStream(fileManager.getFileInputStream(fileManager.getDownloadLocation(), new String(fileRequest)));
+				BufferedOutputStream fileSender = new BufferedOutputStream(connection.getDataOutputStream(), 1024);
+				
+				byte[] fileBuffer = new byte[1024];									//1kB packetsize
+				int packetSize = 0;
+				while((packetSize = fileReader.read(fileBuffer, 0, 1024)) >= 0)		//End of file: packetSize == -1
+				{
+					fileSender.write(fileBuffer, 0, packetSize);
+				}
+				
+				fileReader.close();
+				fileSender.close();
+			}
+			catch(FileNotFoundException e)
+			{
+				fileManager.printTerminalError("Requested file '" + new String(fileRequest) + "' not found: " + e.getMessage());
+			}
+			catch(IOException e)
+			{
+				fileManager.printTerminalError("Connection error while transferring file to " + connection.getConnectedHost() + ": " + e.getMessage());
+			}
+
+			delDownloadHosting();
+			
+			connection.closeConnection();
+		}
 	}
 }

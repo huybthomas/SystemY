@@ -30,7 +30,7 @@ public class AgentManager extends UnicastRemoteObject implements AgentManagerInt
 	private int failureAgentsRunning;
 	private FileAgent bufferedFileAgent;
 	private ArrayList<Download> lockQueue;
-	private ArrayList<Download> secondChangeLockQueue;
+	private ArrayList<Download> secondAttemptLockQueue;
 	private ArrayList<String> unlockQueue;
 	private ArrayList<String> failedNodeQueue;
 	private ArrayList<String> deleteFileQueue;
@@ -50,7 +50,7 @@ public class AgentManager extends UnicastRemoteObject implements AgentManagerInt
 		this.deletionAgentsRunning = 0;
 		this.failureAgentsRunning = 0;
 		this.lockQueue = new ArrayList<Download>();
-		this.secondChangeLockQueue = new ArrayList<Download>();	//Lock queue to allow file agent to update his list with new files before disposing the lock permanently
+		this.secondAttemptLockQueue = new ArrayList<Download>();	//Lock queue to allow file agent to update his list with new files before disposing the lock permanently
 		this.unlockQueue = new ArrayList<String>();
 		this.failedNodeQueue = new ArrayList<String>();
 		this.deleteFileQueue = new ArrayList<String>();
@@ -78,7 +78,7 @@ public class AgentManager extends UnicastRemoteObject implements AgentManagerInt
 	public void reset()
 	{
 		lockQueue = new ArrayList<Download>();
-		secondChangeLockQueue = new ArrayList<Download>();
+		secondAttemptLockQueue = new ArrayList<Download>();
 		unlockQueue = new ArrayList<String>();
 		failedNodeQueue = new ArrayList<String>();
 		deleteFileQueue = new ArrayList<String>();
@@ -597,9 +597,9 @@ public class AgentManager extends UnicastRemoteObject implements AgentManagerInt
 	 * Get the list with all lock requests for a second attempt to lock the file. File agent will make a second round around the network.
 	 * @return The list with all second attempt lock requests.
 	 */
-	public ArrayList<Download> getSecondChangeLockQueue()
+	public ArrayList<Download> getSecondAttemptLockQueue()
 	{
-		return this.secondChangeLockQueue;
+		return this.secondAttemptLockQueue;
 	}
 	
 	/**

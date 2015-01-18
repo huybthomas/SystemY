@@ -101,7 +101,7 @@ public class SettingsWindow extends JFrame implements ActionListener
 		fileDirButton = new JButton("Select");
 		fileDirButton.setFont(font);
 		fileDirButton.setBounds(180, 190, 80, 30);
-		fileDirButton.setEnabled(true);
+		fileDirButton.setEnabled(!clientGUI.getLoginStatus());
 
 		//Set GUI
 		this.add(okButton);

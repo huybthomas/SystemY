@@ -163,6 +163,8 @@ public class Client
 		if(!activeSession)
 		{
 			printTerminalError("No active session running.");
+			this.observer.setChanged();
+			this.observer.notifyObservers("Logout");
 			return true;
 		}
 		
@@ -1134,5 +1136,13 @@ public class Client
 			}
 			System.out.println("-------------------------------------------------");
 		}
+		
+		ArrayList<String> repList = this.fileManager.getReplicatedFiles();
+		System.out.println("Replicated files:");
+		for(String f : repList)
+		{
+			System.out.println("- " + f);
+		}
+		System.out.println("_____________________________________________");
 	}
 }

@@ -14,7 +14,7 @@ public class FileTransferManager
 	private FileManager fileManager;
 	
 	/**
-	 * Create a file tranfer manager.
+	 * Create a file transfer manager.
 	 * @param manager The file manager that created the manager.
 	 */
 	public FileTransferManager(FileManager manager)
@@ -74,7 +74,7 @@ public class FileTransferManager
 		{
 			for(FileProperties f : fileManager.getOwnedOwnerFiles())
 			{
-				if((f.getHash() > fileManager.getNextNode().getHash()) || (f.getHash() < fileManager.getThisNode().getHash()))
+				if(((fileManager.getThisNode().getHash() < fileManager.getNextNode().getHash()) && ((f.getHash() > fileManager.getNextNode().getHash()) || (f.getHash() < fileManager.getThisNode().getHash()))) || ((fileManager.getThisNode().getHash() > fileManager.getNextNode().getHash()) && (f.getHash() > fileManager.getNextNode().getHash()) && (f.getHash() < fileManager.getThisNode().getHash())))	//Next node is the new file owner
 				{
 					try
 					{
@@ -109,10 +109,7 @@ public class FileTransferManager
 			
 			if(fileManager.getNetworkFiles().contains(fileName))
 			{
-				if(!fileManager.getOwnedFiles().contains(fileName)) 			//Only file not owned by this node
-				{
-					fileManager.deleteDownloadLocation(fileName);				//Delete download location from this node
-				}
+				fileManager.deleteDownloadLocation(fileName);				//Delete download location from this node
 				
 				if(fileManager.getLocalFiles().contains(fileName))
 				{
@@ -331,6 +328,8 @@ public class FileTransferManager
 									fileManager.getOwnerFile(f.getName()).setReplicationLocation(fileManager.getThisNode());
 									
 									iFaceNode.ownerSwitchFile(f.getName(), fileManager.getThisNode());
+									
+									fileManager.addReplicatedFile(f.getName());
 								}
 							}
 							catch(NullPointerException | RemoteException e)

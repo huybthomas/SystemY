@@ -14,6 +14,12 @@ public class FileSystemWatcher implements Runnable
 	private FileSystemObserver observer;
 	private WatchService watcher;
 	
+	/**
+	 * Create a File System Watcher
+	 * 
+	 * This object will check a path for changes 
+	 * @param pathlocation the path's location
+	 */
 	public FileSystemWatcher(String pathlocation)
 	{
 		try
@@ -28,11 +34,20 @@ public class FileSystemWatcher implements Runnable
 		this.observer = new FileSystemObserver();
 	}
 	
+	/**
+	 * Get the FileSystemwatcher's Observer
+	 * @return the observer
+	 */
 	public FileSystemObserver getObserver()
 	{
 		return observer;
 	}
 	
+	/**
+	 * Set the path to be checked
+	 * @param pathlocation the path
+	 * @return true if successful, false otherwise
+	 */
 	public boolean setPathLocation(String pathlocation)
 	{
 		try
@@ -47,6 +62,10 @@ public class FileSystemWatcher implements Runnable
 		return true;
 	}
 	
+	/**
+	 * Stop the File System Watcher
+	 * @return True if successful, false otherwise
+	 */
 	public boolean stopWatcher()
 	{
 		if(watcher != null)
@@ -64,6 +83,9 @@ public class FileSystemWatcher implements Runnable
 		return false;
 	}
 	
+	/**
+	 * Run the File System Watcher
+	 */
 	@Override
 	public void run()
 	{

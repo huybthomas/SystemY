@@ -97,22 +97,25 @@ public class FailureAgent implements Runnable, Serializable
 			   
 			    ownerFile.delDownloadLocation(this.failedNode);
 			    
-			    if(ownerFile.getReplicationLocation().equals(failedNode))
+			    if(ownerFile.getReplicationLocation() != null)
 			    {
-			    	ownerFile.setReplicationLocation(null);
-			    	if(!agentM.getPrevNode().equals(agentM.getThisNode()))
-			    	{
-			    		try
-			    		{
-				    		FileManagerInterface iFaceNode = (FileManagerInterface) agentM.getFileManagerInterface(agentM.getPrevNode());
-							iFaceNode.replicateFile(ownerFile.getFilename(), agentM.getThisNode());
-			    		}
-			    		catch(NullPointerException | RemoteException e)
-			    		{
-			    			System.err.println("Can't contact previous node to replicate file from failure: " + e.getMessage());
-			    			agentM.nodeConnectionFailure(agentM.getPrevNode().getHostname());
-			    		}
-			    	}
+				    if(ownerFile.getReplicationLocation().equals(failedNode))
+				    {
+				    	ownerFile.setReplicationLocation(null);
+				    	if(!agentM.getPrevNode().equals(agentM.getThisNode()))
+				    	{
+				    		try
+				    		{
+					    		FileManagerInterface iFaceNode = (FileManagerInterface) agentM.getFileManagerInterface(agentM.getPrevNode());
+								iFaceNode.replicateFile(ownerFile.getFilename(), agentM.getThisNode());
+				    		}
+				    		catch(NullPointerException | RemoteException e)
+				    		{
+				    			System.err.println("Can't contact previous node to replicate file from failure: " + e.getMessage());
+				    			agentM.nodeConnectionFailure(agentM.getPrevNode().getHostname());
+				    		}
+				    	}
+				    }
 			    }
 			}
 		}
@@ -126,60 +129,67 @@ public class FailureAgent implements Runnable, Serializable
 			
 			if(!agentM.getOwnedFiles().contains(fileName))
 			{
-				Node newOwner = agentM.getOwnerLocation(fileName);
-				int newOwnerHash = newOwner.getHash();
-				int fileHash = calculateHash(fileName);
-				
 				boolean act = false;
-				
-				if(fileHash > newOwnerHash) 		// standard situation: new owner is nearest smaller hash value
+				try
 				{
-					if((failedNodeHash > newOwnerHash) && (failedNodeHash < fileHash)) // failed node between newOwner and file
+					Node newOwner = agentM.getOwnerLocation(fileName);
+					int newOwnerHash = newOwner.getHash();
+					int fileHash = calculateHash(fileName);
+					
+					if(fileHash > newOwnerHash) 		// standard situation: new owner is nearest smaller hash value
 					{
-						act = true;
+						if((failedNodeHash > newOwnerHash) && (failedNodeHash < fileHash)) // failed node between newOwner and file
+						{
+							act = true;
+						}
+					}
+					else	// end of circle 
+					{
+						if((failedNodeHash > newOwnerHash) && (failedNodeHash > fileHash)) // failed node is the last in the circle, file at start
+						{
+							act = true;
+						}
+						else if((failedNodeHash < newOwnerHash) && (failedNodeHash < fileHash)) 
+						{
+							act = true;
+						}
+					}
+					
+					if(act) 
+					{
+						try
+						{
+							FileManagerInterface iFace = (FileManagerInterface) agentM.getFileManagerInterface(newOwner);
+							
+							if(iFace.getOwnerFile(fileName) == null)
+							{
+								//Create owner file on new node, so next nodes can already add download locations to it
+								iFace.addOwnerFile(fileName, newOwner);
+								
+								//Create temporary dummy ownerfile for file transfer to the new owner
+								agentM.addOwnerFile(fileName, newOwner);
+								
+								iFace.ownerSwitchFile(fileName, agentM.getThisNode());
+							}
+							
+							if(agentM.getReplicatedFiles().contains(fileName))	//Check if this node is the replicate location of the file
+							{
+								iFace.setReplicationLocation(fileName, agentM.getThisNode());
+							}
+							
+							iFace.addDownloadLocation(fileName, agentM.getThisNode());	//Add this node as a download location of the file
+						}
+						catch(NullPointerException | RemoteException e)
+						{
+							System.err.println("Can not contact new owner node for reconstruct owner file: " + e.getMessage());
+							agentM.nodeConnectionFailure(newOwner.getHostname());
+						}
 					}
 				}
-				else	// end of circle 
+				catch(NullPointerException e)
 				{
-					if((failedNodeHash > newOwnerHash) && (failedNodeHash > fileHash)) // failed node is the last in the circle, file at start
-					{
-						act = true;
-					}
-					else if((failedNodeHash < newOwnerHash) && (failedNodeHash < fileHash)) 
-					{
-						act = true;
-					}
-				}
-				
-				if(act) 
-				{
-					try
-					{
-						FileManagerInterface iFace = (FileManagerInterface) agentM.getFileManagerInterface(newOwner);
-						
-						if(iFace.getOwnerFile(fileName) == null)
-						{
-							//Create owner file on new node, so next nodes can already add download locations to it
-							iFace.addOwnerFile(fileName, newOwner);
-							
-							//Create temporary dummy ownerfile for file transfer to the new owner
-							agentM.addOwnerFile(fileName, newOwner);
-							
-							iFace.ownerSwitchFile(fileName, agentM.getThisNode());
-						}
-						
-						if(agentM.getReplicatedFiles().contains(fileName))	//Check if this node is the replicate location of the file
-						{
-							iFace.setReplicationLocation(fileName, agentM.getThisNode());
-						}
-						
-						iFace.addDownloadLocation(fileName, agentM.getThisNode());	//Add this node as a download location of the file
-					}
-					catch(NullPointerException | RemoteException e)
-					{
-						System.err.println("Can not contact new owner node for reconstruct owner file: " + e.getMessage());
-						agentM.nodeConnectionFailure(newOwner.getHostname());
-					}
+					System.err.println("New owner cannot be resolved for fail recovery: " + e.getMessage());
+					return;
 				}
 			}
 		}

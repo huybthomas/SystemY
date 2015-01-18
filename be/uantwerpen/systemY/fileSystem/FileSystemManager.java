@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 
 import javax.swing.JFileChooser;
@@ -99,6 +98,12 @@ public class FileSystemManager
 		return object;
 	}
 	
+	/**
+	 * Saves a file
+	 * @param data	The file you want to save
+	 * @param fileLocation	The location where you want to save the file
+	 * @return True if successful, false when failed
+	 */
 	public boolean saveFile(byte[] data, String fileLocation)
 	{
 		FileOutputStream f = null;
@@ -138,6 +143,12 @@ public class FileSystemManager
 		return false;
 	}
 	
+	/**
+	 * Get a specific file.
+	 * @param location	The location of the file you want.
+	 * @param name	The name of the file you want
+	 * @return	The requested file.
+	 */
 	public File getFile(String location, String name)
 	{
 		File file = new File(location + File.separator + name);
@@ -218,6 +229,13 @@ public class FileSystemManager
 		}
 	}
 	
+	/**
+	 * Copies a file to a new location.
+	 * @param oldLocation	The old location of the file.
+	 * @param newLocation	The new location where you want the file.
+	 * @return	True when the file is moved, false when failed.
+	 * @throws IOException
+	 */
 	public boolean copyFile(String oldLocation, String newLocation) throws IOException
 	{
 		try

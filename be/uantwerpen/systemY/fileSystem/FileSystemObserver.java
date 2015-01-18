@@ -30,6 +30,10 @@ public class FileSystemObserver extends Observable
 			return this.event;
 		}
 		
+		/**
+		 * Get the name of a file
+		 * @return	The name of the file.
+		 */
 		public String getFileName()
 		{
 			return this.fileName;

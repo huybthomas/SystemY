@@ -38,7 +38,11 @@ public class FailureManager
 			NodeManagerInterface iFace = (NodeManagerInterface)client.getNodeServerInterface();
 			
 			String ipFailedNode = iFace.getNode(hostname);
-			failedNode = new Node(hostname, ipFailedNode);
+			
+			if(ipFailedNode != null)		//If null, then the failure is already been resolved
+			{
+				failedNode = new Node(hostname, ipFailedNode);
+			}
 			
 			prevNode = iFace.getPrevNode(hostname);
 			nextNode = iFace.getNextNode(hostname);
@@ -61,8 +65,11 @@ public class FailureManager
 			updateNode(nextNode, prevNode, null);
 		}
 		
-		client.createFailureAgent(failedNode);
-		
+		if(failedNode != null)				//If null, then a failure agent is already been dispatched
+		{
+			client.createFailureAgent(failedNode);
+		}
+			
 		return true;
 	}
 	

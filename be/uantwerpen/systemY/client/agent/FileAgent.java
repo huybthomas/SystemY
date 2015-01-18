@@ -174,7 +174,7 @@ public class FileAgent implements Runnable, Serializable
 			}
 		}
 		
-		ArrayList<Download> secondAttemptLockQueue = agentM.getSecondChangeLockQueue();
+		ArrayList<Download> secondAttemptLockQueue = agentM.getSecondAttemptLockQueue();
 		if(!secondAttemptLockQueue.isEmpty() && this.oneRoundCompleted)
 		{
 			synchronized(secondAttemptLockQueue)

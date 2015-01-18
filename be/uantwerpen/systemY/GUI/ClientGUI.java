@@ -410,6 +410,8 @@ public class ClientGUI extends JFrame implements ActionListener
 			}
 			case("LoginFailed"):
 			{
+				loginButton.setEnabled(true);
+				logoutButton.setEnabled(false);
 				addFileButton.setEnabled(false);
 				networkFiles = new ArrayList<String>();
 				updateFileList();

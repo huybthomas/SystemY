@@ -1,11 +1,11 @@
 package be.uantwerpen.systemY.client.downloadSystem;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -195,20 +195,18 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 		{
 			try 
 			{
-				if(this.getOwnerFile(fileName) == null)		//When node is no owner of the file, add himself as downloadlocation (needed for replication location)
+				//Add the node as a downloadlocation
+				try
 				{
-					try
-					{
-						NodeManagerInterface iFace = (NodeManagerInterface) getNodeServerInterface();
-						Node ownerNode = iFace.getFileLocation(fileName);
-						
-						this.updateDownloadLocation(ownerNode, fileName);
-					}
-					catch(NullPointerException | RemoteException e)
-					{
-						System.err.println("Can't contact server for owner location: " + e.getMessage());
-						client.serverConnectionFailure();
-					}
+					NodeManagerInterface iFace = (NodeManagerInterface) getNodeServerInterface();
+					Node ownerNode = iFace.getFileLocation(fileName);
+					
+					this.updateDownloadLocation(ownerNode, fileName);
+				}
+				catch(NullPointerException | RemoteException e)
+				{
+					System.err.println("Can't contact server for owner location: " + e.getMessage());
+					client.serverConnectionFailure();
 				}
 				
 				return fileSystemManager.openFile(downloadLocation, fileName);
@@ -298,64 +296,7 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 					}
 					else
 					{
-						//Copy local file to back-up location
-						try
-						{
-							String backupDirectory = this.downloadLocation + File.separator + "Local_Backup";
-							
-							if(this.fileSystemManager.getDirectory(backupDirectory) == null)
-							{
-								this.fileSystemManager.createDirectory(backupDirectory);
-							}
-							
-							//Check if copied file already exist in backup location
-							int i = 0;
-							boolean match = true;
-							String copylocationName = this.downloadLocation + File.separator + "Local_Backup" + File.separator + fileName;
-							
-							while(match)
-							{
-								if(i == 0)
-								{
-									if(!this.fileSystemManager.fileExist(this.downloadLocation + File.separator + "Local_Backup", fileName))
-									{
-										match = false;
-									}
-								}
-								else
-								{
-									if(!this.fileSystemManager.fileExist(this.downloadLocation + File.separator + "Local_Backup", "(" + i + ")_" + fileName))
-									{
-										copylocationName = this.downloadLocation + File.separator + "Local_Backup" + File.separator + "(" + i + ")_" + fileName;
-										match = false;
-									}
-								}
-								i++;
-							}
-							
-							if(this.fileSystemManager.copyFile(this.downloadLocation + File.separator + fileName , copylocationName))
-							{
-								try
-								{
-									deleteSystemFile(fileName);
-								}
-								catch(IOException e)
-								{
-									System.err.println("Could not delete file: " + e.getMessage());
-									status = false;
-								}
-							}
-							else
-							{
-								System.err.println("Local file '" + fileName + "' can not be copied to backup location.");
-								status = false;
-							}
-						}
-						catch(IOException e)
-						{
-							System.err.println("Local file '" + fileName + "' can not be backed up: " + e.getMessage());
-							status = false;
-						}
+						makeLocalBackup(fileName);
 					}
 				} 
 				else 
@@ -365,6 +306,70 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 			}
 		}
 		return status;
+	}
+	
+	public boolean makeLocalBackup(String fileName)
+	{
+		//Copy local file to back-up location
+		try
+		{
+			String backupDirectory = this.downloadLocation + File.separator + "Local_Backup";
+			
+			if(this.fileSystemManager.getDirectory(backupDirectory) == null)
+			{
+				this.fileSystemManager.createDirectory(backupDirectory);
+			}
+			
+			//Check if copied file already exist in backup location
+			int i = 0;
+			boolean match = true;
+			String copylocationName = this.downloadLocation + File.separator + "Local_Backup" + File.separator + fileName;
+			
+			while(match)
+			{
+				if(i == 0)
+				{
+					if(!this.fileSystemManager.fileExist(this.downloadLocation + File.separator + "Local_Backup", fileName))
+					{
+						match = false;
+					}
+				}
+				else
+				{
+					if(!this.fileSystemManager.fileExist(this.downloadLocation + File.separator + "Local_Backup", "(" + i + ")_" + fileName))
+					{
+						copylocationName = this.downloadLocation + File.separator + "Local_Backup" + File.separator + "(" + i + ")_" + fileName;
+						match = false;
+					}
+				}
+				i++;
+			}
+			
+			if(this.fileSystemManager.copyFile(this.downloadLocation + File.separator + fileName , copylocationName))
+			{
+				try
+				{
+					deleteSystemFile(fileName);
+				}
+				catch(IOException e)
+				{
+					System.err.println("Could not delete file: " + e.getMessage());
+					return false;
+				}
+			}
+			else
+			{
+				System.err.println("Local file '" + fileName + "' can not be copied to backup location.");
+				return false;
+			}
+		}
+		catch(IOException e)
+		{
+			System.err.println("Local file '" + fileName + "' can not be backed up: " + e.getMessage());
+			return false;
+		}
+		
+		return true;
 	}
 	
 	/**
@@ -394,17 +399,19 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 			
 			if(this.getNetworkFiles().contains(fileName))
 			{
-				if(!this.getLocalFiles().contains(fileName))
+				try
 				{
-					try
+					if(this.getLocalFiles().contains(fileName))
 					{
-						this.deleteSystemFile(fileName);
+						this.makeLocalBackup(fileName);
 					}
-					catch(IOException e)
-					{
-						System.err.println("Could not delete file: " + e.getMessage());
-						status = false;
-					}
+					
+					this.deleteSystemFile(fileName);
+				}
+				catch(IOException e)
+				{
+					System.err.println("Could not delete file: " + e.getMessage());
+					status = false;
 				}
 			}
 		}
@@ -574,10 +581,15 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 				
 				iFace.delOwnerFile(fileName);
 				
-				if(!transferedOwnerFile.getDownloadLocations().contains(oldOwner) && !(transferedOwnerFile.getReplicationLocation() == null))
+				if(transferedOwnerFile.getDownloadLocations().contains(oldOwner) && (transferedOwnerFile.getReplicationLocation() != null))
 				{
-					iFace.deleteFileRequest(fileName);
+					if(transferedOwnerFile.getReplicationLocation().equals(oldOwner))
+					{
+						return true;
+					}
 				}
+				
+				iFace.deleteFileRequest(fileName);
 				
 				return true;
 			}
@@ -615,6 +627,11 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 			client.nodeConnectionFailure(fileOwner.getHostname());
 			return false;
 		}
+	}
+	
+	public boolean addReplicatedFile(String fileName)
+	{
+		return fileInventoryManager.addReplicatedFile(fileName);
 	}
 	
 	public boolean updateDownloadLocation(Node fileOwner, String fileName)
@@ -835,6 +852,22 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 								}
 							}
 							
+							//Wait until the file is fully copied by the system
+							while(!checkFileIsUsed(fileName))
+							{
+								//File is being copied to the download location
+								//Wait for copy to finish
+								// stalling the while loop a little
+								try
+								{
+									Thread.sleep(10);
+								}
+								catch (InterruptedException e)
+								{
+									e.printStackTrace();
+								}
+							}
+							
 							//Add file to owned and local files
 							addOwnerFile(fileName, client.getThisNode());
 							addLocalFile(fileName);
@@ -856,6 +889,24 @@ public class FileManager extends UnicastRemoteObject implements FileManagerInter
 			case "ENTRY_MODIFY":
 				//Implementation later on
 				break;
+		}
+	}
+	
+	private boolean checkFileIsUsed(String fileName)
+	{
+		try
+		{
+			BufferedInputStream fileReader = new BufferedInputStream(this.getFileInputStream(this.getDownloadLocation(), fileName));
+			byte[] fileBuffer = new byte[1];									//Read test byte out of file
+			fileReader.read(fileBuffer, 0, 1);									//Read from file
+			
+			fileReader.close();
+			
+			return true;														//File successfully opened
+		}
+		catch(IOException e)
+		{
+			return false;														//File not available
 		}
 	}
 }
