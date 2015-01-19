@@ -136,7 +136,7 @@ public class FailureAgent implements Runnable, Serializable
 					int newOwnerHash = newOwner.getHash();
 					int fileHash = calculateHash(fileName);
 					
-					if(fileHash > newOwnerHash) 		// standard situation: new owner is nearest smaller hash value
+					if(fileHash >= newOwnerHash) 		// standard situation: new owner is nearest smaller hash value
 					{
 						if((failedNodeHash > newOwnerHash) && (failedNodeHash < fileHash)) // failed node between newOwner and file
 						{
@@ -161,20 +161,45 @@ public class FailureAgent implements Runnable, Serializable
 						{
 							FileManagerInterface iFace = (FileManagerInterface) agentM.getFileManagerInterface(newOwner);
 							
-							if(iFace.getOwnerFile(fileName) == null)
+							if(newOwner.equals(agentM.getThisNode()))				//New owner is this node
 							{
-								//Create owner file on new node, so next nodes can already add download locations to it
-								iFace.addOwnerFile(fileName, newOwner);
+								agentM.addOwnerFile(fileName, agentM.getThisNode());
 								
-								//Create temporary dummy ownerfile for file transfer to the new owner
-								agentM.addOwnerFile(fileName, newOwner);
-								
-								iFace.ownerSwitchFile(fileName, agentM.getThisNode());
+								if(agentM.getReplicatedFiles().contains(fileName))	//The previous node will become the new replicated node
+								{
+									if(!agentM.getPrevNode().equals(agentM.getThisNode()))	//Check if this node is the last node in the network
+									{
+										try
+										{
+											FileManagerInterface iFacePrev = (FileManagerInterface) agentM.getFileManagerInterface(agentM.getPrevNode());
+											
+											iFacePrev.replicateFile(fileName, agentM.getThisNode());
+										}
+										catch(NullPointerException | RemoteException e)
+										{
+											System.err.println("Can not contact previous node for replication: " + e.getMessage());
+											agentM.nodeConnectionFailure(agentM.getPrevNode().getHostname());
+										}
+									}
+								}
 							}
-							
-							if(agentM.getReplicatedFiles().contains(fileName))	//Check if this node is the replicate location of the file
+							else
 							{
-								iFace.setReplicationLocation(fileName, agentM.getThisNode());
+								if(iFace.getOwnerFile(fileName) == null)
+								{
+									//Create owner file on new node, so next nodes can already add download locations to it
+									iFace.addOwnerFile(fileName, newOwner);
+									
+									//Create temporary dummy ownerfile for file transfer to the new owner
+									agentM.addOwnerFile(fileName, newOwner);
+									
+									iFace.ownerSwitchFile(fileName, agentM.getThisNode());
+								}
+							
+								if(agentM.getReplicatedFiles().contains(fileName))	//Check if this node is the replicate location of the file
+								{
+									iFace.setReplicationLocation(fileName, agentM.getThisNode());
+								}
 							}
 							
 							iFace.addDownloadLocation(fileName, agentM.getThisNode());	//Add this node as a download location of the file
