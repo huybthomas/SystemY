@@ -12,6 +12,6 @@ Huybrechts Thomas,
 Janssens Arthur,
 Van Hasselt Quinten
 
-5-Gedistribueerde Systemen: groep 1
+5-Distributed Systems: group 1
 
 University of Antwerp - 2014
